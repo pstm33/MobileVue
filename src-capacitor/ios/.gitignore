@@ -2,6 +2,8 @@ App/build
 App/Pods
 App/output
 App/App/public
+App/App/Assets.xcassets/AppIcon.appiconset/*.png
+App/App/Assets.xcassets/Splash.imageset/*.png
 DerivedData
 xcuserdata
 

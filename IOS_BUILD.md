@@ -33,26 +33,15 @@ On Windows this stops at `xcrun xcodebuild`, because Xcode only exists on macOS.
 
 ## macOS final build
 
-Prepared macOS VM:
-
-- macOS host: `192.168.1.31`
-- Project copy: `/Users/Shared/MobileVue`
-- Node: `/opt/tools/node20`
-- Homebrew: `/usr/local/bin/brew`
-- CocoaPods: `/usr/local/bin/pod`
-
-The VM currently has Command Line Tools only. A full `/Applications/Xcode.app` is still required before `pod install`, `xcodebuild`, archive, signing, and upload can finish.
-
-After installing Xcode, run:
+On a Mac with a supported Xcode, Node 20, and CocoaPods installed:
 
 ```bash
-sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-sudo xcodebuild -license accept
-cd /Users/Shared/MobileVue
-export PATH=/opt/tools/node20/bin:/usr/local/bin:$PATH
+brew install node@20 cocoapods
+export PATH="$(brew --prefix node@20)/bin:$PATH"
 npm ci
 cd src-capacitor
 npm ci
+npx quasar build -m capacitor -T ios -s
 npx cap sync ios
 cd ios/App
 pod install
@@ -60,6 +49,29 @@ open App.xcworkspace
 ```
 
 In Xcode, set the Apple Developer Team, signing, bundle identifier, version/build number, push notification capabilities if needed, then archive and upload to App Store Connect.
+
+## Xcode Cloud setup
+
+The repository includes Xcode Cloud custom scripts:
+
+- `ci_scripts/ci_post_clone.sh`
+- `ci_scripts/ci_pre_xcodebuild.sh`
+
+The post-clone script installs npm dependencies, builds Quasar web assets into `src-capacitor/www`, syncs Capacitor iOS, and runs `pod install`. The pre-xcodebuild script verifies that the generated web assets, CocoaPods workspace, and shared scheme are present before Apple starts the archive.
+
+Use these workflow settings in App Store Connect:
+
+- Repository: `pstm33/MobileVue`
+- Workspace: `src-capacitor/ios/App/App.xcworkspace`
+- Scheme: `App`
+- Xcode: latest available Xcode 26 or newer
+- Team: Apple Developer Team for `com.tagam.delivery`
+
+Required Apple-side setup:
+
+- App Store Connect app record with bundle ID `com.tagam.delivery`
+- App ID and provisioning profile, or automatic signing enabled
+- Push Notifications capability and iOS `GoogleService-Info.plist` if iPhone push notifications are required
 
 ## Notes from vendor documentation
 
