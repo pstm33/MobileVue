@@ -1,0 +1,32 @@
+﻿cat_id,merchant_id,restaurant_name,base_name,proposed_ru_name,existing_ru_name,existing_tk_name,proposed_en_name,proposed_tk_name,name_notes
+1,1,FIRE IT UP!,Мясо на мангале,Мясо на мангале,,,Meat on the grill,Griliň üstünde et,
+2,2,Pizza &amp; Wing,Пицца,Пицца,,,Pizza,Pitsa,
+3,1,FIRE IT UP!,Салаты,Салаты,,,Salads,Salatlar,
+4,1,FIRE IT UP!,Овощи на мангале,Овощи на мангале,,,Vegetables on the grill,Griliň üstündäki gök önümler,
+5,1,FIRE IT UP!,Мангал,Мангал,,,Brazier,Brazier,
+6,1,FIRE IT UP!,Птица на мангале,Птица на мангале,,,Bird on the grill,Grilde guş,
+7,2,Pizza &amp; Wing,Cупы,Супы,,,Soups,Çorbalar,mixed-script
+8,2,Pizza &amp; Wing,Крылышки,Крылышки,,,Wings,Ganatlar,
+9,2,Pizza &amp; Wing,Салаты,Салаты,,,Salads,Salatlar,
+10,3,BURGER 160°,Салаты,Салаты,,,Salads,Salatlar,
+11,3,BURGER 160°,Бургеры,Бургеры,,,Burgers,Burgerler,
+12,3,BURGER 160°,Снеки,Снеки,,,Snacks,Iýmit önümleri,
+13,3,BURGER 160°,Супы,Супы,,,Soups,Çorbalar,
+15,4,SUSHI.GOOD,Гунканы,Гункины,,,Gunkins,Gunkins,language-tool:name | Возможно найдена орфографическая ошибка.
+16,4,SUSHI.GOOD,Драконы,Драконы,,,Dragons,Aagdarhalar,
+17,4,SUSHI.GOOD,Запеченные роллы,Запеченные роллы,,,Baked rolls,Bişirilen rulonlar,
+18,4,SUSHI.GOOD,Калифорния,Калифорния,,,California,Kaliforniýa,
+19,4,SUSHI.GOOD,Маки,Маки,,,Poppies,Göknar,
+20,4,SUSHI.GOOD,Темпура роллы,Тимура роллы,,,Timura rolls,Timura aýlanýar,language-tool:name | Возможно найдена орфографическая ошибка.
+21,4,SUSHI.GOOD,Салаты,Салаты,,,Salads,Salatlar,
+22,4,SUSHI.GOOD,Спайс роллы,Пайс роллы,,,Pie rolls,Pirog rulonlary,language-tool:name | Возможно найдена орфографическая ошибка.
+23,4,SUSHI.GOOD,Супы,Супы,,,Soups,Çorbalar,
+24,4,SUSHI.GOOD,Филадельфия ,Филадельфия,,,Philadelphia,Filadelfiýa,
+25,4,SUSHI.GOOD,Футомаки,Футом аки,,,Futom aki,Futom aki,language-tool:name | Возможно найдена орфографическая ошибка.
+26,4,SUSHI.GOOD,Сеты,Сеты,,,Sets,Sazlaýjylar,
+27,6,L’ULTIMO SPICCHIO PIZZA,Пицца,Пицца,,,Pizza,Pitsa,
+28,6,L’ULTIMO SPICCHIO PIZZA,Салаты,Салаты,,,Salads,Salatlar,
+29,6,L’ULTIMO SPICCHIO PIZZA,Супы,Супы,,,Soups,Çorbalar,
+30,5,W.oK,Супы,Супы,,,Soups,Çorbalar,
+31,5,W.oK,на WOKе,На WОКе,,,At WOK,WOK-da,"mixed-script | language-tool:name | Это предложение не начинается с заглавной буквы. | Возможно, нужна буква из кириллицы вместо аналогичной по начертанию латинской или наоборот. Вместо букв из других алфавитов для обозначения ударения используйте символ U+0301 в кодировке Юникод."
+32,5,W.oK,Салаты,Салаты,,,Salads,Salatlar,

@@ -1,0 +1,1 @@
+import{k as i,_ as r}from"./index.867a13cf.js";const _=i("Device",{web:()=>r(()=>import("./web.dc1bbec7.js"),["assets/web.dc1bbec7.js","assets/index.867a13cf.js","assets/index.40325a95.css"]).then(e=>new e.DeviceWeb)});export{_ as D};

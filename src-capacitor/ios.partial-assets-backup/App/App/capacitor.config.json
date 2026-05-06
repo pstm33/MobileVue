@@ -1,0 +1,38 @@
+{
+	"appId": "com.tagam.delivery",
+	"appName": "Tagam Delivery",
+	"webDir": "www",
+	"android": {
+		"adjustMarginsForEdgeToEdge": "force"
+	},
+	"plugins": {
+		"StatusBar": {
+			"overlaysWebView": false,
+			"style": "LIGHT",
+			"backgroundColor": "#ff724c"
+		}
+	},
+	"packageClassList": [
+		"FCMPlugin",
+		"HttpPlugin",
+		"NativeAudio",
+		"AppPlugin",
+		"AppLauncherPlugin",
+		"CAPBrowserPlugin",
+		"CAPCameraPlugin",
+		"DevicePlugin",
+		"FilesystemPlugin",
+		"GeolocationPlugin",
+		"LocalNotificationsPlugin",
+		"CAPNetworkPlugin",
+		"PushNotificationsPlugin",
+		"SharePlugin",
+		"SplashScreenPlugin",
+		"StatusBarPlugin",
+		"ToastPlugin",
+		"SocialLoginPlugin",
+		"NativeSettingsPlugin",
+		"VoiceRecorder",
+		"CDVPlugin"
+	]
+}

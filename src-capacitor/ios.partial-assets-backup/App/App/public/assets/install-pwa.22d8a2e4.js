@@ -1,0 +1,1 @@
+import{u as o}from"./pwa-install.2c20151c.js";import"./index.867a13cf.js";var n=()=>{const t=o();window.addEventListener("beforeinstallprompt",e=>{t.isStandalone()||(e.preventDefault(),t.setPromptEvent(e),console.log("[PWA] Install prompt captured"))})};export{n as default};

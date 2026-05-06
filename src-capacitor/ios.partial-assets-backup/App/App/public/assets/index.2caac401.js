@@ -1,0 +1,1 @@
+import{k as r,_ as t}from"./index.867a13cf.js";const _=r("Network",{web:()=>t(()=>import("./web.19eadd60.js"),["assets/web.19eadd60.js","assets/index.867a13cf.js","assets/index.40325a95.css"]).then(e=>new e.NetworkWeb)});export{_ as N};

@@ -1,0 +1,20 @@
+export const legalPages = [
+  {
+    key: "privacy_policy",
+    label: "Privacy Policy",
+    to: "/privacy-policy",
+    icon: "eva-lock-outline",
+  },
+  {
+    key: "terms_of_service",
+    label: "Terms of Service",
+    to: "/terms-of-service",
+    icon: "eva-shield-outline",
+  },
+  {
+    key: "data_deletion",
+    label: "Data Deletion",
+    to: "/data-deletion",
+    icon: "eva-trash-2-outline",
+  },
+];

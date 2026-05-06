@@ -1,0 +1,1 @@
+import{k as r,_ as t}from"./index.867a13cf.js";const a=r("Share",{web:()=>t(()=>import("./web.6533ac60.js"),["assets/web.6533ac60.js","assets/index.867a13cf.js","assets/index.40325a95.css"]).then(e=>new e.ShareWeb)});export{a as S};
