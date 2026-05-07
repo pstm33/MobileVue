@@ -50,6 +50,9 @@ import { useDataStore } from "src/stores/DataStore";
 import { SocialLogin } from "@capgo/capacitor-social-login";
 import APIinterface from "src/api/APIinterface";
 
+const IOS_GOOGLE_CLIENT_ID =
+  "85413186790-c7f0j7h7h9icgqtulo7ffp0n6c3egkt0.apps.googleusercontent.com";
+
 export default {
   name: "SocialNativelogin",
   props: ["google_login_enabled", "fb_flag", "app_enabled_apple_login"],
@@ -59,32 +62,48 @@ export default {
   },
   async mounted() {
     if (this.google_login_enabled) {
-      await SocialLogin.initialize({
-        google: {
-          webClientId: this.DataStore?.attributes_data?.app_google_client_id,
-          iOSClientId: this.DataStore?.attributes_data?.app_apple_app_id,
-          mode: "online",
-        },
-      });
+      try {
+        const webClientId = this.DataStore?.attributes_data?.app_google_client_id;
+        await SocialLogin.initialize({
+          google: {
+            webClientId,
+            iOSClientId:
+              this.DataStore?.attributes_data?.app_google_ios_client_id ||
+              IOS_GOOGLE_CLIENT_ID,
+            iOSServerClientId: webClientId,
+            mode: "online",
+          },
+        });
+      } catch (error) {
+        console.warn("Google login initialization failed", error);
+      }
     }
 
     if (this.fb_flag) {
-      await SocialLogin.initialize({
-        facebook: {
-          appId: this.DataStore?.attributes_data?.app_facebook_id,
-          clientToken:
-            this.DataStore?.attributes_data?.app_facebook_client_token,
-        },
-      });
+      try {
+        await SocialLogin.initialize({
+          facebook: {
+            appId: this.DataStore?.attributes_data?.app_facebook_id,
+            clientToken:
+              this.DataStore?.attributes_data?.app_facebook_client_token,
+          },
+        });
+      } catch (error) {
+        console.warn("Facebook login initialization failed", error);
+      }
     }
 
     if (this.app_enabled_apple_login) {
-      await SocialLogin.initialize({
-        apple: {
-          clientId: this.DataStore?.attributes_data?.app_apple_app_id,
-          redirectUrl: this.DataStore?.attributes_data?.apple_app_redirect_uri,
-        },
-      });
+      try {
+        await SocialLogin.initialize({
+          apple: {
+            clientId: this.DataStore?.attributes_data?.app_apple_app_id,
+            redirectUrl: this.DataStore?.attributes_data?.apple_app_redirect_uri,
+          },
+        });
+      } catch (error) {
+        console.warn("Apple login initialization failed", error);
+      }
     }
   },
   methods: {
