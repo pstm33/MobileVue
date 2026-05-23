@@ -26,10 +26,10 @@
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
               <p class="brand-kicker m-0">{{ orderLabel(order) }}</p>
-              <h2 class="m-0 mt-1 truncate text-xl font-black">{{ order.merchant?.restaurant_name || order.merchant_name || order.restaurant_name || 'KMRS' }}</h2>
+              <h2 class="m-0 mt-1 truncate text-xl font-black">{{ order.merchant?.restaurant_name || order.merchant_name || order.restaurant_name || 'Ресторан' }}</h2>
               <p class="muted m-0 mt-1 text-sm">{{ order.place_on || order.date_created || order.status }}</p>
             </div>
-            <span class="tagam-pill is-active min-h-0 px-3 py-1 text-xs">{{ order.status || order.status_raw || 'KMRS' }}</span>
+            <span class="tagam-pill is-active min-h-0 px-3 py-1 text-xs">{{ prettyStatus(order) }}</span>
           </div>
           <div class="mt-4 flex items-center justify-between gap-3">
             <span class="muted text-sm">{{ order.payment_name || order.service_name || '' }}</span>
@@ -105,6 +105,22 @@ const orderLabel = (order) => {
   if (!value) return "Заказ";
   if (/^(#|заказ|order)/i.test(value)) return value;
   return `Заказ #${value}`;
+};
+const prettyStatus = (order) => {
+  const status = String(order?.status || order?.status_raw || "").trim();
+  const normalized = status.toLowerCase();
+  const map = {
+    new: "Новый",
+    pending: "В обработке",
+    accepted: "Принят",
+    processing: "Готовится",
+    ready: "Готов",
+    completed: "Выполнен",
+    delivered: "Доставлен",
+    cancelled: "Отменен",
+    rejected: "Отклонен",
+  };
+  return map[normalized] || status || "Новый";
 };
 const load = () => orders.loadHistory(query.value).catch(() => {});
 const buyAgain = async (order) => {

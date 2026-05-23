@@ -122,7 +122,7 @@ const socialErrorMessage = (caught, provider = "") => {
 
   return {
     title: `${providerName} не смог выполнить вход.`,
-    text: raw,
+    text: "Попробуйте еще раз. Если вход не пройдет, используйте Facebook, Email или гостевой режим.",
   };
 };
 

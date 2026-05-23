@@ -24,6 +24,37 @@
         </div>
       </div>
 
+      <section class="soft-card p-4">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="brand-kicker m-0">TOP UP</p>
+            <h2 class="m-0 mt-1 text-xl font-black">Пополнить кошелек</h2>
+            <p class="muted m-0 mt-1 text-sm">{{ topupHint }}</p>
+          </div>
+          <button class="icon-button h-11 w-11 shrink-0" type="button" @click="loadDefaultPayment">
+            <RefreshCw :size="18" />
+          </button>
+        </div>
+        <div class="mt-4 grid gap-3">
+          <div v-if="defaultPaymentName" class="rounded-[8px] border border-[var(--app-border)] bg-[var(--app-control)] p-3">
+            <p class="m-0 text-sm font-black">{{ defaultPaymentName }}</p>
+            <p class="muted m-0 mt-1 text-xs">{{ defaultPaymentSubtitle }}</p>
+          </div>
+          <div class="flex gap-2">
+            <input v-model.number="topupAmount" class="field min-w-0 flex-1" inputmode="decimal" min="1" type="number" />
+            <button class="primary-button shrink-0 px-5" type="button" :disabled="topupLoading" @click="prepareTopup">
+              {{ topupLoading ? "..." : "Пополнить" }}
+            </button>
+          </div>
+          <RouterLink v-if="!defaultPaymentName" class="tagam-pill tap-motion px-4 py-3 text-center" to="/payments">
+            Добавить способ оплаты
+          </RouterLink>
+          <p v-if="topupMessage" class="m-0 rounded-[8px] border border-emerald-300/20 bg-emerald-300/10 p-3 text-sm font-bold text-emerald-100">
+            {{ topupMessage }}
+          </p>
+        </div>
+      </section>
+
       <div v-if="loading || profile.loading" class="grid gap-3">
         <div v-for="index in 3" :key="index" class="warm-skeleton h-20 rounded-[8px]" />
       </div>
@@ -65,7 +96,9 @@
 </template>
 
 <script setup>
-import { Gift, ReceiptText, WalletCards } from "@lucide/vue";
+import { Browser } from "@capacitor/browser";
+import { Capacitor } from "@capacitor/core";
+import { Gift, ReceiptText, RefreshCw, WalletCards } from "@lucide/vue";
 import { computed, onMounted, ref, watch } from "vue";
 import APIinterface from "src/api/APIinterface";
 import AppHeader from "src/components/ui/AppHeader.vue";
@@ -78,6 +111,10 @@ const profile = useAccountProfileStore();
 const loading = ref(false);
 const error = ref("");
 const transactions = ref([]);
+const defaultPayment = ref(null);
+const topupAmount = ref(100);
+const topupLoading = ref(false);
+const topupMessage = ref("");
 
 const title = computed(() => "Кошелек и баллы");
 const status = computed(() => profile.accountStatus?.details?.data ?? profile.accountStatus?.details ?? profile.accountStatus ?? {});
@@ -93,6 +130,13 @@ const firstValue = (...keys) => {
 
 const walletBalance = computed(() => firstValue("wallet_balance", "balance", "digital_wallet_balance", "available_balance"));
 const pointsBalance = computed(() => firstValue("points", "points_balance", "reward_points", "available_points"));
+const defaultPaymentName = computed(() => defaultPayment.value?.attr1 || defaultPayment.value?.payment_name || defaultPayment.value?.payment_code || "");
+const defaultPaymentSubtitle = computed(() => defaultPayment.value?.attr2 || defaultPayment.value?.card_number || "Способ оплаты по умолчанию");
+const topupHint = computed(() =>
+  defaultPaymentName.value
+    ? "Выберите сумму, KMRS подготовит защищенную оплату через сохраненный способ."
+    : "Сначала сохраните онлайн-оплату в checkout, после этого здесь появится пополнение."
+);
 const displayError = computed(() => {
   const message = error.value || profile.error;
   if (!message) return "";
@@ -128,9 +172,60 @@ const loadTransactions = async () => {
   }
 };
 
+const loadDefaultPayment = async () => {
+  if (!client.authenticated) return;
+  try {
+    const response = await APIinterface.fetchDataByTokenPost("getCustomerDefaultPayment", "");
+    defaultPayment.value = response?.details?.data ?? response?.details ?? null;
+  } catch {
+    defaultPayment.value = null;
+  }
+};
+
+const topupRedirectUrl = () => {
+  const base = `${window.location.origin}${window.location.pathname}`;
+  return `${base}#/wallet/receipt`;
+};
+
+const prepareTopup = async () => {
+  topupMessage.value = "";
+  error.value = "";
+  if (!defaultPayment.value?.payment_code && !defaultPayment.value?.payment_uuid) {
+    error.value = "Сначала добавьте онлайн-оплату.";
+    return;
+  }
+  if (!Number(topupAmount.value) || Number(topupAmount.value) <= 0) {
+    error.value = "Введите сумму пополнения.";
+    return;
+  }
+
+  topupLoading.value = true;
+  try {
+    const params = new URLSearchParams({
+      return_url: Capacitor.isNativePlatform() ? "" : topupRedirectUrl(),
+      amount: String(topupAmount.value),
+      payment_code: defaultPayment.value.payment_code || "",
+      payment_uuid: defaultPayment.value.payment_uuid || "",
+      currency_code: defaultPayment.value.currency_code || "TMT",
+    }).toString();
+    const response = await APIinterface.fetchDataByTokenPost("prepareAddFunds", params);
+    const details = response?.details ?? {};
+    const paymentUrl = details.redirect_url || details.payment_url || details.url || details.redirect;
+    topupMessage.value = response?.msg || "Пополнение подготовлено.";
+    if (paymentUrl) {
+      if (Capacitor.isNativePlatform()) await Browser.open({ url: paymentUrl });
+      else window.location.href = paymentUrl;
+    }
+  } catch (err) {
+    error.value = err?.message ?? String(err);
+  } finally {
+    topupLoading.value = false;
+  }
+};
+
 const load = async () => {
   if (!client.authenticated) return;
-  await Promise.all([profile.load(), loadTransactions()]);
+  await Promise.all([profile.load(), loadTransactions(), loadDefaultPayment()]);
 };
 
 onMounted(load);

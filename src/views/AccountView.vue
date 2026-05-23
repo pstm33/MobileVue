@@ -233,7 +233,16 @@ const themes = [
   { code: "light", label: "Светлая" },
 ];
 
-const profileName = computed(() => (client.authenticated ? client.displayName : "Гость Tagam"));
+const isGeneratedGuestEmail = (value = "") => /^guest\./i.test(String(value));
+const cleanPhone = computed(() =>
+  [client.user?.mobile_prefix, client.user?.mobile_number].filter(Boolean).join(" ").trim() || client.user?.contact_phone || ""
+);
+const profileName = computed(() => {
+  if (!client.authenticated) return "Гость";
+  const name = [client.user?.first_name, client.user?.last_name].filter(Boolean).join(" ").trim();
+  if (/^tagam\s+guest$/i.test(name)) return cleanPhone.value ? `Гость ${cleanPhone.value}` : "Гость";
+  return client.displayName;
+});
 const profileSubtitle = computed(() =>
   client.authenticated
     ? "Заказы, адреса, бонусы и любимые места всегда под рукой."
@@ -250,7 +259,7 @@ const initials = computed(() =>
 );
 const identityChips = computed(() =>
   [
-    client.user?.email_address,
+    isGeneratedGuestEmail(client.user?.email_address) ? "" : client.user?.email_address,
     client.user?.contact_phone,
     [client.user?.mobile_prefix, client.user?.mobile_number].filter(Boolean).join(" "),
   ].filter(Boolean)

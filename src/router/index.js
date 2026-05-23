@@ -74,7 +74,8 @@ const routes = [
   },
   {
     path: "/view/categories",
-    redirect: "/search",
+    name: "categories",
+    component: () => import("src/views/CategoriesView.vue"),
   },
   {
     path: "/view/quick-results",

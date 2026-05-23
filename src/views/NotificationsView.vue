@@ -11,6 +11,29 @@
         <p class="muted m-0 mt-1 text-sm">Статусы заказов, бронирования и важные сообщения будут собраны здесь.</p>
       </div>
 
+      <section class="soft-card p-4">
+        <div class="flex items-center justify-between gap-4">
+          <div class="min-w-0">
+            <p class="brand-kicker m-0">NOTIFICATION SETTINGS</p>
+            <h2 class="m-0 mt-1 text-xl font-black">Push-уведомления</h2>
+            <p class="muted m-0 mt-1 text-sm">Заказы, курьер, бронирования и важные статусы будут приходить сразу на устройство.</p>
+          </div>
+          <button
+            class="relative h-9 w-16 shrink-0 rounded-full border transition"
+            :class="pushEnabled ? 'border-[var(--app-accent)] bg-[var(--app-accent)]' : 'border-[var(--app-border)] bg-[var(--app-control)]'"
+            type="button"
+            :aria-pressed="pushEnabled"
+            :disabled="customer.notificationSettingsSaving"
+            @click="togglePush"
+          >
+            <span
+              class="absolute top-1 h-7 w-7 rounded-full bg-white shadow-lg transition"
+              :class="pushEnabled ? 'left-8' : 'left-1'"
+            />
+          </button>
+        </div>
+      </section>
+
       <p v-if="customer.notificationsError" class="m-0 rounded-[8px] border border-rose-300/20 bg-rose-400/10 p-3 text-sm font-bold text-rose-100">
         {{ customer.notificationsError }}
       </p>
@@ -45,15 +68,20 @@
 </template>
 
 <script setup>
+import { FCM } from "@capacitor-community/fcm";
+import { Capacitor } from "@capacitor/core";
+import { PushNotifications } from "@capacitor/push-notifications";
 import { Bell, CalendarDays, ShoppingBag, Trash2 } from "@lucide/vue";
-import { computed, onMounted, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import AppHeader from "src/components/ui/AppHeader.vue";
 import AuthBridge from "src/components/checkout/AuthBridge.vue";
 import { useClientAuthStore } from "src/stores/clientAuth";
 import { useCustomerStore } from "src/stores/customer";
+import { LocalStorage } from "src/services/storage";
 
 const client = useClientAuthStore();
 const customer = useCustomerStore();
+const pushEnabled = ref(Boolean(LocalStorage.getItem("user_settings")?.app_push_notifications));
 
 const notifications = computed(() => customer.notificationList);
 
@@ -74,6 +102,41 @@ const load = () => {
 
 const remove = (item) => {
   customer.deleteNotification(item.notification_uuid || item.uuid).catch(() => {});
+};
+
+const clientTopic = computed(() => client.user?.client_uuid || client.user?.uuid || client.user?.client_id || "");
+
+const enableNativePush = async () => {
+  if (!Capacitor.isNativePlatform()) return true;
+
+  const current = await PushNotifications.checkPermissions().catch(() => ({ receive: "prompt" }));
+  const permission = current.receive === "granted" ? current : await PushNotifications.requestPermissions();
+  if (permission.receive !== "granted") {
+    throw new Error("Разрешите уведомления в настройках телефона, чтобы получать статусы заказов.");
+  }
+
+  if (clientTopic.value) {
+    await FCM.subscribeTo({ topic: clientTopic.value }).catch(() => {});
+  }
+  return true;
+};
+
+const disableNativePush = async () => {
+  if (Capacitor.isNativePlatform() && clientTopic.value) {
+    await FCM.unsubscribeFrom({ topic: clientTopic.value }).catch(() => {});
+  }
+};
+
+const togglePush = async () => {
+  const next = !pushEnabled.value;
+  try {
+    if (next) await enableNativePush();
+    else await disableNativePush();
+    await customer.saveNotificationSettings({ push: next });
+    pushEnabled.value = next;
+  } catch (error) {
+    customer.notificationsError = error?.message ?? String(error);
+  }
 };
 
 onMounted(load);

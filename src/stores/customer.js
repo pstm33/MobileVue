@@ -40,6 +40,7 @@ export const useCustomerStore = defineStore("customer", {
     notificationsLoading: false,
     notificationsError: "",
     notificationMessage: "",
+    notificationSettingsSaving: false,
     securityLoading: false,
     securityError: "",
     securityMessage: "",
@@ -239,6 +240,25 @@ export const useCustomerStore = defineStore("customer", {
       } catch (error) {
         this.notificationsError = readableError(error);
         throw error;
+      }
+    },
+    async saveNotificationSettings({ push }) {
+      this.notificationSettingsSaving = true;
+      this.notificationsError = "";
+      this.notificationMessage = "";
+      try {
+        const response = await APIinterface.fetchDataByTokenPost("saveNotifications", `push=${push ? 1 : 0}`);
+        const settings = response?.details?.user_settings;
+        if (settings) {
+          LocalStorage.set("user_settings", settings);
+        }
+        this.notificationMessage = response?.msg || "Настройки уведомлений сохранены.";
+        return response;
+      } catch (error) {
+        this.notificationsError = readableError(error);
+        throw error;
+      } finally {
+        this.notificationSettingsSaving = false;
       }
     },
     async updatePassword(data) {
