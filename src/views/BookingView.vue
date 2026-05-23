@@ -20,6 +20,38 @@
             <strong>{{ row.value }}</strong>
           </div>
         </div>
+        <div class="mt-4 grid grid-cols-2 gap-2">
+          <button class="tagam-pill tap-motion px-4 py-3" type="button" @click="showCancel = !showCancel">
+            {{ showCancel ? "Скрыть отмену" : "Отменить бронь" }}
+          </button>
+          <RouterLink class="tagam-pill tap-motion px-4 py-3" :to="{ path: '/booking', query: { status } }">
+            Все брони
+          </RouterLink>
+        </div>
+      </section>
+
+      <section v-if="bookingDetail && showCancel" class="soft-card p-4">
+        <p class="brand-kicker m-0">CANCEL BOOKING</p>
+        <h2 class="m-0 mt-1 text-xl font-black">Причина отмены</h2>
+        <p class="muted m-0 mt-1 text-sm">KMRS сохранит причину и обновит статус бронирования.</p>
+
+        <div class="mt-4 grid gap-2">
+          <button
+            v-for="reason in cancelReasons"
+            :key="reason"
+            class="rounded-[8px] border px-4 py-3 text-left text-sm font-black"
+            :class="cancelReason === reason ? 'border-[var(--app-accent)] bg-[var(--app-accent)] text-black' : 'border-[var(--app-border)] bg-[var(--app-control)] text-[var(--app-fg)]'"
+            type="button"
+            @click="cancelReason = reason"
+          >
+            {{ reason }}
+          </button>
+          <textarea v-if="!cancelReasons.length" v-model.trim="cancelReason" class="field min-h-24 resize-none py-3" placeholder="Напишите причину отмены" />
+        </div>
+
+        <button class="primary-button mt-4 w-full" type="button" :disabled="cancelLoading || !cancelReason" @click="cancelReservation">
+          {{ cancelLoading ? "Отменяем..." : "Подтвердить отмену" }}
+        </button>
       </section>
 
       <div class="sticky-rail -mt-1">
@@ -43,6 +75,9 @@
 
       <p v-if="error" class="m-0 rounded-[8px] border border-rose-300/20 bg-rose-400/10 p-3 text-sm font-bold text-rose-100">
         {{ error }}
+      </p>
+      <p v-if="message" class="m-0 rounded-[8px] border border-emerald-300/20 bg-emerald-300/10 p-3 text-sm font-bold text-emerald-100">
+        {{ message }}
       </p>
 
       <article v-for="item in bookings" :key="item.reservation_uuid || item.reservation_id || JSON.stringify(item)" class="tagam-card p-4">
@@ -98,10 +133,15 @@ const client = useClientAuthStore();
 const settings = useAppSettingsStore();
 const loading = ref(false);
 const error = ref("");
+const message = ref("");
 const summary = ref(null);
 const bookings = ref([]);
 const bookingDetail = ref(null);
 const status = ref(String(route.query.status || "all"));
+const showCancel = ref(route.query.action === "cancel");
+const cancelReasons = ref([]);
+const cancelReason = ref("");
+const cancelLoading = ref(false);
 
 const headerTitle = computed(() => (route.path.includes("/track") ? "Бронь" : "Бронирования"));
 const isTrack = computed(() => route.path.includes("/track"));
@@ -129,9 +169,10 @@ const summaryTitle = computed(() => {
 });
 const detailData = computed(() => bookingDetail.value?.data_booking || bookingDetail.value?.data || bookingDetail.value || {});
 const detailMerchant = computed(() => bookingDetail.value?.merchant || {});
+const detailReservationUuid = computed(() => route.query.reservation_uuid || route.query.id || detailData.value.reservation_uuid || detailData.value.uuid);
 const detailRows = computed(() =>
   [
-    ["Номер брони", detailData.value.reservation_id || detailData.value.reservation_uuid || route.query.reservation_uuid],
+    ["Номер брони", detailData.value.reservation_id || detailReservationUuid.value],
     ["Гости", detailData.value.guest_number || detailData.value.guest_number_raw],
     ["Дата", detailData.value.reservation_date || detailData.value.reservation_date_raw],
     ["Время", detailData.value.reservation_time || detailData.value.reservation_time_raw],
@@ -154,6 +195,7 @@ const load = async () => {
   if (!client.authenticated) return;
   loading.value = true;
   error.value = "";
+  message.value = "";
   bookingDetail.value = null;
   try {
     await settings.load().catch(() => {});
@@ -165,15 +207,17 @@ const load = async () => {
       }),
     ];
 
-    if (isTrack.value && route.query.reservation_uuid) {
+    const reservationUuid = route.query.reservation_uuid || route.query.id;
+    if (isTrack.value && reservationUuid) {
       jobs.push(
         APIinterface.fetchGet("apibookingv2/fetchBookingdetails", {
-          reservation_uuid: route.query.reservation_uuid,
+          reservation_uuid: reservationUuid,
         })
       );
+      jobs.push(APIinterface.fetchDataPostTable("getCancelreason", `id=${encodeURIComponent(reservationUuid)}`).catch(() => null));
     }
 
-    const [summaryResult, listResult, detailResult] = await Promise.allSettled(jobs);
+    const [summaryResult, listResult, detailResult, cancelReasonResult] = await Promise.allSettled(jobs);
 
     if (summaryResult.status === "fulfilled") {
       summary.value = summaryResult.value?.details?.summary || summaryResult.value?.details || null;
@@ -186,12 +230,38 @@ const load = async () => {
     if (detailResult?.status === "fulfilled") {
       bookingDetail.value = detailResult.value?.details || null;
     }
+    if (cancelReasonResult?.status === "fulfilled") {
+      const data = cancelReasonResult.value?.details?.data;
+      cancelReasons.value = Array.isArray(data) ? data : [];
+      cancelReason.value ||= cancelReasons.value[0] || "";
+    }
 
     const failure = [summaryResult, listResult].find((item) => item.status === "rejected");
     const message = failure ? failure.reason?.message ?? String(failure.reason) : "";
     error.value = /no results|record not found|null|undefined/i.test(message) ? "" : message;
   } finally {
     loading.value = false;
+  }
+};
+
+const cancelReservation = async () => {
+  const reservationUuid = detailReservationUuid.value;
+  if (!reservationUuid || !cancelReason.value) return;
+  cancelLoading.value = true;
+  error.value = "";
+  message.value = "";
+  try {
+    const response = await APIinterface.fetchDataPostTable2(
+      "CancelReservation",
+      `id=${encodeURIComponent(reservationUuid)}&reason=${encodeURIComponent(cancelReason.value)}`
+    );
+    message.value = response?.msg || "Бронь отменена.";
+    showCancel.value = false;
+    await load();
+  } catch (caught) {
+    error.value = caught?.message ?? String(caught);
+  } finally {
+    cancelLoading.value = false;
   }
 };
 
