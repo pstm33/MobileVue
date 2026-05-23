@@ -115,6 +115,10 @@
           <span><Languages :size="20" /> Язык и тема</span>
           <ChevronRight :size="18" />
         </RouterLink>
+        <RouterLink class="account-row tap-motion border-t border-white/10" to="/legal">
+          <span><FileText :size="20" /> Правовая информация</span>
+          <ChevronRight :size="18" />
+        </RouterLink>
         <button class="account-row tap-motion border-t border-white/10" type="button" @click="logout">
           <span><LogOut :size="20" /> Выйти</span>
           <ChevronRight :size="18" />
@@ -187,6 +191,7 @@ import {
   CalendarDays,
   ChevronRight,
   CreditCard,
+  FileText,
   Gift,
   Heart,
   Languages,

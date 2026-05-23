@@ -67,9 +67,9 @@
     <section class="tagam-card p-4">
       <div class="flex items-center justify-between gap-3">
         <div>
-          <p class="brand-kicker m-0">Preview</p>
-          <h2 class="m-0 mt-1 text-xl font-black">Живая витрина Tailwind</h2>
-          <p class="muted m-0 mt-1 text-sm">Так выглядят карточки, кнопки и glow в текущей схеме.</p>
+          <p class="brand-kicker m-0">TAGAM DELIVERY</p>
+          <h2 class="m-0 mt-1 text-xl font-black">Готово к заказу</h2>
+          <p class="muted m-0 mt-1 text-sm">Откройте рестораны рядом с выбранной локацией.</p>
         </div>
         <div class="grid h-14 w-14 place-items-center rounded-full bg-[var(--app-accent)] text-black">
           <Sparkles :size="28" />

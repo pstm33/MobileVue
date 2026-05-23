@@ -6,19 +6,19 @@
       <p class="brand-kicker m-0">KMRS</p>
       <h1 class="m-0 mt-2 text-3xl font-black">{{ title }}</h1>
       <p class="muted m-0 mt-2 text-sm">
-        Здесь показаны юридические документы и инструкции, которые нужны пользователю и магазинам приложений.
+        Юридические документы загружаются напрямую с сервера Tagam Delivery.
       </p>
     </div>
 
-    <div v-if="settings.loading" class="grid gap-3">
+    <div v-if="loading" class="grid gap-3">
       <div class="warm-skeleton h-16 rounded-[8px]" />
       <div class="warm-skeleton h-16 rounded-[8px]" />
     </div>
 
-    <div v-else-if="settings.error" class="soft-card p-4">
-      <h2 class="m-0 text-xl font-black">Не удалось загрузить настройки</h2>
-      <p class="muted m-0 mt-2 text-sm">{{ settings.error }}</p>
-      <button class="primary-button tap-motion mt-4 w-full" type="button" @click="settings.load()">
+    <div v-else-if="error" class="soft-card p-4">
+      <h2 class="m-0 text-xl font-black">Документ недоступен</h2>
+      <p class="muted m-0 mt-2 text-sm">{{ error }}</p>
+      <button class="primary-button tap-motion mt-4 w-full" type="button" @click="loadActivePage">
         Повторить
       </button>
     </div>
@@ -38,7 +38,7 @@
         <div class="legal-content" v-html="activeDocument" />
       </div>
       <p v-if="!availableDocuments.length" class="muted m-0 p-4 text-sm">
-        В текущем ответе KMRS нет текстов правовых страниц.
+        KMRS не вернул правовые документы для этой страницы.
       </p>
     </section>
   </section>
@@ -46,50 +46,80 @@
 
 <script setup>
 import { ChevronRight, FileText } from "@lucide/vue";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
+import APIinterface from "src/api/APIinterface";
 import AppHeader from "src/components/ui/AppHeader.vue";
-import { useAppSettingsStore } from "src/stores/appSettings";
 
 const route = useRoute();
-const settings = useAppSettingsStore();
 const activeKey = ref("");
-
-const dataDeletionHtml = `
-  <h2>Account and data deletion</h2>
-  <p>Tagam Delivery users can request deletion of their account and related personal data directly from the app.</p>
-  <ol>
-    <li>Open Tagam Delivery.</li>
-    <li>Go to Profile, then Account security.</li>
-    <li>Open Account deletion and follow the confirmation flow.</li>
-  </ol>
-  <p>If you cannot access the app, send a deletion request to support@tagam.delivery and include the phone number or email used for your account.</p>
-  <p>We delete account profile data, saved addresses, saved payment references and app account identifiers when deletion is completed. Some order, payment and tax records may be retained when required for fraud prevention, accounting, dispute resolution or legal compliance.</p>
-`;
+const loading = ref(false);
+const error = ref("");
+const loadedPages = ref({});
 
 const routeTitles = {
   "/privacy-policy": "Privacy Policy",
   "/terms-of-service": "Terms of Service",
   "/data-deletion": "Data deletion",
 };
+const pageIds = {
+  privacy_policy: "page_privacy_policy",
+  terms: "page_terms",
+  data_deletion: "page_data_deletion",
+};
+const routeKeys = {
+  "/privacy-policy": "privacy_policy",
+  "/terms-of-service": "terms",
+  "/data-deletion": "data_deletion",
+};
+const keyFromRoute = () => {
+  const pageId = String(route.params.page_id || "");
+  const fromParam = Object.entries(pageIds).find(([, value]) => value === pageId)?.[0];
+  return routeKeys[route.path] || fromParam || "privacy_policy";
+};
 
 const title = computed(() => routeTitles[route.path] || "Документы");
-const documents = computed(() => {
-  const data = settings.data || {};
-  return [
-    { key: "privacy_policy", label: "Privacy Policy", value: data.privacy_policy || data.privacy_policy_content },
-    { key: "terms", label: "Terms of Service", value: data.terms || data.terms_content || data.terms_condition },
-    { key: "data_deletion", label: "Data deletion", value: data.data_deletion || data.data_deletion_content || dataDeletionHtml },
-  ];
-});
+const documents = computed(() => [
+  { key: "privacy_policy", label: "Privacy Policy", value: loadedPages.value.privacy_policy?.long_content },
+  { key: "terms", label: "Terms of Service", value: loadedPages.value.terms?.long_content },
+  { key: "data_deletion", label: "Data deletion", value: loadedPages.value.data_deletion?.long_content },
+]);
 const availableDocuments = computed(() => documents.value.filter((item) => item.value));
 const activeDocument = computed(() => availableDocuments.value.find((item) => item.key === activeKey.value)?.value || "");
 
+const fetchPage = async (key) => {
+  if (!pageIds[key] || loadedPages.value[key]) return;
+  const response = await APIinterface.fetchDataPost("getPage", `page_id=${pageIds[key]}`);
+  loadedPages.value = {
+    ...loadedPages.value,
+    [key]: response.details,
+  };
+};
+
+const loadActivePage = async () => {
+  loading.value = true;
+  error.value = "";
+  try {
+    await fetchPage(activeKey.value);
+  } catch (err) {
+    error.value = err?.message ?? String(err);
+  } finally {
+    loading.value = false;
+  }
+};
+
 onMounted(async () => {
-  await settings.load().catch(() => {});
-  const preferred = documents.value.find((item) => title.value.toLowerCase().includes(item.label.toLowerCase()))?.key;
-  activeKey.value = preferred || availableDocuments.value[0]?.key || "";
+  activeKey.value = keyFromRoute();
+  await loadActivePage();
 });
+
+watch(activeKey, loadActivePage);
+watch(
+  () => route.path,
+  async (path) => {
+    activeKey.value = routeKeys[path] || keyFromRoute();
+  }
+);
 </script>
 
 <style scoped>
