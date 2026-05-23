@@ -595,10 +595,6 @@ button:disabled {
     --app-tabbar-bottom: calc(8px + var(--safe-bottom));
   }
 
-  body {
-    font-size: 13px;
-  }
-
   .screen {
     width: 100%;
     padding: calc(12px + var(--native-top)) 12px calc(var(--app-tabbar-height) + var(--app-tabbar-bottom) + 14px);
@@ -645,55 +641,9 @@ button:disabled {
     padding: 12px !important;
   }
 
-  .headline {
-    font-size: 19px;
-    line-height: 1.08;
-  }
-
-  .text-4xl {
-    font-size: 21px !important;
-    line-height: 1.08 !important;
-  }
-
-  .text-3xl {
-    font-size: 19px !important;
-    line-height: 1.12 !important;
-  }
-
-  .text-2xl {
-    font-size: 17px !important;
-    line-height: 1.16 !important;
-  }
-
-  .text-xl {
-    font-size: 15px !important;
-    line-height: 1.2 !important;
-  }
-
-  .text-lg {
-    font-size: 13px !important;
-    line-height: 1.25 !important;
-  }
-
-  .text-base {
-    font-size: 12px !important;
-    line-height: 1.35 !important;
-  }
-
-  .text-sm {
-    font-size: 11px !important;
-    line-height: 1.35 !important;
-  }
-
-  .text-xs {
-    font-size: 10px !important;
-    line-height: 1.25 !important;
-  }
-
   .primary-button {
     min-height: 40px;
     gap: 7px;
-    font-size: 13px;
     box-shadow: 0 10px 28px rgba(242, 138, 0, 0.2);
   }
 
@@ -721,105 +671,30 @@ button:disabled {
 }
 
 :root.native {
-  --app-tabbar-height: 48px;
-  --app-tabbar-bottom: calc(4px + var(--safe-bottom));
-}
-
-:root.native body {
-  font-size: 10.5px;
-}
-
-:root.native .screen {
-  padding-right: 9px;
-  padding-left: 9px;
+  --app-tabbar-height: 58px;
+  --app-tabbar-bottom: calc(8px + var(--safe-bottom));
 }
 
 :root.native .brand-logo {
-  width: min(104px, 36vw);
-}
-
-:root.native .headline {
-  font-size: 14px;
-  line-height: 1.08;
-}
-
-:root.native .text-4xl {
-  font-size: 16px !important;
-}
-
-:root.native .text-3xl {
-  font-size: 15px !important;
-}
-
-:root.native .text-2xl {
-  font-size: 14px !important;
-}
-
-:root.native .text-xl {
-  font-size: 13px !important;
-}
-
-:root.native .text-lg {
-  font-size: 11px !important;
-}
-
-:root.native .text-base {
-  font-size: 11px !important;
-}
-
-:root.native .text-sm {
-  font-size: 9.5px !important;
-}
-
-:root.native .section-title h2 {
-  font-size: 13px;
-  line-height: 1.18;
-}
-
-:root.native .tagam-pill {
-  min-height: 28px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-  font-size: 10px;
-}
-
-:root.native .primary-button {
-  min-height: 34px;
-  font-size: 10.5px;
-}
-
-:root.native .icon-button,
-:root.native .theme-icon-button {
-  width: 34px;
-  height: 34px;
-}
-
-:root.native .tabbar-item {
-  font-size: 7.5px;
-}
-
-:root.native .tabbar-item svg {
-  width: 15px;
-  height: 15px;
+  width: min(128px, 42vw);
 }
 
 :root.native .home-hero {
-  padding: 14px !important;
+  padding: 16px !important;
 }
 
 :root.native .home-hero .headline {
-  max-width: 16rem;
-  font-size: 15px;
+  max-width: 18rem;
 }
 
 :root.native .home-hero-icon {
-  width: 52px;
-  height: 52px;
+  width: 60px;
+  height: 60px;
 }
 
 :root.native .home-hero-icon img {
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
 }
 
 .section-title {
