@@ -16,7 +16,7 @@
 
     <div v-else-if="!cart.cartUuid || !cart.items.length" class="soft-card grid gap-4 p-5 text-center">
       <h1 class="m-0 text-2xl font-black">Корзина пуста</h1>
-      <p class="muted m-0 text-sm">Checkout появится после добавления блюда из реального меню.</p>
+      <p class="muted m-0 text-sm">Оформление появится после добавления блюда в корзину.</p>
       <RouterLink class="primary-button tap-motion" to="/home">К ресторанам</RouterLink>
     </div>
 
@@ -188,7 +188,7 @@
       <label class="soft-card flex items-center justify-between gap-3 p-4">
         <span>
           <span class="block text-sm font-black">Приборы</span>
-          <span class="muted text-xs">Передаем include_utensils в payload заказа</span>
+          <span class="muted text-xs">Добавим одноразовые приборы к заказу</span>
         </span>
         <input v-model="checkout.includeUtensils" type="checkbox" class="h-5 w-5 accent-[var(--app-accent)]" />
       </label>

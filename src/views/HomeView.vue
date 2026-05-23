@@ -21,6 +21,14 @@
       </RouterLink>
     </div>
 
+    <section v-if="homeInsights.length" class="home-insights grid grid-cols-3 gap-2">
+      <div v-for="item in homeInsights" :key="item.label" class="soft-card p-3">
+        <component :is="item.icon" class="text-[var(--app-accent)]" :size="18" />
+        <strong class="mt-2 block text-lg leading-none">{{ item.value }}</strong>
+        <span class="muted mt-1 block text-xs">{{ item.label }}</span>
+      </div>
+    </section>
+
     <div v-if="cuisines.length" class="sticky-rail sticky top-0 z-10 py-3">
       <div class="hide-scrollbar flex gap-2 overflow-x-auto px-4">
         <button
@@ -122,7 +130,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { ShoppingBag, Sparkles, X } from "@lucide/vue";
+import { Flame, MapPin, ShoppingBag, Sparkles, X } from "@lucide/vue";
 import { useAppStore } from "src/stores/app";
 import { useMerchantFeedStore } from "src/stores/merchantFeed";
 import { useSessionStore } from "src/stores/session";
@@ -162,6 +170,26 @@ const filteredRestaurants = computed(() => {
 });
 
 const isCuisineSelected = (label) => selectedCuisines.value.includes(label);
+const freeDeliveryCount = computed(() => feed.rows.filter((restaurant) => restaurant.free_delivery).length);
+const fastRestaurantCount = computed(() =>
+  feed.rows.filter((restaurant) => {
+    const minutes = Number.parseInt(String(restaurant.estimation || ""), 10);
+    return Number.isFinite(minutes) && minutes > 0 && minutes <= 35;
+  }).length
+);
+const homeInsights = computed(() => {
+  if (!feed.rows.length) return [];
+
+  return [
+    { label: "мест рядом", value: feed.rows.length, icon: MapPin },
+    cuisines.value.length ? { label: "категорий", value: cuisines.value.length, icon: Sparkles } : null,
+    freeDeliveryCount.value
+      ? { label: "без доставки", value: freeDeliveryCount.value, icon: ShoppingBag }
+      : fastRestaurantCount.value
+        ? { label: "быстро", value: fastRestaurantCount.value, icon: Flame }
+        : null,
+  ].filter(Boolean);
+});
 
 const toggleCuisine = (label, event) => {
   selectedCuisines.value = isCuisineSelected(label)
@@ -184,3 +212,20 @@ onMounted(() => {
   }
 });
 </script>
+
+<style scoped>
+.home-insights :deep(.soft-card) {
+  min-width: 0;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--app-card) 92%, transparent), color-mix(in srgb, var(--app-accent) 8%, var(--app-card))),
+    var(--app-card);
+}
+
+.home-insights strong,
+.home-insights span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

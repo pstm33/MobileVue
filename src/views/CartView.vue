@@ -14,7 +14,7 @@
       </div>
       <div>
         <h1 class="m-0 text-2xl font-black">Корзина пуста</h1>
-        <p class="muted mt-2 text-sm">Выберите ресторан и добавьте блюда из реального меню KMRS.</p>
+        <p class="muted mt-2 text-sm">Выберите ресторан и добавьте любимые блюда в заказ.</p>
       </div>
       <RouterLink class="primary-button tap-motion" to="/home">К ресторанам</RouterLink>
     </div>
