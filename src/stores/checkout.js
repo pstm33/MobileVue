@@ -17,6 +17,8 @@ export const useCheckoutStore = defineStore("checkout", {
     paymentError: "",
     selectedTip: 0,
     selectedPaymentUuid: "",
+    applyingPromo: false,
+    promoCode: "",
     paymentChange: "",
     orderNotes: "",
     includeUtensils: false,
@@ -165,6 +167,68 @@ export const useCheckoutStore = defineStore("checkout", {
       } catch (error) {
         this.paymentError = error?.message ?? String(error);
         throw error;
+      }
+    },
+    async applyPromoItem(promo) {
+      const cart = useCartStore();
+      if (!cart.cartUuid || !promo) return;
+
+      this.applyingPromo = true;
+      this.promoError = "";
+      try {
+        await APIinterface.applyPromo({
+          cart_uuid: cart.cartUuid,
+          promo_id: promo.promo_id,
+          promo_type: promo.promo_type,
+          currency_code: LocalStorage.getItem("currency_code") || "TMT",
+        });
+        await this.load();
+      } catch (error) {
+        this.promoError = error?.message ?? String(error);
+        throw error;
+      } finally {
+        this.applyingPromo = false;
+      }
+    },
+    async applyPromoCodeValue() {
+      const cart = useCartStore();
+      const code = this.promoCode.trim();
+      if (!cart.cartUuid || !code) return;
+
+      this.applyingPromo = true;
+      this.promoError = "";
+      try {
+        await APIinterface.applyPromoCode({
+          cart_uuid: cart.cartUuid,
+          promo_code: code,
+        });
+        this.promoCode = "";
+        await this.load();
+      } catch (error) {
+        this.promoError = error?.message ?? String(error);
+        throw error;
+      } finally {
+        this.applyingPromo = false;
+      }
+    },
+    async removeAppliedPromo(promo) {
+      const cart = useCartStore();
+      if (!cart.cartUuid) return;
+
+      this.applyingPromo = true;
+      this.promoError = "";
+      try {
+        await APIinterface.removePromo({
+          cart_uuid: cart.cartUuid,
+          promo_id: promo?.promo_id || "",
+          promo_type: promo?.promo_type || "",
+        });
+        await this.load();
+      } catch (error) {
+        this.promoError = error?.message ?? String(error);
+        throw error;
+      } finally {
+        this.applyingPromo = false;
       }
     },
     buildPlaceOrderPayload() {

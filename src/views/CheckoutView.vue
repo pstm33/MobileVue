@@ -146,6 +146,58 @@
       </section>
 
       <section class="soft-card grid gap-3 p-4">
+        <div class="flex items-center justify-between">
+          <h2 class="m-0 text-lg font-black">Промо и баллы</h2>
+          <BadgePercent class="text-[var(--app-accent)]" :size="20" />
+        </div>
+
+        <div class="flex gap-2">
+          <input v-model.trim="checkout.promoCode" class="field min-w-0 flex-1" placeholder="Промокод" autocomplete="off" />
+          <button
+            class="tagam-pill tap-motion shrink-0 px-4 py-2"
+            type="button"
+            :disabled="!checkout.promoCode || checkout.applyingPromo"
+            @click="checkout.applyPromoCodeValue()"
+          >
+            Добавить
+          </button>
+        </div>
+
+        <p v-if="checkout.promoError" class="m-0 rounded-[8px] border border-amber-300/20 bg-amber-300/10 p-3 text-sm font-bold text-amber-50">
+          {{ checkout.promoError }}
+        </p>
+
+        <div v-if="checkout.promoList.length" class="grid gap-2">
+          <article v-for="promo in checkout.promoList" :key="promo.promo_id || promo.title" class="rounded-[8px] border border-[var(--app-border)] bg-[var(--app-control)] p-3">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="brand-kicker m-0">{{ promo.promo_type === "points" ? "POINTS" : "PROMO" }}</p>
+                <h3 class="m-0 mt-1 text-base font-black">{{ promo.title || promo.promo_name || "Предложение" }}</h3>
+                <p class="muted m-0 mt-1 text-xs">{{ promo.sub_title || promo.description || promo.valid_to || "" }}</p>
+                <p v-if="promo.max_spend || promo.max_cap" class="muted m-0 mt-1 text-xs">
+                  {{ [promo.max_spend, promo.max_cap].filter(Boolean).join(" · ") }}
+                </p>
+              </div>
+              <button
+                v-if="promo.promo_type !== 'points'"
+                class="tagam-pill tap-motion shrink-0 px-3 py-2 text-xs"
+                type="button"
+                :disabled="checkout.applyingPromo"
+                @click="checkout.applyPromoItem(promo)"
+              >
+                Применить
+              </button>
+              <RouterLink v-else class="tagam-pill tap-motion shrink-0 px-3 py-2 text-xs" to="/points">
+                Открыть
+              </RouterLink>
+            </div>
+          </article>
+        </div>
+
+        <p v-else class="muted m-0 text-sm">Активные промо появятся здесь, если KMRS вернет предложения для корзины.</p>
+      </section>
+
+      <section class="soft-card grid gap-3 p-4">
         <h2 class="m-0 text-lg font-black">Оплата</h2>
         <template v-if="paymentList.length">
           <button
@@ -212,7 +264,7 @@
 <script setup>
 import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { CheckCircle2, Clock3, CreditCard, MapPin, Sparkles } from "@lucide/vue";
+import { BadgePercent, CheckCircle2, Clock3, CreditCard, MapPin, Sparkles } from "@lucide/vue";
 import AppHeader from "src/components/ui/AppHeader.vue";
 import AuthBridge from "src/components/checkout/AuthBridge.vue";
 import { useCartStore } from "src/stores/cart";

@@ -27,7 +27,7 @@ const tabs = computed(() => [
   { to: "/search", label: app.copy.tabs.search, icon: Search, match: ["/search", "/restaurant"] },
   { to: "/cart", label: app.copy.tabs.cart, icon: ShoppingBag, match: ["/cart", "/checkout"] },
   { to: "/tracking", label: app.copy.tabs.track, icon: MapPinned, match: ["/tracking"] },
-  { to: "/account", label: app.copy.tabs.account, icon: UserRound, match: ["/account", "/orders", "/profile", "/addresses", "/payments", "/wallet", "/notifications", "/favourites"] },
+  { to: "/account", label: app.copy.tabs.account, icon: UserRound, match: ["/account", "/orders", "/profile", "/addresses", "/payments", "/wallet", "/points", "/notifications", "/favourites"] },
 ]);
 
 const isTabActive = (item) => item.match.some((path) => route.path === path || route.path.startsWith(`${path}/`));

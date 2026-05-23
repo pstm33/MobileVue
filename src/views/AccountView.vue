@@ -88,7 +88,11 @@
           <ChevronRight :size="18" />
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/wallet">
-          <span><WalletCards :size="20" /> Кошелек и баллы</span>
+          <span><WalletCards :size="20" /> Кошелек</span>
+          <ChevronRight :size="18" />
+        </RouterLink>
+        <RouterLink class="account-row tap-motion border-t border-white/10" to="/points">
+          <span><Gift :size="20" /> Баллы</span>
           <ChevronRight :size="18" />
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/booking">
@@ -183,6 +187,7 @@ import {
   CalendarDays,
   ChevronRight,
   CreditCard,
+  Gift,
   Heart,
   Languages,
   LogOut,

@@ -45,7 +45,7 @@ const routes = [
   {
     path: "/home/offers",
     name: "home-offers",
-    component: () => import("src/views/HomeView.vue"),
+    component: () => import("src/views/OffersView.vue"),
   },
   {
     path: "/home/browse",
@@ -220,7 +220,8 @@ const routes = [
   },
   {
     path: "/points",
-    redirect: "/wallet",
+    name: "points",
+    component: () => import("src/views/PointsView.vue"),
   },
   {
     path: "/booking",
@@ -330,7 +331,7 @@ const routes = [
       if (to.params.section === "favorite") return { path: "/favourites", query: to.query };
       if (to.params.section === "notifications") return { path: "/notifications", query: to.query };
       if (to.params.section === "wallet") return { path: "/wallet", query: to.query };
-      if (to.params.section === "points") return { path: "/wallet", query: to.query };
+      if (to.params.section === "points") return { path: "/points", query: to.query };
       if (to.params.section === "change-password") return { path: "/account/security", query: to.query };
       if (to.params.section === "manage-account") return { path: "/account/security", query: to.query };
       if (to.params.section === "delete-account") return { path: "/account/security", query: to.query };
