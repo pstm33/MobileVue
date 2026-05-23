@@ -53,15 +53,15 @@
       </p>
 
       <div v-if="!client.authenticated" class="tagam-card p-5 text-center">
-        <p class="brand-kicker m-0">KMRS CLIENT</p>
+        <p class="brand-kicker m-0">TAGAM CLUB</p>
         <h2 class="m-0 mt-2 text-2xl font-black">Войдите, чтобы видеть заказы</h2>
-        <p class="muted m-0 mt-2 text-sm">История заказов возвращается сервером только для текущего client token.</p>
+        <p class="muted m-0 mt-2 text-sm">После входа здесь появятся ваши прошлые заказы, статусы и быстрый повтор.</p>
         <RouterLink class="primary-button tap-motion mt-4 w-full" to="/account">Открыть профиль</RouterLink>
       </div>
 
       <div v-else-if="!filteredOrders.length" class="soft-card p-5 text-center">
         <h2 class="m-0 text-xl font-black">Заказов пока нет</h2>
-        <p class="muted m-0 mt-2 text-sm">KMRS не вернул историю для текущего client token.</p>
+        <p class="muted m-0 mt-2 text-sm">Когда вы оформите первый заказ, он появится здесь.</p>
         <RouterLink class="primary-button tap-motion mt-4 w-full" to="/home">К ресторанам</RouterLink>
       </div>
     </template>

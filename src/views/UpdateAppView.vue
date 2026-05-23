@@ -3,9 +3,9 @@
     <AppHeader title="Версия приложения" :icon="Smartphone" action-label="Обновить" @action="load" />
 
     <div class="premium-card p-5">
-      <p class="brand-kicker m-0">KMRS APP VERSION</p>
+      <p class="brand-kicker m-0">TAGAM DELIVERY</p>
       <h1 class="m-0 mt-2 text-3xl font-black">{{ title }}</h1>
-      <p class="muted m-0 mt-2 text-sm">Экран совместим с коробочным `/update-app` и читает `appversion_data` из KMRS настроек.</p>
+      <p class="muted m-0 mt-2 text-sm">Проверяем, что у вас установлена актуальная версия приложения.</p>
     </div>
 
     <div v-if="settings.loading" class="grid gap-3">
@@ -48,7 +48,6 @@ const rows = computed(() =>
     ["Текущая версия", appVersion.value],
     ["Android", serverVersion.value?.android_version || serverVersion.value?.android],
     ["iOS", serverVersion.value?.ios_version || serverVersion.value?.ios],
-    ["Force update", serverVersion.value?.force_update === undefined ? "" : String(serverVersion.value.force_update)],
   ]
     .filter(([, value]) => value !== undefined && value !== null && value !== "")
     .map(([label, value]) => ({ label, value }))

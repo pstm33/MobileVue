@@ -3,9 +3,9 @@
     <AppHeader title="Отзыв" :icon="Star" action-label="Заказ" @action="router.push({ path: '/order/details', query: { order_uuid: orderUuid } })" />
 
     <div class="tagam-card tagam-glow p-5">
-      <p class="brand-kicker m-0">KMRS REVIEW</p>
+      <p class="brand-kicker m-0">TAGAM REVIEW</p>
       <h1 class="m-0 mt-2 text-3xl font-black">Оцените заказ</h1>
-      <p class="muted m-0 mt-2 text-sm">Отзыв отправляется в реальный endpoint KMRS `addReview` для текущего order UUID.</p>
+      <p class="muted m-0 mt-2 text-sm">Ваш отзыв поможет ресторану стать лучше и подскажет другим гостям.</p>
     </div>
 
     <form class="grid gap-4" @submit.prevent="submitReview">

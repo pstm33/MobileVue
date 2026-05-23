@@ -30,7 +30,7 @@
           </label>
 
           <div v-if="searchLoading || suggestions.length" class="mt-2 grid max-h-56 gap-1 overflow-y-auto rounded-[8px] bg-black/68 p-1 backdrop-blur-xl">
-            <div v-if="searchLoading" class="px-3 py-2 text-xs font-black text-white/70">Ищем адрес в KMRS...</div>
+            <div v-if="searchLoading" class="px-3 py-2 text-xs font-black text-white/70">Ищем адрес...</div>
             <button
               v-for="suggestion in suggestions"
               :key="suggestion.id"
@@ -224,7 +224,7 @@ const chooseSuggestion = async (suggestion) => {
     const response = await APIinterface.getLocationDetails(suggestion.id, suggestion.description || "");
     const data = response.details?.data ?? null;
     if (!data?.latitude || !data?.longitude) {
-      throw new Error("KMRS не вернул координаты для этого адреса.");
+      throw new Error("Не удалось получить координаты для этого адреса.");
     }
 
     const parsedAddress = data.parsed_address || {};

@@ -8,7 +8,7 @@
           {{ initials }}
         </div>
         <div class="min-w-0 flex-1">
-          <p class="brand-kicker m-0">{{ client.authenticated ? "KMRS CLIENT" : "TAGAM DELIVERY" }}</p>
+          <p class="brand-kicker m-0">{{ client.authenticated ? "TAGAM CLUB" : "TAGAM DELIVERY" }}</p>
           <h1 class="m-0 mt-1 truncate text-2xl font-black">{{ profileName }}</h1>
           <p class="muted m-0 mt-1 text-sm">{{ profileSubtitle }}</p>
         </div>
@@ -226,8 +226,8 @@ const themes = [
 const profileName = computed(() => (client.authenticated ? client.displayName : "Гость Tagam"));
 const profileSubtitle = computed(() =>
   client.authenticated
-    ? "Профиль связан с KMRS token. Ниже только данные, которые реально вернул сервер."
-    : "Войдите или создайте гостевой профиль, чтобы видеть заказы, адреса и checkout-данные."
+    ? "Заказы, адреса, бонусы и любимые места всегда под рукой."
+    : "Войдите или продолжите как гость, чтобы оформить заказ и сохранить доставку."
 );
 const initials = computed(() =>
   profileName.value
@@ -243,14 +243,13 @@ const identityChips = computed(() =>
     client.user?.email_address,
     client.user?.contact_phone,
     [client.user?.mobile_prefix, client.user?.mobile_number].filter(Boolean).join(" "),
-    client.user?.client_uuid || client.user?.uuid,
   ].filter(Boolean)
 );
 const metrics = computed(() => [
   { label: "Заказы", value: profile.loading ? "..." : String(profile.orderList.length), icon: ShoppingBag },
   { label: "Адреса", value: profile.loading ? "..." : String(profile.addressList.length), icon: MapPin },
-  { label: "Статус", value: client.authenticated ? "Token" : "Гость", icon: UserRound },
-  { label: "Локация", value: session.hasCoordinates ? "Есть" : "Нет", icon: MapPin },
+  { label: "Статус", value: client.authenticated ? "Активен" : "Гость", icon: UserRound },
+  { label: "Локация", value: session.hasCoordinates ? "Выбрана" : "Выбрать", icon: MapPin },
 ]);
 
 const loadProfile = () => profile.load();

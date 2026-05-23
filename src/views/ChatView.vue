@@ -6,10 +6,10 @@
 
     <template v-else>
       <div class="premium-card p-5">
-        <p class="brand-kicker m-0">KMRS CHAT</p>
+        <p class="brand-kicker m-0">TAGAM CHAT</p>
         <h1 class="m-0 mt-2 text-3xl font-black">Связь с рестораном</h1>
         <p class="muted m-0 mt-2 text-sm">
-          Поиск и рекомендованные участники берутся из реальных `chatapi/searchChats` и `chatapi/suggestedUser`.
+          Найдите ресторан или оператора, чтобы быстро уточнить детали заказа.
         </p>
       </div>
 
@@ -40,7 +40,7 @@
           </div>
           <div class="min-w-0 flex-1">
             <h3 class="m-0 truncate text-base font-black">{{ displayName(user) }}</h3>
-            <p class="muted m-0 mt-1 text-sm">{{ user.user_type || user.restaurant_name || user.email_address || user.phone || "KMRS user" }}</p>
+            <p class="muted m-0 mt-1 text-sm">{{ user.user_type || user.restaurant_name || user.email_address || user.phone || "Контакт Tagam" }}</p>
           </div>
           <RouterLink class="icon-button h-10 w-10 shrink-0" :to="{ path: '/account/chat/conversation', query: { user_uuid: user.user_uuid || user.uuid || user.client_uuid } }">
             <ChevronRight :size="18" />
@@ -49,7 +49,7 @@
 
         <div v-if="!loading && !users.length" class="soft-card p-5 text-center">
           <h2 class="m-0 text-xl font-black">Контактов нет</h2>
-          <p class="muted m-0 mt-2 text-sm">KMRS chatapi не вернул участников для текущего клиента.</p>
+          <p class="muted m-0 mt-2 text-sm">Когда появятся доступные контакты, они будут показаны здесь.</p>
         </div>
       </section>
     </template>
@@ -84,7 +84,7 @@ const displayName = (user) =>
   user.restaurant_name ||
   user.name ||
   user.email_address ||
-  "KMRS contact";
+  "Контакт Tagam";
 
 const initials = (user) =>
   displayName(user)

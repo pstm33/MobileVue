@@ -8,7 +8,7 @@
       <div class="tagam-card tagam-glow p-5">
         <p class="brand-kicker m-0">TAGAM WALLET</p>
         <h1 class="m-0 mt-2 text-4xl font-black">{{ walletBalance }}</h1>
-        <p class="muted m-0 mt-2 text-sm">Баланс и бонусы берутся из KMRS account status.</p>
+        <p class="muted m-0 mt-2 text-sm">Ваш баланс, бонусы и операции по аккаунту.</p>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
@@ -47,7 +47,7 @@
 
         <article v-for="item in transactions" :key="item.transaction_uuid || item.id || JSON.stringify(item)" class="soft-card flex items-center justify-between gap-3 p-4">
           <div class="min-w-0">
-            <h3 class="m-0 text-base font-black">{{ item.transaction_description || item.description || item.transaction_type || "Операция KMRS" }}</h3>
+            <h3 class="m-0 text-base font-black">{{ item.transaction_description || item.description || item.transaction_type || "Операция кошелька" }}</h3>
             <p class="muted m-0 mt-1 text-sm">{{ item.transaction_date || item.created_at || "" }}</p>
           </div>
           <strong :class="item.transaction_type === 'debit' ? 'text-rose-200' : 'text-[var(--app-accent)]'">
@@ -57,7 +57,7 @@
 
         <div v-if="!loading && !transactions.length" class="soft-card p-5 text-center">
           <h2 class="m-0 text-xl font-black">Операций нет</h2>
-          <p class="muted m-0 mt-2 text-sm">KMRS не вернул транзакции кошелька для текущего клиента.</p>
+          <p class="muted m-0 mt-2 text-sm">Пока не было начислений, списаний или возвратов.</p>
         </div>
       </section>
     </template>
@@ -109,7 +109,6 @@ const statusRows = computed(() =>
     ["Уровень", firstValue("membership_type", "membership_name", "member_type")],
     ["Заказы", firstValue("total_orders", "orders", "order_count")],
     ["Повторные заказы", firstValue("repeat_orders", "reorder_rate", "orders_repeat")],
-    ["Client UUID", client.user?.client_uuid || client.user?.uuid || ""],
   ]
     .filter(([, value]) => value !== "" && value !== "0")
     .map(([label, value]) => ({ label, value }))

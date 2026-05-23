@@ -1,6 +1,6 @@
 <template>
   <section class="page fade-up">
-    <AppHeader title="Профиль клиента" :icon="UserRound" action-label="KMRS" />
+    <AppHeader title="Профиль клиента" :icon="UserRound" action-label="Профиль" />
 
     <AuthBridge v-if="!client.authenticated" @authenticated="load" />
 
@@ -12,9 +12,9 @@
 
       <form v-else class="tagam-card grid gap-4 p-5" @submit.prevent="save">
         <div>
-          <p class="brand-kicker m-0">KMRS PROFILE</p>
+          <p class="brand-kicker m-0">TAGAM PROFILE</p>
           <h1 class="m-0 mt-1 text-2xl font-black">Личные данные</h1>
-          <p class="muted m-0 mt-1 text-sm">Редактируются только поля, которые принимает сервер KMRS.</p>
+          <p class="muted m-0 mt-1 text-sm">Обновите имя, email и телефон для связи по заказам.</p>
         </div>
 
         <div class="grid grid-cols-2 gap-3">

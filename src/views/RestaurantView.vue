@@ -109,7 +109,7 @@
             <strong>{{ review.customer_name || review.full_name || review.client_name || "KMRS" }}</strong>
             <p class="muted m-0 mt-1 text-sm">{{ review.review || review.comment || review.message || review.content }}</p>
           </article>
-          <p v-if="!reviewsLoading && !reviews.length" class="muted m-0 text-sm">KMRS не вернул список отзывов для этого ресторана.</p>
+          <p v-if="!reviewsLoading && !reviews.length" class="muted m-0 text-sm">У этого ресторана пока нет отзывов.</p>
         </div>
       </div>
 

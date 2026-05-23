@@ -1,15 +1,15 @@
 <template>
   <section class="page fade-up">
-    <AppHeader title="Безопасность" :icon="ShieldCheck" action-label="KMRS" />
+    <AppHeader title="Безопасность" :icon="ShieldCheck" action-label="Аккаунт" />
 
     <AuthBridge v-if="!client.authenticated" />
 
     <template v-else>
       <form class="tagam-card grid gap-4 p-5" @submit.prevent="savePassword">
         <div>
-          <p class="brand-kicker m-0">KMRS ACCOUNT</p>
+          <p class="brand-kicker m-0">ACCOUNT SECURITY</p>
           <h1 class="m-0 mt-1 text-2xl font-black">Сменить пароль</h1>
-          <p class="muted m-0 mt-1 text-sm">Используется коробочный endpoint `updatePassword`.</p>
+          <p class="muted m-0 mt-1 text-sm">Используйте надежный пароль, который не повторяется в других сервисах.</p>
         </div>
 
         <label class="grid gap-2">
@@ -40,7 +40,7 @@
           <ChevronRight :size="18" :class="deleteOpen ? 'rotate-90' : ''" />
         </button>
         <div v-if="deleteOpen" class="grid gap-3 border-t border-white/10 p-4">
-          <p class="muted m-0 text-sm">KMRS обычно требует код подтверждения. Сначала запросите код в админской/коробочной логике, затем отправьте его здесь.</p>
+          <p class="muted m-0 text-sm">Для удаления аккаунта может потребоваться код подтверждения. Это защищает профиль от случайного удаления.</p>
           <input v-model="deleteCode" class="field" inputmode="numeric" placeholder="Код подтверждения" />
           <div class="grid grid-cols-2 gap-2">
             <button class="tagam-pill tap-motion px-4 py-2" type="button" :disabled="!deleteCode" @click="customer.verifyAccountDelete(deleteCode).catch(() => {})">

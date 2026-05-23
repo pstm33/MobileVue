@@ -6,14 +6,14 @@
 
     <template v-else>
       <div class="premium-card p-5">
-        <p class="brand-kicker m-0">KMRS BOOKING</p>
+        <p class="brand-kicker m-0">TAGAM BOOKING</p>
         <h1 class="m-0 mt-2 text-3xl font-black">{{ summaryTitle }}</h1>
-        <p class="muted m-0 mt-2 text-sm">Брони загружаются из `apibookingv2/BookingSummary` и `apibookingv2/BookingList`.</p>
+        <p class="muted m-0 mt-2 text-sm">Ваши бронирования столиков и детали визитов.</p>
       </div>
 
       <section v-if="bookingDetail" class="tagam-card p-4">
         <p class="brand-kicker m-0">Reservation details</p>
-        <h2 class="m-0 mt-1 text-xl font-black">{{ detailData.restaurant_name || detailMerchant.restaurant_name || "Бронь KMRS" }}</h2>
+        <h2 class="m-0 mt-1 text-xl font-black">{{ detailData.restaurant_name || detailMerchant.restaurant_name || "Бронь ресторана" }}</h2>
         <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
           <div v-for="row in detailRows" :key="row.label" class="soft-card p-3">
             <span class="muted block">{{ row.label }}</span>
@@ -49,7 +49,7 @@
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="brand-kicker m-0">{{ item.status || item.status_pretty || "Booking" }}</p>
-            <h2 class="m-0 mt-1 truncate text-xl font-black">{{ item.restaurant_name || item.merchant_name || "KMRS restaurant" }}</h2>
+            <h2 class="m-0 mt-1 truncate text-xl font-black">{{ item.restaurant_name || item.merchant_name || "Ресторан" }}</h2>
             <p class="muted m-0 mt-1 text-sm">№ {{ item.reservation_id || item.reservation_uuid || "..." }}</p>
           </div>
           <span class="rounded-full bg-[var(--app-accent)] px-3 py-1 text-xs font-black text-black">
@@ -76,7 +76,7 @@
 
       <div v-if="!loading && !bookings.length && !error" class="soft-card p-5 text-center">
         <h2 class="m-0 text-xl font-black">Броней нет</h2>
-        <p class="muted m-0 mt-2 text-sm">KMRS не вернул бронирования для выбранного статуса.</p>
+        <p class="muted m-0 mt-2 text-sm">Когда вы забронируете столик, запись появится здесь.</p>
       </div>
     </template>
   </section>
@@ -131,7 +131,7 @@ const detailData = computed(() => bookingDetail.value?.data_booking || bookingDe
 const detailMerchant = computed(() => bookingDetail.value?.merchant || {});
 const detailRows = computed(() =>
   [
-    ["Reservation ID", detailData.value.reservation_id || detailData.value.reservation_uuid || route.query.reservation_uuid],
+    ["Номер брони", detailData.value.reservation_id || detailData.value.reservation_uuid || route.query.reservation_uuid],
     ["Гости", detailData.value.guest_number || detailData.value.guest_number_raw],
     ["Дата", detailData.value.reservation_date || detailData.value.reservation_date_raw],
     ["Время", detailData.value.reservation_time || detailData.value.reservation_time_raw],

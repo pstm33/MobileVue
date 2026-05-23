@@ -6,9 +6,9 @@
 
     <template v-else>
       <div class="tagam-card p-5">
-        <p class="brand-kicker m-0">KMRS FAVOURITES</p>
+        <p class="brand-kicker m-0">TAGAM FAVOURITES</p>
         <h1 class="m-0 mt-1 text-2xl font-black">Любимые рестораны и блюда</h1>
-        <p class="muted m-0 mt-1 text-sm">Раздел повторяет коробочную логику избранного и показывает только то, что вернул сервер.</p>
+        <p class="muted m-0 mt-1 text-sm">Сохраняйте места и блюда, к которым хочется возвращаться.</p>
       </div>
 
       <p v-if="customer.favouritesError" class="m-0 rounded-[8px] border border-rose-300/20 bg-rose-400/10 p-3 text-sm font-bold text-rose-100">
@@ -41,7 +41,7 @@
 
       <div v-if="!customer.favouritesLoading && !favourites.length" class="soft-card p-5 text-center">
         <h2 class="m-0 text-xl font-black">Избранного пока нет</h2>
-        <p class="muted m-0 mt-2 text-sm">KMRS не вернул сохраненные рестораны или блюда для текущего клиента.</p>
+        <p class="muted m-0 mt-2 text-sm">Нажмите сердце у ресторана или блюда, и оно появится здесь.</p>
       </div>
     </template>
   </section>
@@ -61,7 +61,7 @@ const customer = useCustomerStore();
 const favourites = computed(() => customer.favouriteList);
 
 const itemKey = (item) => item.item_uuid || item.restaurant_slug || item.merchant_uuid || item.merchant_id || JSON.stringify(item);
-const titleOf = (item) => item.item_name || item.restaurant_name || item.merchant_name || item.name || "KMRS item";
+const titleOf = (item) => item.item_name || item.restaurant_name || item.merchant_name || item.name || "Избранное";
 const subtitleOf = (item) => item.item_description || item.cuisine_name || item.restaurant_cuisine || item.address || item.distance_local_new || "";
 const imageOf = (item) => item.url_image || item.logo || item.restaurant_logo || item.merchant_logo || item.photo || "";
 const merchantIdOf = (item) => item.merchant_id || item.restaurant_id || item.merchant_uuid || "";

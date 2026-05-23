@@ -3,9 +3,9 @@
     <AppHeader title="Вход" :icon="UserRound" action-label="Auth" />
 
     <div class="tagam-card p-5">
-      <p class="brand-kicker m-0">KMRS CLIENT</p>
+      <p class="brand-kicker m-0">TAGAM CLUB</p>
       <h1 class="m-0 mt-2 text-3xl font-black">Аккаунт для заказов</h1>
-      <p class="muted m-0 mt-2 text-sm">Email, регистрация, гость и соцсети работают через реальные KMRS endpoint-ы.</p>
+      <p class="muted m-0 mt-2 text-sm">Войдите, зарегистрируйтесь или продолжите как гость.</p>
     </div>
 
     <AuthBridge @authenticated="afterAuthenticated" />

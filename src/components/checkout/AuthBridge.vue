@@ -7,7 +7,7 @@
           {{ client.authenticated ? client.displayName : modeTitle }}
         </h2>
         <p class="muted m-0 mt-1 text-sm">
-          {{ client.authenticated ? "Client token сохранен, защищенные сценарии KMRS доступны." : modeSubtitle }}
+          {{ client.authenticated ? "Вы вошли. Теперь доступны заказы, адреса и оплата." : modeSubtitle }}
         </p>
       </div>
       <button v-if="client.authenticated" class="tagam-pill tap-motion px-3 py-2 text-xs" type="button" @click="logout">
@@ -67,15 +67,15 @@
 
       <div v-else-if="mode === 'social-complete'" class="grid gap-3">
         <div class="soft-card p-4">
-          <p class="brand-kicker m-0">SOCIAL LOGIN</p>
-          <h3 class="m-0 mt-1 text-xl font-black">Complete profile</h3>
-          <p class="muted m-0 mt-1 text-sm">KMRS needs a phone number to finish the client token.</p>
+          <p class="brand-kicker m-0">TAGAM LOGIN</p>
+          <h3 class="m-0 mt-1 text-xl font-black">Завершите вход</h3>
+          <p class="muted m-0 mt-1 text-sm">Добавьте телефон, чтобы мы могли связаться по заказу.</p>
         </div>
         <NameFields :model="signup" />
         <input v-model="signup.email_address" class="field" autocomplete="email" placeholder="Email" type="email" />
         <PhoneFields :model="signup" />
         <button class="primary-button tap-motion w-full" type="button" :disabled="client.loading || !canCompleteSocial" @click="submitSocialCompletion">
-          {{ client.loading ? "Saving..." : "Finish login" }}
+          {{ client.loading ? "Сохраняем..." : "Завершить вход" }}
         </button>
       </div>
 
@@ -167,13 +167,13 @@ const modeTitle = computed(() => ({
   reset: "Восстановить пароль",
 }[mode.value] || "Complete social login"));
 const modeSubtitle = computed(() => ({
-  guest: "KMRS требует client token для оплаты и финального заказа.",
-  login: "Используйте пароль от клиентского аккаунта KMRS.",
+  guest: "Быстрый способ оформить заказ без полной регистрации.",
+  login: "Используйте email или телефон, указанный при регистрации.",
   phone: "Получите одноразовый код по телефону.",
-  signup: "Регистрация создает настоящий client token на сервере.",
-  otp: "Код проверяется реальным KMRS endpoint.",
-  reset: "Восстановление работает через KMRS resetPassword.",
-}[mode.value] || "Social provider returned a profile; KMRS still needs phone details."));
+  signup: "Сохраните адреса, заказы и любимые рестораны в личном профиле.",
+  otp: "Введите код подтверждения, который пришел вам в сообщении.",
+  reset: "Мы отправим инструкции для восстановления доступа.",
+}[mode.value] || "Добавьте недостающие данные, чтобы завершить вход."));
 const canGuest = computed(() => guest.first_name && guest.last_name && guest.mobile_prefix && guest.mobile_number);
 const canSignup = computed(() => signup.first_name && signup.last_name && signup.email_address && signup.password && signup.password === signup.cpassword);
 const canReset = computed(() => reset.uuid && reset.password && reset.password === reset.cpassword);
@@ -283,7 +283,7 @@ const applyAppleCallback = async () => {
   };
 
   if (!payload.id && !payload.social_token && !payload.email_address) {
-    notice.value = String(route.query.msg || "Apple callback returned without a usable token.");
+    notice.value = String(route.query.msg || "Не удалось завершить вход через Apple. Попробуйте еще раз.");
     return;
   }
 

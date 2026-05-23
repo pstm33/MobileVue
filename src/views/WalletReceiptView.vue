@@ -19,9 +19,9 @@
           <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[var(--app-accent)] text-black">
             <Check :size="34" stroke-width="2.6" />
           </div>
-          <p class="brand-kicker m-0 mt-5">Wallet loaded</p>
+          <p class="brand-kicker m-0 mt-5">WALLET UPDATED</p>
           <h1 class="m-0 mt-2 text-3xl font-black">Кошелек пополнен</h1>
-          <p class="muted m-0 mt-2 text-sm">Данные чека загружены через KMRS `interface/fetchWallettransactions`.</p>
+          <p class="muted m-0 mt-2 text-sm">Сохраните чек или вернитесь к кошельку, чтобы посмотреть историю операций.</p>
         </div>
 
         <section class="soft-card overflow-hidden">
@@ -39,7 +39,7 @@
 
       <div v-if="!loading && !receipt && !error" class="soft-card p-5 text-center">
         <h2 class="m-0 text-xl font-black">Чек не найден</h2>
-        <p class="muted m-0 mt-2 text-sm">KMRS не вернул транзакцию для переданного `transaction_id`.</p>
+        <p class="muted m-0 mt-2 text-sm">Мы не нашли эту операцию в истории кошелька.</p>
       </div>
     </template>
   </section>
@@ -66,7 +66,7 @@ const rows = computed(() =>
   [
     ["Сумма", receipt.value?.amount],
     ["Метод оплаты", receipt.value?.payment_name],
-    ["Transaction ID", receipt.value?.transaction_id || transactionId.value],
+    ["Номер операции", receipt.value?.transaction_id || transactionId.value],
     ["Дата и время", receipt.value?.transaction_date],
   ]
     .filter(([, value]) => value !== undefined && value !== null && value !== "")

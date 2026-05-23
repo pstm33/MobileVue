@@ -1,6 +1,6 @@
 <template>
   <section class="page fade-up">
-    <AppHeader title="Адреса" :icon="MapPin" action-label="KMRS" />
+    <AppHeader title="Адреса" :icon="MapPin" action-label="Карта" />
 
     <AuthBridge v-if="!client.authenticated" @authenticated="load" />
 
@@ -8,7 +8,7 @@
       <div class="tagam-card p-5">
         <p class="brand-kicker m-0">Delivery places</p>
         <h1 class="m-0 mt-1 text-2xl font-black">Адресная книга</h1>
-        <p class="muted m-0 mt-1 text-sm">Сохраняем и удаляем реальные адреса KMRS для текущего client token.</p>
+        <p class="muted m-0 mt-1 text-sm">Сохраните дом, офис и другие места для быстрой доставки.</p>
         <div class="mt-4 grid grid-cols-2 gap-3">
           <RouterLink class="tagam-pill tap-motion px-4 py-3" :to="{ path: '/location', query: { redirect: '/addresses?new=1' } }">
             <MapPinned :size="17" />
@@ -46,7 +46,7 @@
         </label>
 
         <p v-if="!canSaveAddress" class="m-0 rounded-[8px] border border-amber-300/20 bg-amber-300/10 p-3 text-sm font-bold text-amber-50">
-          Для нового адреса сначала выберите точку на карте, чтобы KMRS получил реальные координаты и place_id.
+          Для нового адреса сначала выберите точку на карте, чтобы доставка точно попала в нужное место.
         </p>
 
         <button class="primary-button tap-motion w-full" type="submit" :disabled="customer.addressSaving || !canSaveAddress">
@@ -82,7 +82,7 @@
 
       <div v-if="!customer.addressesLoading && !customer.addressList.length" class="soft-card p-5 text-center">
         <h2 class="m-0 text-xl font-black">Адресов пока нет</h2>
-        <p class="muted m-0 mt-2 text-sm">KMRS не вернул сохраненные адреса для текущего клиента.</p>
+        <p class="muted m-0 mt-2 text-sm">Добавьте первый адрес, чтобы быстрее оформлять следующие заказы.</p>
       </div>
     </template>
   </section>

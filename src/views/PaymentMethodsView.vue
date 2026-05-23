@@ -1,6 +1,6 @@
 <template>
   <section class="page fade-up">
-    <AppHeader title="Платежи" :icon="CreditCard" action-label="KMRS" />
+    <AppHeader title="Платежи" :icon="CreditCard" action-label="Оплата" />
 
     <AuthBridge v-if="!client.authenticated" @authenticated="load" />
 
@@ -8,7 +8,7 @@
       <div class="tagam-card p-5">
         <p class="brand-kicker m-0">SAVED PAYMENTS</p>
         <h1 class="m-0 mt-1 text-2xl font-black">Платежные методы</h1>
-        <p class="muted m-0 mt-1 text-sm">Показываем только реальные способы оплаты, которые вернул KMRS для текущего client token.</p>
+        <p class="muted m-0 mt-1 text-sm">Здесь будут карты и способы оплаты, сохраненные после оформления заказа.</p>
         <RouterLink class="primary-button tap-motion mt-4 w-full" to="/checkout">
           Добавить через checkout
         </RouterLink>
@@ -28,7 +28,7 @@
       <article v-for="payment in customer.paymentList" v-else :key="payment.payment_uuid || payment.id || payment.payment_code" class="tagam-card p-4">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <p class="brand-kicker m-0">{{ payment.payment_code || payment.payment_name || "KMRS PAYMENT" }}</p>
+            <p class="brand-kicker m-0">{{ payment.payment_name || payment.payment_code || "SAVED PAYMENT" }}</p>
             <h2 class="m-0 mt-1 truncate text-xl font-black">{{ paymentTitle(payment) }}</h2>
             <p class="muted m-0 mt-1 text-sm">{{ paymentSubtitle(payment) }}</p>
           </div>
@@ -46,7 +46,7 @@
 
       <div v-if="!customer.paymentsLoading && !customer.paymentList.length" class="soft-card p-5 text-center">
         <h2 class="m-0 text-xl font-black">Сохраненных оплат нет</h2>
-        <p class="muted m-0 mt-2 text-sm">KMRS не вернул сохраненные платежные методы для текущего клиента.</p>
+        <p class="muted m-0 mt-2 text-sm">После оплаты заказа сохраненный способ появится здесь.</p>
       </div>
     </template>
   </section>
@@ -63,8 +63,8 @@ import { useCustomerStore } from "src/stores/customer";
 const client = useClientAuthStore();
 const customer = useCustomerStore();
 
-const paymentTitle = (payment) => payment.attr1 || payment.card_name || payment.payment_name || payment.provider || "KMRS payment";
-const paymentSubtitle = (payment) => payment.attr2 || payment.card_number || payment.payment_uuid || "";
+const paymentTitle = (payment) => payment.attr1 || payment.card_name || payment.payment_name || payment.provider || "Способ оплаты";
+const paymentSubtitle = (payment) => payment.attr2 || payment.card_number || "";
 
 const load = () => {
   if (client.authenticated) customer.loadPayments().catch(() => {});

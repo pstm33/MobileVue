@@ -29,7 +29,7 @@
         <div class="flex items-start justify-between gap-3">
           <div>
             <p class="brand-kicker m-0">ДЕТАЛИ ЗАКАЗА</p>
-            <h2 class="m-0 mt-1 text-2xl font-black">{{ merchant.restaurant_name || 'KMRS' }}</h2>
+            <h2 class="m-0 mt-1 text-2xl font-black">{{ merchant.restaurant_name || 'Ресторан' }}</h2>
             <p class="muted m-0 mt-1 text-sm">{{ orderInfo.place_on || orderInfo.date_created }}</p>
           </div>
           <span class="tagam-pill is-active min-h-0 px-3 py-1 text-xs">{{ readableStatus }}</span>
@@ -38,7 +38,7 @@
         <div class="grid gap-2 text-sm">
           <div class="flex justify-between gap-3">
             <span class="muted">Оплата</span>
-            <strong class="text-right">{{ orderInfo.payment_name || orderInfo.payment_code || 'KMRS' }}</strong>
+            <strong class="text-right">{{ orderInfo.payment_name || orderInfo.payment_code || 'Оплата' }}</strong>
           </div>
           <div v-if="deliveryAddress" class="flex justify-between gap-3">
             <span class="muted">Доставка</span>
@@ -118,7 +118,7 @@
     <div v-if="cancelOpen" class="fixed inset-0 z-50 flex items-end bg-black/60 p-3 backdrop-blur-sm" @click.self="cancelOpen = false">
       <section class="tagam-card mx-auto w-full max-w-[520px] rounded-t-[8px] p-4 pb-[calc(16px+var(--safe-bottom))] shadow-2xl">
         <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-[var(--app-border)]" />
-        <p class="brand-kicker m-0">KMRS CANCEL</p>
+        <p class="brand-kicker m-0">ORDER CANCEL</p>
         <h2 class="m-0 mt-1 text-2xl font-black">Отменить заказ?</h2>
         <p class="muted m-0 mt-2 text-sm">
           {{ cancelMessage }}
@@ -161,7 +161,7 @@ const merchant = computed(() => details.value?.merchant ?? details.value?.mercha
 const orderItems = computed(() => details.value?.items ?? details.value?.order_items ?? []);
 const summaryRows = computed(() => details.value?.summary ?? details.value?.order?.summary ?? []);
 const orderStatus = computed(() => details.value?.order_status ?? details.value?.status ?? {});
-const statusLabel = computed(() => orderStatus.value.status || orderInfo.value.status || orderInfo.value.status_raw || "KMRS");
+const statusLabel = computed(() => orderStatus.value.status || orderInfo.value.status || orderInfo.value.status_raw || "Новый");
 const readableStatus = computed(() => {
   const status = String(statusLabel.value || "").toLowerCase();
   const labels = {
@@ -191,7 +191,7 @@ const canReview = computed(() => {
 const cancelDisabled = computed(() => cancelPreview.value && cancelPreview.value.cancel_status === false);
 const cancelMessage = computed(() =>
   cancelPreview.value?.cancel_msg ||
-  "Проверяем правила отмены на сервере KMRS. Если отмена доступна, заказ будет отменен сразу после подтверждения."
+  "Проверяем возможность отмены. Если отмена доступна, заказ будет отменен сразу после подтверждения."
 );
 const estimationLabel = computed(() => details.value?.estimation?.label || details.value?.estimation?.value || "");
 const estimatedLabel = computed(() => {

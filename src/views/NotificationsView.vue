@@ -6,9 +6,9 @@
 
     <template v-else>
       <div class="tagam-card p-5">
-        <p class="brand-kicker m-0">KMRS NOTIFICATIONS</p>
+        <p class="brand-kicker m-0">TAGAM UPDATES</p>
         <h1 class="m-0 mt-1 text-2xl font-black">История уведомлений</h1>
-        <p class="muted m-0 mt-1 text-sm">Здесь выводится реальная лента `getNotification` для текущего клиента.</p>
+        <p class="muted m-0 mt-1 text-sm">Статусы заказов, бронирования и важные сообщения будут собраны здесь.</p>
       </div>
 
       <p v-if="customer.notificationsError" class="m-0 rounded-[8px] border border-rose-300/20 bg-rose-400/10 p-3 text-sm font-bold text-rose-100">
@@ -28,7 +28,7 @@
         </div>
         <div class="min-w-0 flex-1">
           <h2 class="m-0 text-base font-black">{{ item.title || item.subject || typeLabel(item) }}</h2>
-          <p class="m-0 mt-1 text-sm text-[var(--app-fg)]">{{ item.message || item.body || item.description || "KMRS notification" }}</p>
+          <p class="m-0 mt-1 text-sm text-[var(--app-fg)]">{{ item.message || item.body || item.description || "Новое уведомление" }}</p>
           <p class="muted m-0 mt-2 text-xs">{{ item.date || item.created_at || item.date_created || "" }}</p>
         </div>
         <button v-if="item.notification_uuid || item.uuid" class="icon-button h-10 w-10 shrink-0" type="button" aria-label="Удалить" @click="remove(item)">
@@ -38,7 +38,7 @@
 
       <div v-if="!customer.notificationsLoading && !notifications.length" class="soft-card p-5 text-center">
         <h2 class="m-0 text-xl font-black">Уведомлений нет</h2>
-        <p class="muted m-0 mt-2 text-sm">KMRS не вернул уведомления для текущего клиента.</p>
+        <p class="muted m-0 mt-2 text-sm">Здесь появятся обновления по заказам и аккаунту.</p>
       </div>
     </template>
   </section>
