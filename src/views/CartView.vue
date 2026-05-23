@@ -1,0 +1,159 @@
+<template>
+  <section class="page fade-up">
+    <AppHeader title="Корзина" :icon="ShoppingBag" action-label="Cart" />
+
+    <div v-if="cart.loading && !cart.cart" class="grid gap-4">
+      <div class="soft-card warm-skeleton h-24" />
+      <div class="soft-card warm-skeleton h-32" />
+      <div class="soft-card warm-skeleton h-32" />
+    </div>
+
+    <div v-else-if="!cart.cartUuid" class="soft-card grid gap-4 p-5 text-center">
+      <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-300/10 text-emerald-300">
+        <ShoppingBag :size="28" />
+      </div>
+      <div>
+        <h1 class="m-0 text-2xl font-black">Корзина пуста</h1>
+        <p class="muted mt-2 text-sm">Выберите ресторан и добавьте блюда из реального меню KMRS.</p>
+      </div>
+      <RouterLink class="primary-button tap-motion" to="/home">К ресторанам</RouterLink>
+    </div>
+
+    <div v-else-if="cart.error" class="soft-card p-5">
+      <h1 class="m-0 text-2xl font-black">Корзина недоступна</h1>
+      <p class="muted mt-2 text-sm">{{ cart.error }}</p>
+      <button class="primary-button tap-motion mt-4 w-full" type="button" @click="cart.refresh()">
+        Повторить
+      </button>
+    </div>
+
+    <template v-else>
+      <section v-if="cart.merchant" class="glass flex items-center gap-3 rounded-[8px] p-3">
+        <img
+          v-if="cart.merchant.logo"
+          class="h-14 w-14 rounded-[8px] object-cover"
+          :src="cart.merchant.logo"
+          :alt="cart.merchant.restaurant_name"
+        />
+        <div class="min-w-0 flex-1">
+          <p class="m-0 text-xs font-black uppercase tracking-[0.16em] text-emerald-300">Заказ из</p>
+          <h1 class="m-0 truncate text-xl font-black">{{ cart.merchant.restaurant_name }}</h1>
+          <p class="muted m-0 truncate text-xs">{{ cart.merchant.merchant_address }}</p>
+        </div>
+      </section>
+
+      <section v-if="!cart.items.length" class="soft-card grid gap-4 p-5 text-center">
+        <h2 class="m-0 text-2xl font-black">В корзине нет блюд</h2>
+        <RouterLink class="primary-button" :to="restaurantLink">Открыть меню</RouterLink>
+      </section>
+
+      <section v-else class="grid gap-3">
+        <article v-for="(item, index) in cart.items" :key="item.cart_row" class="tagam-card stagger-item grid gap-3 p-3" :style="{ '--stagger-delay': `${Math.min(index, 6) * 45}ms` }">
+          <div class="flex gap-3">
+            <img
+              v-if="item.url_image"
+              class="h-20 w-20 rounded-[8px] object-cover"
+              :src="item.url_image"
+              :alt="item.item_name"
+            />
+            <div v-else class="grid h-20 w-20 shrink-0 place-items-center rounded-[8px] bg-[var(--app-accent-soft)] text-xs font-black text-[var(--app-muted)]">
+              TAGAM
+            </div>
+
+            <div class="min-w-0 flex-1">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <h2 class="m-0 text-base font-black">{{ decodeHtml(item.item_name) }}</h2>
+                  <p v-if="item.price?.size_name" class="muted m-0 text-xs">{{ item.price.size_name }}</p>
+                </div>
+                <button class="icon-button !h-9 !w-9" type="button" aria-label="Remove item" @click="cart.removeItem(item.cart_row, slug)">
+                  <Trash2 :size="16" />
+                </button>
+              </div>
+
+              <p v-if="item.special_instructions" class="muted mt-2 text-xs">{{ item.special_instructions }}</p>
+
+              <div v-if="item.addons?.length" class="mt-2 grid gap-1">
+                <p v-for="addon in item.addons" :key="`${item.cart_row}-${addon.sub_item_id}`" class="muted m-0 text-xs">
+                  + {{ decodeHtml(addon.sub_item_name) }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between border-t border-white/10 pt-3">
+            <div class="glass flex items-center rounded-[8px] p-1">
+              <button
+                class="icon-button !h-9 !w-9"
+                type="button"
+                aria-label="Decrease quantity"
+                :disabled="cart.loading"
+                @click="changeQty(item, -1)"
+              >
+                <Minus :size="16" />
+              </button>
+              <strong class="w-10 text-center">{{ item.qty }}</strong>
+              <button
+                class="icon-button !h-9 !w-9"
+                type="button"
+                aria-label="Increase quantity"
+                :disabled="cart.loading"
+                @click="changeQty(item, 1)"
+              >
+                <Plus :size="16" />
+              </button>
+            </div>
+            <strong>{{ item.price?.pretty_total_after_discount || item.subtotal_pretty }}</strong>
+          </div>
+        </article>
+      </section>
+
+      <section v-if="cart.summary.length" class="soft-card grid gap-3 p-4">
+        <div v-for="row in cart.summary" :key="row.type || row.name" class="flex items-center justify-between gap-3">
+          <span class="muted">{{ row.name }}</span>
+          <strong>{{ row.value }}</strong>
+        </div>
+      </section>
+
+      <div v-if="cart.items.length" class="sticky bottom-4 z-20 grid gap-3">
+        <button class="surface-button rounded-full px-4 py-3 text-sm font-black" type="button" @click="cart.clear">
+          Очистить корзину
+        </button>
+        <RouterLink class="primary-button tap-motion w-full justify-between px-5" to="/checkout">
+          <span>К оформлению</span>
+          <strong>{{ cart.totalLabel }}</strong>
+        </RouterLink>
+      </div>
+    </template>
+  </section>
+</template>
+
+<script setup>
+import { computed, onMounted } from "vue";
+import { Minus, Plus, ShoppingBag, Trash2 } from "@lucide/vue";
+import AppHeader from "src/components/ui/AppHeader.vue";
+import { useCartStore } from "src/stores/cart";
+
+const cart = useCartStore();
+const slug = computed(() => cart.merchant?.slug || "");
+const restaurantLink = computed(() => (slug.value ? `/restaurant/${slug.value}` : "/home"));
+
+const decodeHtml = (value) => {
+  const element = document.createElement("div");
+  element.innerHTML = String(value ?? "");
+  return element.textContent || "";
+};
+
+const changeQty = (item, delta) => {
+  const nextQty = Number(item.qty ?? 1) + delta;
+  if (nextQty <= 0) {
+    cart.removeItem(item.cart_row, slug.value);
+    return;
+  }
+  cart.updateItem(item.cart_row, nextQty, slug.value);
+};
+
+onMounted(() => {
+  cart.refresh().catch(() => {});
+});
+</script>

@@ -1,0 +1,226 @@
+<template>
+  <section class="page fade-up">
+    <AppHeader title="Язык и тема" :icon="Languages" action-label="Назад" @action="router.back()" />
+
+    <div class="premium-card p-5">
+      <p class="brand-kicker m-0">TAGAM DELIVERY</p>
+      <h1 class="m-0 mt-2 text-3xl font-black">Настройки приложения</h1>
+      <p class="muted m-0 mt-2 text-sm">
+        Выбор применяется сразу ко всему приложению и сохраняется локально, как в коробочной версии KMRS.
+      </p>
+    </div>
+
+    <section class="soft-card overflow-hidden">
+      <div class="border-b border-white/10 p-4">
+        <p class="muted m-0 mb-3 text-xs font-black uppercase tracking-[0.14em]">Язык</p>
+        <div class="grid grid-cols-3 gap-2">
+          <button
+            v-for="item in languages"
+            :key="item.code"
+            class="preference-tile tap-motion"
+            :class="{ active: app.language === item.code }"
+            type="button"
+            @click="app.setLanguage(item.code)"
+          >
+            <span class="text-lg font-black">{{ item.short }}</span>
+            <small>{{ item.label }}</small>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-4">
+        <p class="muted m-0 mb-3 text-xs font-black uppercase tracking-[0.14em]">Тема</p>
+        <div class="grid grid-cols-2 gap-2">
+          <button
+            v-for="item in themes"
+            :key="item.code"
+            class="preference-tile tap-motion"
+            :class="{ active: app.theme === item.code }"
+            type="button"
+            @click="app.setTheme(item.code)"
+          >
+            <component :is="item.icon" :size="22" />
+            <small>{{ item.label }}</small>
+          </button>
+        </div>
+      </div>
+
+      <div class="border-t border-white/10 p-4">
+        <p class="muted m-0 mb-3 text-xs font-black uppercase tracking-[0.14em]">Валюта</p>
+        <div class="grid grid-cols-2 gap-2">
+          <button
+            v-for="item in currencies"
+            :key="item.code"
+            class="preference-tile tap-motion"
+            :class="{ active: app.currency === item.code }"
+            type="button"
+            @click="app.setCurrency(item.code)"
+          >
+            <span class="text-lg font-black">{{ item.code }}</span>
+            <small>{{ item.label }}</small>
+          </button>
+        </div>
+        <p v-if="settings.loading" class="muted m-0 mt-3 text-xs">Загружаем список валют KMRS...</p>
+      </div>
+    </section>
+
+    <section class="tagam-card p-4">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <p class="brand-kicker m-0">Preview</p>
+          <h2 class="m-0 mt-1 text-xl font-black">Живая витрина Tailwind</h2>
+          <p class="muted m-0 mt-1 text-sm">Так выглядят карточки, кнопки и glow в текущей схеме.</p>
+        </div>
+        <div class="grid h-14 w-14 place-items-center rounded-full bg-[var(--app-accent)] text-black">
+          <Sparkles :size="28" />
+        </div>
+      </div>
+      <button class="primary-button mt-5 w-full" type="button" @click="router.push('/home')">
+        Смотреть главную
+        <ArrowRight :size="18" />
+      </button>
+    </section>
+
+    <section class="tagam-card p-4">
+      <p class="brand-kicker m-0">Native diagnostics</p>
+      <h2 class="m-0 mt-1 text-xl font-black">Device readiness</h2>
+      <p class="muted m-0 mt-1 text-sm">Fast check before social login, deeplink and push smoke tests.</p>
+      <div class="mt-4 grid grid-cols-2 gap-2">
+        <div v-for="item in diagnostics" :key="item.label" class="diagnostic-tile">
+          <small>{{ item.label }}</small>
+          <strong>{{ item.value }}</strong>
+        </div>
+      </div>
+    </section>
+  </section>
+</template>
+
+<script setup>
+import { ArrowRight, Languages, Moon, Sparkles, Sun } from "@lucide/vue";
+import { computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import AppHeader from "src/components/ui/AppHeader.vue";
+import { LocalStorage } from "src/services/storage";
+import { useAppSettingsStore } from "src/stores/appSettings";
+import { useAppStore } from "src/stores/app";
+
+const router = useRouter();
+const app = useAppStore();
+const settings = useAppSettingsStore();
+
+const languages = [
+  { code: "ru", short: "RU", label: "Русский" },
+  { code: "tk", short: "TK", label: "Türkmen" },
+  { code: "en", short: "EN", label: "English" },
+];
+
+const themes = [
+  { code: "dark", label: "Темная", icon: Moon },
+  { code: "light", label: "Светлая", icon: Sun },
+];
+
+const currencies = computed(() => {
+  const value = settings.data?.currency_list;
+  const result = [];
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => {
+      const code = item.currency_code || item.code || item.value;
+      const label = item.currency_symbol || item.currency_name || item.label || code;
+      if (code) result.push({ code, label });
+    });
+  } else if (value && typeof value === "object") {
+    Object.entries(value).forEach(([code, item]) => {
+      result.push({
+        code: item?.currency_code || item?.code || code,
+        label: item?.currency_symbol || item?.currency_name || item?.label || code,
+      });
+    });
+  }
+
+  return result.length ? result : [{ code: "TMT", label: "Manat" }];
+});
+
+const shortToken = (value) => {
+  const token = String(value || "");
+  if (!token) return "not yet";
+  return `${token.slice(0, 7)}...${token.slice(-5)}`;
+};
+
+const diagnostics = computed(() => {
+  const runtimeDevice = LocalStorage.getItem("runtime_device") || {};
+  const pushReady = LocalStorage.getItem("runtime_push_ready") || {};
+  const permission = LocalStorage.getItem("push_permission") || "unknown";
+
+  return [
+    { label: "Platform", value: runtimeDevice.platform || LocalStorage.getItem("device_platform") || "web" },
+    { label: "App version", value: runtimeDevice.app_version || LocalStorage.getItem("app_version") || "web" },
+    { label: "Push permission", value: permission },
+    { label: "FCM token", value: shortToken(LocalStorage.getItem("device_token")) },
+    { label: "Topic", value: pushReady.topic || "not yet" },
+    { label: "Device id", value: shortToken(runtimeDevice.device_id || LocalStorage.getItem("device_identifier")) },
+  ];
+});
+
+onMounted(() => {
+  settings.load().catch(() => {});
+});
+</script>
+
+<style scoped>
+.preference-tile {
+  display: grid;
+  min-height: 72px;
+  place-items: center;
+  gap: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  background: var(--app-control);
+  color: var(--app-fg);
+  font-weight: 900;
+}
+
+.preference-tile small {
+  color: var(--app-muted);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.preference-tile.active {
+  border-color: var(--app-accent);
+  background: var(--app-accent);
+  color: #11110d;
+  box-shadow: 0 16px 44px color-mix(in srgb, var(--app-accent) 28%, transparent);
+}
+
+.preference-tile.active small {
+  color: rgba(17, 17, 13, 0.72);
+}
+
+.diagnostic-tile {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  background: var(--app-control);
+  padding: 12px;
+}
+
+.diagnostic-tile small {
+  color: var(--app-muted);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.diagnostic-tile strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--app-fg);
+  font-size: 13px;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

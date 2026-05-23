@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Tagam Delivery</string>
+    <string name="title_activity_main">Tagam Delivery</string>
+    <string name="package_name">com.tagam.delivery</string>
+    <string name="custom_url_scheme">com.tagam.delivery</string>
+    <string name="facebook_app_id">1606418370574325</string>
+    <string name="facebook_client_token">d9205d6a4f5bbe015a01cba089b7249f</string>
+</resources>

@@ -1,0 +1,50 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+.env.*
+!.env.example
+android/keystore.properties
+android/keystores/*.jks
+android/app/build
+android/build
+android/app/src/main/assets/public
+release
+tmp
+scripts/play_upload_internal.mjs
+
+# iOS local build artifacts
+ios/App/App/public
+ios/App/Pods
+ios/App/build
+ios/App/DerivedData
+ios/App/*.xcworkspace/xcuserdata
+ios/App/*.xcodeproj/xcuserdata
+ios/App/*.xcodeproj/project.xcworkspace/xcuserdata
+*.xcuserstate
+
+# Local QA screenshots and device captures
+android-device-*.png
+native-*.png
+phone-*.png
+tagam-*.png
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
