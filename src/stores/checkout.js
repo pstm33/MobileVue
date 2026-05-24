@@ -20,6 +20,10 @@ export const useCheckoutStore = defineStore("checkout", {
     applyingPromo: false,
     promoCode: "",
     paymentChange: "",
+    cartWallet: null,
+    cartWalletError: "",
+    useDigitalWallet: false,
+    applyingWallet: false,
     orderNotes: "",
     includeUtensils: false,
     deliveryStreetNumber: "",
@@ -47,6 +51,11 @@ export const useCheckoutStore = defineStore("checkout", {
           credentials: credentials[code] ?? payment.credentials ?? null,
         })),
       ];
+    },
+    cartWalletBalance: (state) => Number(state.cartWallet?.balance_raw ?? state.cartWallet?.balance ?? 0),
+    cartWalletLabel: (state) => state.cartWallet?.balance || state.cartWallet?.wallet_balance || "",
+    canUseCartWallet() {
+      return this.cartWalletBalance > 0;
     },
     selectedPayment(state) {
       const cart = useCartStore();
@@ -97,6 +106,7 @@ export const useCheckoutStore = defineStore("checkout", {
           this.promoError = promoResult.reason?.message ?? String(promoResult.reason);
         }
 
+        await this.loadCartWallet().catch(() => {});
         this.payment = null;
       } catch (error) {
         this.error = error?.message ?? String(error);
@@ -128,6 +138,75 @@ export const useCheckoutStore = defineStore("checkout", {
         this.payment = null;
         this.paymentError = error?.message ?? String(error);
         throw error;
+      }
+    },
+    cartTotalRaw() {
+      const cart = useCartStore();
+      const total = cart.summary.find((row) => row.type === "total");
+      const subtotal = cart.data?.data?.subtotal;
+      return (
+        total?.raw ||
+        total?.value_raw ||
+        subtotal?.raw ||
+        subtotal?.value_raw ||
+        subtotal?.unformatted ||
+        0
+      );
+    },
+    async loadCartWallet() {
+      const cart = useCartStore();
+      if (!cart.cartUuid || !auth.authenticated()) {
+        this.cartWallet = null;
+        this.useDigitalWallet = false;
+        this.cartWalletError = "";
+        return null;
+      }
+
+      this.cartWalletError = "";
+
+      try {
+        const response = await APIinterface.fetchDataByTokenPost("getCartWallet", {
+          cart_uuid: cart.cartUuid,
+          currency_code: LocalStorage.getItem("currency_code") || "TMT",
+        });
+        this.cartWallet = response?.details ?? null;
+        this.useDigitalWallet = Boolean(this.cartWallet?.use_wallet);
+        return response;
+      } catch (error) {
+        this.cartWallet = null;
+        this.useDigitalWallet = false;
+        this.cartWalletError = error?.message ?? String(error);
+        return null;
+      }
+    },
+    async applyDigitalWallet(value) {
+      const cart = useCartStore();
+      if (!cart.cartUuid || !auth.authenticated()) return null;
+
+      this.applyingWallet = true;
+      this.cartWalletError = "";
+
+      try {
+        const response = await APIinterface.fetchDataByTokenPost("applyDigitalWallet", {
+          cart_uuid: cart.cartUuid,
+          currency_code: LocalStorage.getItem("currency_code") || "TMT",
+          use_wallet: value ? 1 : 0,
+          amount_to_pay: this.cartTotalRaw(),
+        });
+        this.useDigitalWallet = Boolean(value);
+        this.cartWallet = {
+          ...(this.cartWallet ?? {}),
+          ...(response?.details ?? {}),
+        };
+        await cart.refresh("", checkoutPayload);
+        await this.loadPayments().catch(() => {});
+        return response;
+      } catch (error) {
+        this.useDigitalWallet = false;
+        this.cartWalletError = error?.message ?? String(error);
+        throw error;
+      } finally {
+        this.applyingWallet = false;
       }
     },
     async loadSavedPayments() {
@@ -251,7 +330,7 @@ export const useCheckoutStore = defineStore("checkout", {
         guest_number: "",
         room_uuid: "",
         table_uuid: "",
-        use_digital_wallet: 0,
+        use_digital_wallet: this.useDigitalWallet ? 1 : 0,
         address_uuid: address,
       };
     },
@@ -384,7 +463,7 @@ export const useCheckoutStore = defineStore("checkout", {
       const savedPlaceData = response.details?.place_data ?? response.details?.data ?? response.details ?? {};
       const addressUuid = savedPlaceData?.address_uuid || response.details?.address_uuid || existingAddressUuid || "";
       if (!addressUuid) {
-        throw new Error("KMRS не вернул address_uuid для адреса доставки.");
+        throw new Error("Не удалось сохранить адрес доставки. Выберите точку на карте еще раз.");
       }
 
       this.deliveryAddressUuid = addressUuid;

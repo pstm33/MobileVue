@@ -1,6 +1,6 @@
 <template>
   <section class="page fade-up">
-    <AppHeader title="Профиль клиента" :icon="UserRound" action-label="Профиль" />
+    <AppHeader :title="text.title" :icon="UserRound" :action-label="text.title" />
 
     <AuthBridge v-if="!client.authenticated" @authenticated="load" />
 
@@ -13,17 +13,17 @@
       <form v-else class="tagam-card grid gap-4 p-5" @submit.prevent="save">
         <div>
           <p class="brand-kicker m-0">TAGAM PROFILE</p>
-          <h1 class="m-0 mt-1 text-2xl font-black">Личные данные</h1>
-          <p class="muted m-0 mt-1 text-sm">Обновите имя, email и телефон для связи по заказам.</p>
+          <h1 class="m-0 mt-1 text-2xl font-black">{{ text.personal }}</h1>
+          <p class="muted m-0 mt-1 text-sm">{{ text.description }}</p>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <label class="grid gap-2">
-            <span class="field-label text-xs font-black uppercase">Имя</span>
+            <span class="field-label text-xs font-black uppercase">{{ text.firstName }}</span>
             <input v-model="form.first_name" class="field" autocomplete="given-name" />
           </label>
           <label class="grid gap-2">
-            <span class="field-label text-xs font-black uppercase">Фамилия</span>
+            <span class="field-label text-xs font-black uppercase">{{ text.lastName }}</span>
             <input v-model="form.last_name" class="field" autocomplete="family-name" />
           </label>
         </div>
@@ -35,11 +35,11 @@
 
         <div class="grid grid-cols-[86px_1fr] gap-3">
           <label class="grid gap-2">
-            <span class="field-label text-xs font-black uppercase">Код</span>
+            <span class="field-label text-xs font-black uppercase">{{ text.code }}</span>
             <input v-model="form.mobile_prefix" class="field" inputmode="tel" />
           </label>
           <label class="grid gap-2">
-            <span class="field-label text-xs font-black uppercase">Телефон</span>
+            <span class="field-label text-xs font-black uppercase">{{ text.phone }}</span>
             <input v-model="form.mobile_number" class="field" inputmode="tel" autocomplete="tel" />
           </label>
         </div>
@@ -52,21 +52,21 @@
         </p>
 
         <button class="primary-button tap-motion w-full" type="submit" :disabled="customer.profileSaving">
-          {{ customer.profileSaving ? "Сохраняем..." : "Сохранить профиль" }}
+          {{ customer.profileSaving ? text.saving : text.save }}
         </button>
       </form>
 
       <section class="soft-card overflow-hidden">
         <RouterLink class="account-row tap-motion" to="/addresses">
-          <span><MapPin :size="20" /> Адресная книга</span>
+          <span><MapPin :size="20" /> {{ text.addressBook }}</span>
           <ChevronRight :size="18" />
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/payments">
-          <span><CreditCard :size="20" /> Платежи</span>
+          <span><CreditCard :size="20" /> {{ text.payments }}</span>
           <ChevronRight :size="18" />
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/account/security">
-          <span><ShieldCheck :size="20" /> Безопасность аккаунта</span>
+          <span><ShieldCheck :size="20" /> {{ text.security }}</span>
           <ChevronRight :size="18" />
         </RouterLink>
       </section>
@@ -76,14 +76,62 @@
 
 <script setup>
 import { ChevronRight, CreditCard, MapPin, ShieldCheck, UserRound } from "@lucide/vue";
-import { onMounted, reactive, watch } from "vue";
+import { computed, onMounted, reactive, watch } from "vue";
 import AppHeader from "src/components/ui/AppHeader.vue";
 import AuthBridge from "src/components/checkout/AuthBridge.vue";
+import { useAppStore } from "src/stores/app";
 import { useClientAuthStore } from "src/stores/clientAuth";
 import { useCustomerStore } from "src/stores/customer";
 
+const labels = {
+  ru: {
+    title: "Профиль клиента",
+    personal: "Личные данные",
+    description: "Обновите имя, email и телефон для связи по заказам.",
+    firstName: "Имя",
+    lastName: "Фамилия",
+    code: "Код",
+    phone: "Телефон",
+    saving: "Сохраняем...",
+    save: "Сохранить профиль",
+    addressBook: "Адресная книга",
+    payments: "Платежи",
+    security: "Безопасность аккаунта",
+  },
+  tk: {
+    title: "Müşderi profili",
+    personal: "Şahsy maglumatlar",
+    description: "Sargytlar boýunça habarlaşmak üçin ady, emaili we telefony täzeläň.",
+    firstName: "Ady",
+    lastName: "Familiýasy",
+    code: "Kod",
+    phone: "Telefon",
+    saving: "Saklanýar...",
+    save: "Profili sakla",
+    addressBook: "Salgy kitaby",
+    payments: "Tölegler",
+    security: "Hasap howpsuzlygy",
+  },
+  en: {
+    title: "Customer profile",
+    personal: "Personal details",
+    description: "Update name, email and phone so the restaurant can contact you about orders.",
+    firstName: "First name",
+    lastName: "Last name",
+    code: "Code",
+    phone: "Phone",
+    saving: "Saving...",
+    save: "Save profile",
+    addressBook: "Address book",
+    payments: "Payments",
+    security: "Account security",
+  },
+};
+
+const app = useAppStore();
 const client = useClientAuthStore();
 const customer = useCustomerStore();
+const text = computed(() => labels[app.language] || labels.ru);
 
 const form = reactive({
   first_name: "",

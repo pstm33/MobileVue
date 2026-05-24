@@ -2,7 +2,24 @@
   <section class="page fade-up">
     <AppHeader :title="copy.title" :icon="MessageCircle" :action-label="orderNumber || copy.action" />
 
-    <div class="tracking-map-shell glass relative overflow-hidden rounded-[8px]">
+    <div v-if="!canTrack" class="tagam-card tagam-glow p-5">
+      <p class="brand-kicker m-0">{{ emptyCopy.kicker }}</p>
+      <h1 class="m-0 mt-2 text-3xl font-black">{{ emptyCopy.title }}</h1>
+      <p class="muted m-0 mt-3 text-sm">{{ emptyCopy.text }}</p>
+
+      <div class="mt-5 grid grid-cols-2 gap-3">
+        <RouterLink class="primary-button tap-motion w-full" to="/orders">
+          <ReceiptText :size="18" />
+          {{ emptyCopy.orders }}
+        </RouterLink>
+        <RouterLink class="tagam-pill tap-motion px-4 py-3" to="/account">
+          <UserRound :size="18" />
+          {{ emptyCopy.account }}
+        </RouterLink>
+      </div>
+    </div>
+
+    <div v-else class="tracking-map-shell glass relative overflow-hidden rounded-[8px]">
       <div ref="mapEl" class="h-[420px] min-h-[52vh] w-full bg-[#111820]" />
 
       <div class="pointer-events-none absolute inset-x-0 top-0 z-[410] p-4">
@@ -26,19 +43,19 @@
       </div>
     </div>
 
-    <div v-if="orders.detailsLoading" class="soft-card p-4">
+    <div v-if="canTrack && orders.detailsLoading" class="soft-card p-4">
       <div class="warm-skeleton h-5 w-2/3 rounded" />
       <div class="warm-skeleton mt-3 h-12 rounded" />
     </div>
 
-    <div v-if="orders.detailsError" class="rounded-[8px] border border-amber-300/20 bg-amber-300/10 p-3 text-sm font-bold text-amber-50">
+    <div v-if="canTrack && orders.detailsError" class="rounded-[8px] border border-amber-300/20 bg-amber-300/10 p-3 text-sm font-bold text-amber-50">
       {{ orders.detailsError }}
     </div>
 
-    <section class="soft-card p-4">
+    <section v-if="canTrack" class="soft-card p-4">
       <div class="mb-4 flex items-center justify-between gap-3">
         <div>
-          <p class="brand-kicker m-0">KMRS TRACKING</p>
+          <p class="brand-kicker m-0">{{ trackingText.kicker }}</p>
           <h2 class="m-0 mt-1 text-xl font-black">{{ progressTitle }}</h2>
         </div>
         <span class="tagam-pill px-3 py-2 text-xs">{{ progressBadge }}</span>
@@ -75,8 +92,8 @@
       </div>
     </section>
 
-    <section v-if="driverInfo" class="soft-card p-4">
-      <p class="brand-kicker m-0">COURIER</p>
+    <section v-if="canTrack && driverInfo" class="soft-card p-4">
+      <p class="brand-kicker m-0">{{ trackingText.courier }}</p>
       <div class="mt-3 flex items-center gap-3">
         <img v-if="driverInfo.photo" class="h-14 w-14 rounded-full object-cover" :src="driverInfo.photo" alt="" />
         <div v-else class="grid h-14 w-14 place-items-center rounded-full bg-[var(--app-accent)] text-lg font-black text-black">
@@ -96,15 +113,17 @@ import "leaflet/dist/leaflet.css";
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import L from "leaflet";
-import { Bike, Check, ChefHat, Home, MessageCircle, PackageCheck, Store } from "@lucide/vue";
+import { Bike, Check, ChefHat, Home, MessageCircle, PackageCheck, ReceiptText, Store, UserRound } from "@lucide/vue";
 import AppHeader from "src/components/ui/AppHeader.vue";
 import { useAppStore } from "src/stores/app";
 import { useSessionStore } from "src/stores/session";
 import { useOrdersStore } from "src/stores/orders";
+import { useClientAuthStore } from "src/stores/clientAuth";
 
 const app = useAppStore();
 const session = useSessionStore();
 const orders = useOrdersStore();
+const client = useClientAuthStore();
 const route = useRoute();
 const copy = computed(() => app.copy.tracking);
 
@@ -114,6 +133,95 @@ const markers = [];
 const routeLines = [];
 
 const orderUuid = computed(() => String(route.query.order_uuid || route.params.order_uuid || ""));
+const canTrack = computed(() => client.authenticated && Boolean(orderUuid.value));
+const trackingText = computed(() => {
+  if (app.language === "tk") {
+    return {
+      kicker: "GÖZEGÇILIK",
+      courier: "KURÝER",
+      emptyKicker: "SARGYT",
+      noOrderTitle: "Işjeň sargyt saýlanmady",
+      signInTitle: "Sargydy yzarlamak üçin giriň",
+      noOrderText: "Kurýer kartasy diňe hakyky sargyt açylanda görkezilýär.",
+      signInText: "Canly karta we ýagdaýlar diňe resmileşdirilen sargyt üçin açylýar.",
+      orders: "Sargytlar",
+      account: "Profil",
+      restaurantUpdating: "Restoran sargydyň ýagdaýyny täzeleýär.",
+      liveStatus: "Sargydyň canlı ýagdaýy",
+      records: "ýazgy",
+      stage: "tapgyr",
+      stages: {
+        accepted: "Restoran kabul etdi",
+        cooking: "Aşhana taýýarlaýar",
+        courier: "Kurýer ýolda",
+        delivered: "Eltildi",
+        ready: "Tabşyrmaga taýýar",
+      },
+      record: "Ýazgy",
+      status: "Ýagdaý",
+    };
+  }
+  if (app.language === "en") {
+    return {
+      kicker: "LIVE TRACKING",
+      courier: "COURIER",
+      emptyKicker: "ORDER",
+      noOrderTitle: "No active order selected",
+      signInTitle: "Sign in to track",
+      noOrderText: "The courier map appears only after opening a real order.",
+      signInText: "Live map and order status are available only for a placed order.",
+      orders: "Orders",
+      account: "Account",
+      restaurantUpdating: "The restaurant is updating your order status.",
+      liveStatus: "Live order status",
+      records: "records",
+      stage: "stage",
+      stages: {
+        accepted: "Restaurant accepted",
+        cooking: "Kitchen is cooking",
+        courier: "Courier on the way",
+        delivered: "Delivered",
+        ready: "Ready for handoff",
+      },
+      record: "Record",
+      status: "Status",
+    };
+  }
+  return {
+    kicker: "ЖИВОЙ ТРЕКИНГ",
+    courier: "КУРЬЕР",
+    emptyKicker: "ЗАКАЗ",
+    noOrderTitle: "Активный заказ не выбран",
+    signInTitle: "Войдите для трекинга",
+    noOrderText: "Карта курьера показывается только после открытия реального заказа.",
+    signInText: "Живая карта и статус доступны только для оформленного заказа.",
+    orders: "Заказы",
+    account: "Профиль",
+    restaurantUpdating: "Ресторан обновляет статус заказа.",
+    liveStatus: "Живой статус заказа",
+    records: "записей",
+    stage: "этап",
+    stages: {
+      accepted: "Ресторан принял",
+      cooking: "Кухня готовит",
+      courier: "Курьер в пути",
+      delivered: "Доставлено",
+      ready: "Готов к передаче",
+    },
+    record: "Запись",
+    status: "Статус",
+  };
+});
+const emptyCopy = computed(() => {
+  const text = trackingText.value;
+  return {
+    kicker: text.emptyKicker,
+    title: client.authenticated ? text.noOrderTitle : text.signInTitle,
+    text: client.authenticated ? text.noOrderText : text.signInText,
+    orders: text.orders,
+    account: text.account,
+  };
+});
 const details = computed(() => (orderUuid.value ? orders.orderDetails(orderUuid.value) : null));
 const liveTracking = computed(() => (orderUuid.value ? orders.trackingDetails(orderUuid.value) : null));
 const progressData = computed(() => liveTracking.value || details.value?.progress || {});
@@ -142,11 +250,15 @@ const etaLabel = computed(() =>
 );
 const headline = computed(() => {
   if (statusLabel.value) return statusLabel.value;
-  if (details.value) return "Ресторан обновляет статус заказа.";
+  if (details.value) return trackingText.value.restaurantUpdating;
   return copy.value.headline;
 });
-const progressTitle = computed(() => statusDetails.value || statusLabel.value || "Живой статус заказа");
-const progressBadge = computed(() => (timelineRecords.value.length ? `${timelineRecords.value.length} записей` : `этап ${orderProgress.value || 1}`));
+const progressTitle = computed(() => statusDetails.value || statusLabel.value || trackingText.value.liveStatus);
+const progressBadge = computed(() =>
+  timelineRecords.value.length
+    ? `${timelineRecords.value.length} ${trackingText.value.records}`
+    : `${trackingText.value.stage} ${orderProgress.value || 1}`
+);
 
 const numberFrom = (value) => {
   const number = Number(String(value ?? "").replace(",", "."));
@@ -261,18 +373,19 @@ const destinationLabel = computed(() =>
 );
 
 const stageLabels = computed(() => {
+  const stages = trackingText.value.stages;
   if (orderType.value === "delivery") {
     return [
-      ["Ресторан принял", restaurantLabel.value, Store],
-      ["Кухня готовит", statusDetails.value || statusLabel.value || etaLabel.value, ChefHat],
-      ["Курьер в пути", driverInfo.value?.full_name || destinationLabel.value, Bike],
-      ["Доставлено", destinationLabel.value, Home],
+      [stages.accepted, restaurantLabel.value, Store],
+      [stages.cooking, statusDetails.value || statusLabel.value || etaLabel.value, ChefHat],
+      [stages.courier, driverInfo.value?.full_name || destinationLabel.value, Bike],
+      [stages.delivered, destinationLabel.value, Home],
     ];
   }
   return [
-    ["Ресторан принял", restaurantLabel.value, Store],
-    ["Кухня готовит", statusDetails.value || statusLabel.value || etaLabel.value, ChefHat],
-    ["Готов к передаче", destinationLabel.value, PackageCheck],
+    [stages.accepted, restaurantLabel.value, Store],
+    [stages.cooking, statusDetails.value || statusLabel.value || etaLabel.value, ChefHat],
+    [stages.ready, destinationLabel.value, PackageCheck],
   ];
 });
 
@@ -287,7 +400,7 @@ const steps = computed(() => {
   if (timelineRecords.value.length) {
     return timelineRecords.value.map((item, index) => {
       const statusKey = item.status || item.order_status || item.status_raw || "";
-      const statusName = statusDictionary.value?.[statusKey] || item.order_status || item.label || item.title || statusKey || `Запись ${index + 1}`;
+      const statusName = statusDictionary.value?.[statusKey] || item.order_status || item.label || item.title || statusKey || `${trackingText.value.record} ${index + 1}`;
       return {
         label: statusName,
         meta: [item.created_at, item.remarks || item.description || item.order_status_details].filter(Boolean).join(" · "),
@@ -299,7 +412,7 @@ const steps = computed(() => {
 
   if (progressItems.value.length) {
     return progressItems.value.map((item, index) => ({
-      label: item.label || item.status || item.title || item.name || `Статус ${index + 1}`,
+      label: item.label || item.status || item.title || item.name || `${trackingText.value.status} ${index + 1}`,
       meta: item.description || item.subtitle || item.sub_title || item.date || item.date_created || item.meta || "",
       done: Boolean(item.active || item.done || item.completed || item.checked || item.is_done || item.passed),
       icon: stageLabels.value[index]?.[2] || Check,
@@ -372,11 +485,11 @@ const addTrackingMap = async () => {
 };
 
 onMounted(async () => {
-  if (orderUuid.value) {
+  if (canTrack.value) {
     await orders.loadDetails(orderUuid.value, true).catch(() => {});
     await orders.loadTracking(orderUuid.value).catch(() => {});
+    await addTrackingMap();
   }
-  await addTrackingMap();
 });
 
 onBeforeUnmount(() => {

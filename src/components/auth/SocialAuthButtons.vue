@@ -39,18 +39,18 @@
     </div>
 
     <div v-if="pendingCompletion" class="rounded-[8px] border border-emerald-300/20 bg-emerald-300/10 p-3">
-      <p class="m-0 text-sm font-black">Завершите социальную регистрацию</p>
+      <p class="m-0 text-sm font-black">{{ copy.completeSocial }}</p>
       <p class="muted m-0 mt-1 text-xs">{{ pendingCompletion.message }}</p>
       <div class="mt-3 grid grid-cols-2 gap-2">
-        <input v-model="completion.first_name" class="field" placeholder="Имя" />
-        <input v-model="completion.last_name" class="field" placeholder="Фамилия" />
+        <input v-model="completion.first_name" class="field" :placeholder="copy.firstName" />
+        <input v-model="completion.last_name" class="field" :placeholder="copy.lastName" />
       </div>
       <div class="mt-2 grid grid-cols-[86px_1fr] gap-2">
         <input v-model="completion.mobile_prefix" class="field" placeholder="+993" />
-        <input v-model="completion.mobile_number" class="field" inputmode="tel" placeholder="Телефон" />
+        <input v-model="completion.mobile_number" class="field" inputmode="tel" :placeholder="copy.phone" />
       </div>
       <button class="primary-button mt-3 w-full" type="button" :disabled="busy || !canComplete" @click="completeSignup">
-        {{ busy ? "Отправляем..." : "Завершить регистрацию" }}
+        {{ busy ? copy.sending : copy.completeSocial }}
       </button>
     </div>
 
@@ -65,11 +65,13 @@
 import { Capacitor } from "@capacitor/core";
 import { SocialLogin } from "@capgo/capacitor-social-login";
 import { computed, onMounted, reactive, ref } from "vue";
+import { useAppStore } from "src/stores/app";
 import { useAppSettingsStore } from "src/stores/appSettings";
 import { useClientAuthStore } from "src/stores/clientAuth";
 
 const emit = defineEmits(["authenticated"]);
 
+const app = useAppStore();
 const settings = useAppSettingsStore();
 const client = useClientAuthStore();
 const busy = ref(false);
@@ -84,6 +86,64 @@ const completion = reactive({
   mobile_number: "",
 });
 
+const socialCopy = {
+  ru: {
+    socialLogin: "Социальный вход",
+    completeSocial: "Завершить регистрацию",
+    firstName: "Имя",
+    lastName: "Фамилия",
+    phone: "Телефон",
+    sending: "Отправляем...",
+    reauthTitle: (provider) => `${provider} требует повторной авторизации.`,
+    reauthText: "Закройте окно входа и попробуйте еще раз. Если ошибка повторяется, используйте Facebook, Email или гостевой вход.",
+    cancelledTitle: "Вход отменен.",
+    cancelledText: "Попробуйте еще раз или продолжите как гость.",
+    notConfiguredTitle: (provider) => `${provider} еще не настроен.`,
+    notConfiguredText: "Провайдер включен, но приложению не хватает OAuth-настроек. Сейчас можно использовать гостевой или Email-вход.",
+    failedTitle: (provider) => `${provider} не смог выполнить вход.`,
+    failedText: "Попробуйте еще раз. Если вход не пройдет, используйте Facebook, Email или гостевой режим.",
+    loading: "Социальный вход еще загружается. Попробуйте еще раз через секунду.",
+    webHint: " Для web-входа также проверьте OAuth redirect origins.",
+  },
+  tk: {
+    socialLogin: "Sosial giriş",
+    completeSocial: "Hasaba almagy tamamla",
+    firstName: "Ady",
+    lastName: "Familiýasy",
+    phone: "Telefon",
+    sending: "Iberilýär...",
+    reauthTitle: (provider) => `${provider} gaýtadan ygtyýarlandyrmagy talap edýär.`,
+    reauthText: "Giriş penjiresini ýapyň we gaýtadan synanyşyň. Gaýtalansa Facebook, Email ýa-da myhman girişini ulanyň.",
+    cancelledTitle: "Giriş ýatyryldy.",
+    cancelledText: "Gaýtadan synanyşyň ýa-da myhman hökmünde dowam ediň.",
+    notConfiguredTitle: (provider) => `${provider} entek sazlanmady.`,
+    notConfiguredText: "Provider açyk, ýöne OAuth sazlamalary ýetmeýär. Häzir myhman ýa-da Email girişini ulanyp bolýar.",
+    failedTitle: (provider) => `${provider} giriş edip bilmedi.`,
+    failedText: "Gaýtadan synanyşyň. Bolmasa Facebook, Email ýa-da myhman režimini ulanyň.",
+    loading: "Sosial giriş ýüklenýär. Bir sekuntdan gaýtadan synanyşyň.",
+    webHint: " Web giriş üçin OAuth redirect origins hem barlaň.",
+  },
+  en: {
+    socialLogin: "Social sign in",
+    completeSocial: "Complete registration",
+    firstName: "First name",
+    lastName: "Last name",
+    phone: "Phone",
+    sending: "Sending...",
+    reauthTitle: (provider) => `${provider} needs reauthorization.`,
+    reauthText: "Close the sign-in window and try again. If it repeats, use Facebook, Email or guest sign in.",
+    cancelledTitle: "Sign in cancelled.",
+    cancelledText: "Try again or continue as guest.",
+    notConfiguredTitle: (provider) => `${provider} is not configured yet.`,
+    notConfiguredText: "The provider is enabled, but OAuth settings are missing. Guest or Email sign in is available now.",
+    failedTitle: (provider) => `${provider} could not sign in.`,
+    failedText: "Try again. If sign in still fails, use Facebook, Email or guest mode.",
+    loading: "Social sign in is still loading. Try again in a second.",
+    webHint: " For web sign in, also check OAuth redirect origins.",
+  },
+};
+
+const copy = computed(() => socialCopy[app.language] || socialCopy.ru);
 const canComplete = computed(
   () => pendingCompletion.value?.uuid && completion.first_name && completion.last_name && completion.mobile_prefix && completion.mobile_number
 );
@@ -97,32 +157,32 @@ const providerNames = {
 
 const socialErrorMessage = (caught, provider = "") => {
   const raw = caught?.message ?? String(caught ?? "");
-  const providerName = providerNames[provider] || "Социальный вход";
+  const providerName = providerNames[provider] || copy.value.socialLogin;
 
   if (/reauth|sign-?in failed|\[16\]|developer_error|12500|10:/i.test(raw)) {
     return {
-      title: `${providerName} требует повторной авторизации.`,
-      text: "Закройте окно входа и попробуйте еще раз. Если ошибка повторяется, используйте Facebook, Email или гостевой вход, пока мы завершаем OAuth-настройки этой сборки.",
+      title: copy.value.reauthTitle(providerName),
+      text: copy.value.reauthText,
     };
   }
 
   if (/cancel|popup closed|user.*closed/i.test(raw)) {
     return {
-      title: "Вход отменен.",
-      text: "Попробуйте еще раз или продолжите как гость.",
+      title: copy.value.cancelledTitle,
+      text: copy.value.cancelledText,
     };
   }
 
   if (/not set|not configured|client id|initialize/i.test(raw)) {
     return {
-      title: `${providerName} не настроен.`,
-      text: "Провайдер включен в KMRS, но приложению не хватает OAuth-настроек. Сейчас можно использовать гостевой или Email-вход.",
+      title: copy.value.notConfiguredTitle(providerName),
+      text: copy.value.notConfiguredText,
     };
   }
 
   return {
-    title: `${providerName} не смог выполнить вход.`,
-    text: "Попробуйте еще раз. Если вход не пройдет, используйте Facebook, Email или гостевой режим.",
+    title: copy.value.failedTitle(providerName),
+    text: copy.value.failedText,
   };
 };
 
@@ -179,11 +239,11 @@ const runProvider = async (provider, runner) => {
   pendingCompletion.value = null;
   try {
     if (!initialized.value) {
-      throw new Error("Социальный вход еще загружается. Попробуйте еще раз через секунду.");
+      throw new Error(copy.value.loading);
     }
     await finishSocialLogin(await runner());
   } catch (caught) {
-    const nativeHint = Capacitor.isNativePlatform() ? "" : " Для web-входа также проверьте OAuth redirect origins.";
+    const nativeHint = Capacitor.isNativePlatform() ? "" : copy.value.webHint;
     error.value = socialErrorMessage({ message: `${caught?.message ?? String(caught)}${nativeHint}` }, provider);
   } finally {
     busy.value = false;

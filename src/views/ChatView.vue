@@ -1,22 +1,22 @@
 <template>
   <section class="page fade-up">
-    <AppHeader title="Чат" :icon="MessageCircle" action-label="Обновить" @action="loadSuggested" />
+    <AppHeader :title="copy.title" :icon="MessageCircle" :action-label="copy.refresh" @action="loadSuggested" />
 
     <AuthBridge v-if="!client.authenticated" @authenticated="loadSuggested" />
 
     <template v-else>
       <div class="premium-card p-5">
         <p class="brand-kicker m-0">TAGAM CHAT</p>
-        <h1 class="m-0 mt-2 text-3xl font-black">Связь с рестораном</h1>
+        <h1 class="m-0 mt-2 text-3xl font-black">{{ copy.hero }}</h1>
         <p class="muted m-0 mt-2 text-sm">
-          Найдите ресторан или оператора, чтобы быстро уточнить детали заказа.
+          {{ copy.subtitle }}
         </p>
       </div>
 
       <label class="soft-card flex items-center gap-3 p-3">
         <Search :size="20" class="text-[var(--app-accent)]" />
-        <input v-model.trim="query" class="min-w-0 flex-1 bg-transparent text-sm font-bold outline-none" placeholder="Поиск ресторана или оператора" @keyup.enter="search" />
-        <button class="tagam-pill px-3" type="button" @click="search">Найти</button>
+        <input v-model.trim="query" class="min-w-0 flex-1 bg-transparent text-sm font-bold outline-none" :placeholder="copy.placeholder" @keyup.enter="search" />
+        <button class="tagam-pill px-3" type="button" @click="search">{{ copy.find }}</button>
       </label>
 
       <p v-if="error" class="m-0 rounded-[8px] border border-rose-300/20 bg-rose-400/10 p-3 text-sm font-bold text-rose-100">
@@ -29,7 +29,7 @@
 
       <section class="grid gap-3">
         <div class="flex items-center justify-between gap-3">
-          <h2 class="m-0 text-xl font-black">{{ query ? "Результаты" : "Предложенные контакты" }}</h2>
+          <h2 class="m-0 text-xl font-black">{{ query ? copy.results : copy.suggested }}</h2>
           <span class="muted text-sm">{{ users.length }}</span>
         </div>
 
@@ -40,7 +40,7 @@
           </div>
           <div class="min-w-0 flex-1">
             <h3 class="m-0 truncate text-base font-black">{{ displayName(user) }}</h3>
-            <p class="muted m-0 mt-1 text-sm">{{ user.user_type || user.restaurant_name || user.email_address || user.phone || "Контакт Tagam" }}</p>
+            <p class="muted m-0 mt-1 text-sm">{{ user.user_type || user.restaurant_name || user.email_address || user.phone || copy.contact }}</p>
           </div>
           <RouterLink class="icon-button h-10 w-10 shrink-0" :to="{ path: '/account/chat/conversation', query: { user_uuid: user.user_uuid || user.uuid || user.client_uuid } }">
             <ChevronRight :size="18" />
@@ -48,8 +48,8 @@
         </article>
 
         <div v-if="!loading && !users.length" class="soft-card p-5 text-center">
-          <h2 class="m-0 text-xl font-black">Контактов нет</h2>
-          <p class="muted m-0 mt-2 text-sm">Когда появятся доступные контакты, они будут показаны здесь.</p>
+          <h2 class="m-0 text-xl font-black">{{ copy.emptyTitle }}</h2>
+          <p class="muted m-0 mt-2 text-sm">{{ copy.emptyText }}</p>
         </div>
       </section>
     </template>
@@ -62,14 +62,59 @@ import { computed, onMounted, ref, watch } from "vue";
 import APIinterface from "src/api/APIinterface";
 import AppHeader from "src/components/ui/AppHeader.vue";
 import AuthBridge from "src/components/checkout/AuthBridge.vue";
+import { useAppStore } from "src/stores/app";
 import { useClientAuthStore } from "src/stores/clientAuth";
 
+const app = useAppStore();
 const client = useClientAuthStore();
 const query = ref("");
 const loading = ref(false);
 const error = ref("");
 const data = ref([]);
 
+const chatCopy = {
+  ru: {
+    title: "Чат",
+    refresh: "Обновить",
+    hero: "Связь с рестораном",
+    subtitle: "Найдите ресторан или оператора, чтобы быстро уточнить детали заказа.",
+    placeholder: "Поиск ресторана или оператора",
+    find: "Найти",
+    results: "Результаты",
+    suggested: "Предложенные контакты",
+    contact: "Контакт Tagam",
+    emptyTitle: "Контактов нет",
+    emptyText: "Когда появятся доступные контакты, они будут показаны здесь.",
+  },
+  tk: {
+    title: "Çat",
+    refresh: "Täzele",
+    hero: "Restoran bilen habarlaşyň",
+    subtitle: "Sargyt jikme-jikliklerini anyklamak üçin restoran ýa-da operator tapyň.",
+    placeholder: "Restoran ýa-da operator gözlegi",
+    find: "Gözle",
+    results: "Netijeler",
+    suggested: "Teklip edilen aragatnaşyklar",
+    contact: "Tagam aragatnaşygy",
+    emptyTitle: "Aragatnaşyk ýok",
+    emptyText: "Elýeterli aragatnaşyklar peýda bolanda şu ýerde görkeziler.",
+  },
+  en: {
+    title: "Chat",
+    refresh: "Refresh",
+    hero: "Talk to the restaurant",
+    subtitle: "Find a restaurant or operator to quickly clarify order details.",
+    placeholder: "Search restaurant or operator",
+    find: "Find",
+    results: "Results",
+    suggested: "Suggested contacts",
+    contact: "Tagam contact",
+    emptyTitle: "No contacts",
+    emptyText: "Available contacts will appear here.",
+  },
+};
+
+const copy = computed(() => chatCopy[app.language] || chatCopy.ru);
 const users = computed(() => (Array.isArray(data.value) ? data.value : []));
 
 const normalize = (response) => {
@@ -84,7 +129,7 @@ const displayName = (user) =>
   user.restaurant_name ||
   user.name ||
   user.email_address ||
-  "Контакт Tagam";
+  copy.value.contact;
 
 const initials = (user) =>
   displayName(user)

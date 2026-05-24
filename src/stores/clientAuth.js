@@ -270,7 +270,7 @@ export const useClientAuthStore = defineStore("clientAuth", {
         const verificationNeeded = response?.details?.verify ?? false;
 
         if (verificationNeeded) {
-          const message = response.msg || "KMRS требует email/OTP-подтверждение для социальной регистрации.";
+          const message = response.msg || "Для социальной регистрации нужно email/OTP-подтверждение.";
           throw new Error(message);
         }
 
@@ -278,7 +278,7 @@ export const useClientAuthStore = defineStore("clientAuth", {
           return {
             needsCompletion: true,
             uuid: response.details?.uuid,
-            message: response.msg || "Завершите регистрацию, чтобы KMRS создал профиль.",
+            message: response.msg || "Завершите регистрацию, чтобы создать профиль.",
           };
         }
 

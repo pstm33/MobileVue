@@ -1,6 +1,6 @@
 <template>
   <section class="page fade-up">
-    <AppHeader title="Профиль" :icon="Settings" action-label="Настройки" @action="router.push('/account/language')" />
+    <AppHeader :title="accountCopy.title" :icon="Settings" :action-label="accountCopy.action" @action="router.push('/account/language')" />
 
     <div class="tagam-card p-5">
       <div class="flex items-start gap-4">
@@ -25,19 +25,19 @@
 
     <section v-if="!client.authenticated" class="soft-card overflow-hidden">
       <RouterLink class="account-row tap-motion" to="/cart">
-        <span><ShoppingBag :size="20" /> Корзина и checkout</span>
+        <span><ShoppingBag :size="20" /> {{ accountCopy.cartCheckout }}</span>
         <ChevronRight :size="18" />
       </RouterLink>
       <RouterLink class="account-row tap-motion border-t border-white/10" to="/location">
-        <span><MapPin :size="20" /> Адрес доставки</span>
+        <span><MapPin :size="20" /> {{ accountCopy.deliveryAddress }}</span>
         <ChevronRight :size="18" />
       </RouterLink>
       <RouterLink class="account-row tap-motion border-t border-white/10" to="/account/language">
-        <span><Languages :size="20" /> Язык и тема</span>
+        <span><Languages :size="20" /> {{ accountCopy.languageTheme }}</span>
         <ChevronRight :size="18" />
       </RouterLink>
       <RouterLink class="account-row tap-motion border-t border-white/10" to="/legal">
-        <span><ReceiptText :size="20" /> Правовая информация</span>
+        <span><ReceiptText :size="20" /> {{ accountCopy.legal }}</span>
         <ChevronRight :size="18" />
       </RouterLink>
     </section>
@@ -62,65 +62,65 @@
 
       <section class="soft-card overflow-hidden">
         <RouterLink class="account-row tap-motion" to="/profile">
-          <span><UserRound :size="20" /> Профиль клиента</span>
+          <span><UserRound :size="20" /> {{ accountCopy.profile }}</span>
           <ChevronRight :size="18" />
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/orders">
-          <span><ReceiptText :size="20" /> Заказы</span>
+          <span><ReceiptText :size="20" /> {{ accountCopy.orders }}</span>
           <span class="flex items-center gap-2">
             <span class="muted text-sm">{{ profile.orderList.length }}</span>
             <ChevronRight :size="18" />
           </span>
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/addresses">
-          <span><MapPin :size="20" /> Адреса</span>
+          <span><MapPin :size="20" /> {{ accountCopy.addresses }}</span>
           <span class="flex items-center gap-2">
             <span class="muted text-sm">{{ profile.addressList.length }}</span>
             <ChevronRight :size="18" />
           </span>
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/payments">
-          <span><CreditCard :size="20" /> Платежи</span>
+          <span><CreditCard :size="20" /> {{ accountCopy.payments }}</span>
           <ChevronRight :size="18" />
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/favourites">
-          <span><Heart :size="20" /> Избранное</span>
+          <span><Heart :size="20" /> {{ accountCopy.favourites }}</span>
           <ChevronRight :size="18" />
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/wallet">
-          <span><WalletCards :size="20" /> Кошелек</span>
+          <span><WalletCards :size="20" /> {{ accountCopy.wallet }}</span>
           <ChevronRight :size="18" />
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/points">
-          <span><Gift :size="20" /> Баллы</span>
+          <span><Gift :size="20" /> {{ accountCopy.points }}</span>
           <ChevronRight :size="18" />
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/booking">
-          <span><CalendarDays :size="20" /> Бронирования</span>
+          <span><CalendarDays :size="20" /> {{ accountCopy.bookings }}</span>
           <ChevronRight :size="18" />
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/account/chat">
-          <span><MessageCircle :size="20" /> Чат</span>
+          <span><MessageCircle :size="20" /> {{ accountCopy.chat }}</span>
           <ChevronRight :size="18" />
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/notifications">
-          <span><Bell :size="20" /> Уведомления</span>
+          <span><Bell :size="20" /> {{ accountCopy.notifications }}</span>
           <ChevronRight :size="18" />
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/account/security">
-          <span><ShieldCheck :size="20" /> Безопасность</span>
+          <span><ShieldCheck :size="20" /> {{ accountCopy.security }}</span>
           <ChevronRight :size="18" />
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/account/language">
-          <span><Languages :size="20" /> Язык и тема</span>
+          <span><Languages :size="20" /> {{ accountCopy.languageTheme }}</span>
           <ChevronRight :size="18" />
         </RouterLink>
         <RouterLink class="account-row tap-motion border-t border-white/10" to="/legal">
-          <span><FileText :size="20" /> Правовая информация</span>
+          <span><FileText :size="20" /> {{ accountCopy.legal }}</span>
           <ChevronRight :size="18" />
         </RouterLink>
         <button class="account-row tap-motion border-t border-white/10" type="button" @click="logout">
-          <span><LogOut :size="20" /> Выйти</span>
+          <span><LogOut :size="20" /> {{ accountCopy.logout }}</span>
           <ChevronRight :size="18" />
         </button>
       </section>
@@ -135,17 +135,17 @@
         <div class="mb-5 flex items-start justify-between gap-3">
           <div>
             <p class="brand-kicker m-0">TAGAM DELIVERY</p>
-            <h2 class="m-0 mt-1 text-2xl font-black">Язык и тема</h2>
-            <p class="muted m-0 mt-1 text-sm">Изменения сразу применяются ко всему приложению.</p>
+            <h2 class="m-0 mt-1 text-2xl font-black">{{ accountCopy.languageTheme }}</h2>
+            <p class="muted m-0 mt-1 text-sm">{{ accountCopy.appliesImmediately }}</p>
           </div>
-          <button class="icon-button shrink-0" type="button" aria-label="Готово" @click="preferencesOpen = false">
+          <button class="icon-button shrink-0" type="button" :aria-label="accountCopy.done" @click="preferencesOpen = false">
             <X :size="20" />
           </button>
         </div>
 
         <div class="grid gap-5">
           <div>
-            <p class="muted m-0 mb-2 text-xs font-black uppercase tracking-[0.14em]">Язык</p>
+            <p class="muted m-0 mb-2 text-xs font-black uppercase tracking-[0.14em]">{{ accountCopy.language }}</p>
             <div class="grid grid-cols-3 gap-2 rounded-[8px] bg-[var(--app-control)] p-1">
               <button
                 v-for="language in languages"
@@ -161,7 +161,7 @@
           </div>
 
           <div>
-            <p class="muted m-0 mb-2 text-xs font-black uppercase tracking-[0.14em]">Тема</p>
+            <p class="muted m-0 mb-2 text-xs font-black uppercase tracking-[0.14em]">{{ accountCopy.theme }}</p>
             <div class="grid grid-cols-2 gap-2 rounded-[8px] bg-[var(--app-control)] p-1">
               <button
                 v-for="theme in themes"
@@ -177,7 +177,7 @@
           </div>
 
           <button class="primary-button tap-motion w-full" type="button" @click="preferencesOpen = false">
-            Готово
+            {{ accountCopy.done }}
           </button>
         </div>
       </section>
@@ -221,6 +221,27 @@ const client = useClientAuthStore();
 const profile = useAccountProfileStore();
 const session = useSessionStore();
 const preferencesOpen = ref(false);
+const accountCopy = computed(() => ({
+  ...app.copy.account,
+  cartCheckout:
+    app.language === "tk" ? "Sebet we töleg" : app.language === "en" ? "Cart & checkout" : "Корзина и оформление",
+  deliveryAddress:
+    app.language === "tk" ? "Eltip beriş salgysy" : app.language === "en" ? "Delivery address" : "Адрес доставки",
+  languageTheme: app.copy.account.menu?.[4] || app.copy.account.preferences,
+  legal: app.language === "tk" ? "Hukuk maglumatlary" : app.language === "en" ? "Legal information" : "Правовая информация",
+  profile: app.language === "tk" ? "Müşderi profili" : app.language === "en" ? "Customer profile" : "Профиль клиента",
+  orders: app.copy.account.menu?.[0] || "Заказы",
+  addresses: app.copy.account.menu?.[2] || "Адреса",
+  payments: app.copy.account.menu?.[1] || "Платежи",
+  favourites: app.language === "tk" ? "Halanlarym" : app.language === "en" ? "Favourites" : "Избранное",
+  wallet: app.language === "tk" ? "Gapjyk" : app.language === "en" ? "Wallet" : "Кошелек",
+  points: app.language === "tk" ? "Ballar" : app.language === "en" ? "Points" : "Баллы",
+  bookings: app.language === "tk" ? "Bronlar" : app.language === "en" ? "Bookings" : "Бронирования",
+  chat: app.language === "tk" ? "Çat" : app.language === "en" ? "Chat" : "Чат",
+  notifications: app.copy.account.menu?.[3] || "Уведомления",
+  security: app.language === "tk" ? "Howpsuzlyk" : app.language === "en" ? "Security" : "Безопасность",
+  logout: app.language === "tk" ? "Çykmak" : app.language === "en" ? "Log out" : "Выйти",
+}));
 
 const languages = [
   { code: "ru", label: "Рус" },
@@ -228,25 +249,30 @@ const languages = [
   { code: "en", label: "Eng" },
 ];
 
-const themes = [
-  { code: "dark", label: "Темная" },
-  { code: "light", label: "Светлая" },
-];
+const themes = computed(() => [
+  { code: "dark", label: accountCopy.value.dark },
+  { code: "light", label: accountCopy.value.light },
+]);
 
 const isGeneratedGuestEmail = (value = "") => /^guest\./i.test(String(value));
 const cleanPhone = computed(() =>
   [client.user?.mobile_prefix, client.user?.mobile_number].filter(Boolean).join(" ").trim() || client.user?.contact_phone || ""
 );
 const profileName = computed(() => {
-  if (!client.authenticated) return "Гость";
+  const guest = app.language === "tk" ? "Myhman" : app.language === "en" ? "Guest" : "Гость";
+  if (!client.authenticated) return guest;
   const name = [client.user?.first_name, client.user?.last_name].filter(Boolean).join(" ").trim();
-  if (/^tagam\s+guest$/i.test(name)) return cleanPhone.value ? `Гость ${cleanPhone.value}` : "Гость";
+  if (/^tagam\s+guest$/i.test(name)) return cleanPhone.value ? `${guest} ${cleanPhone.value}` : guest;
   return client.displayName;
 });
 const profileSubtitle = computed(() =>
   client.authenticated
-    ? "Заказы, адреса, бонусы и любимые места всегда под рукой."
-    : "Войдите или продолжите как гость, чтобы оформить заказ и сохранить доставку."
+    ? app.copy.account.subtitle
+    : app.language === "tk"
+      ? "Sargyt bermek we eltmegi saklamak üçin giriň ýa-da myhman hökmünde dowam ediň."
+      : app.language === "en"
+        ? "Sign in or continue as guest to place an order and save delivery."
+        : "Войдите или продолжите как гость, чтобы оформить заказ и сохранить доставку."
 );
 const initials = computed(() =>
   profileName.value
@@ -265,10 +291,22 @@ const identityChips = computed(() =>
   ].filter(Boolean)
 );
 const metrics = computed(() => [
-  { label: "Заказы", value: profile.loading ? "..." : String(profile.orderList.length), icon: ShoppingBag },
-  { label: "Адреса", value: profile.loading ? "..." : String(profile.addressList.length), icon: MapPin },
-  { label: "Статус", value: client.authenticated ? "Активен" : "Гость", icon: UserRound },
-  { label: "Локация", value: session.hasCoordinates ? "Выбрана" : "Выбрать", icon: MapPin },
+  { label: accountCopy.value.orders, value: profile.loading ? "..." : String(profile.orderList.length), icon: ShoppingBag },
+  { label: accountCopy.value.addresses, value: profile.loading ? "..." : String(profile.addressList.length), icon: MapPin },
+  {
+    label: app.language === "tk" ? "Status" : app.language === "en" ? "Status" : "Статус",
+    value: client.authenticated
+      ? app.language === "tk" ? "Işjeň" : app.language === "en" ? "Active" : "Активен"
+      : profileName.value,
+    icon: UserRound,
+  },
+  {
+    label: app.language === "tk" ? "Ýerleşiş" : app.language === "en" ? "Location" : "Локация",
+    value: session.hasCoordinates
+      ? app.language === "tk" ? "Saýlanan" : app.language === "en" ? "Selected" : "Выбрана"
+      : app.language === "tk" ? "Saýla" : app.language === "en" ? "Choose" : "Выбрать",
+    icon: MapPin,
+  },
 ]);
 
 const loadProfile = () => profile.load();

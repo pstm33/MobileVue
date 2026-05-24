@@ -3,7 +3,7 @@
     <AppHeader :title="title" :icon="FileText" action-label="Legal" />
 
     <div class="tagam-card p-5">
-      <p class="brand-kicker m-0">KMRS</p>
+      <p class="brand-kicker m-0">TAGAM</p>
       <h1 class="m-0 mt-2 text-3xl font-black">{{ title }}</h1>
       <p class="muted m-0 mt-2 text-sm">
         Юридические документы загружаются напрямую с сервера Tagam Delivery.
@@ -38,7 +38,7 @@
         <div class="legal-content" v-html="activeDocument" />
       </div>
       <p v-if="!availableDocuments.length" class="muted m-0 p-4 text-sm">
-        KMRS не вернул правовые документы для этой страницы.
+        Правовые документы для этой страницы пока не опубликованы.
       </p>
     </section>
   </section>

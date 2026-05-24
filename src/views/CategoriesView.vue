@@ -1,11 +1,11 @@
 <template>
   <section class="page fade-up">
-    <AppHeader title="Категории" :icon="LayoutGrid" action-label="Обновить" @action="load" />
+    <AppHeader :title="copy.title" :icon="LayoutGrid" :action-label="copy.refresh" @action="load" />
 
     <div class="tagam-card p-5">
       <p class="brand-kicker m-0">REAL CUISINES</p>
-      <h1 class="m-0 mt-1 text-3xl font-black">Выберите вкус</h1>
-      <p class="muted m-0 mt-2 text-sm">Категории собраны из ресторанов, которые сейчас отдает KMRS для вашей зоны доставки.</p>
+      <h1 class="m-0 mt-1 text-3xl font-black">{{ copy.heading }}</h1>
+      <p class="muted m-0 mt-2 text-sm">{{ copy.subtitle }}</p>
     </div>
 
     <div v-if="feed.loading" class="grid grid-cols-2 gap-3">
@@ -41,8 +41,8 @@
     </div>
 
     <div v-if="!feed.loading && !categories.length" class="soft-card p-5 text-center">
-      <h2 class="m-0 text-xl font-black">Категории не найдены</h2>
-      <p class="muted m-0 mt-2 text-sm">Измените адрес доставки или обновите список ресторанов.</p>
+      <h2 class="m-0 text-xl font-black">{{ copy.emptyTitle }}</h2>
+      <p class="muted m-0 mt-2 text-sm">{{ copy.emptyText }}</p>
     </div>
   </section>
 </template>
@@ -53,8 +53,48 @@ import { computed, onMounted } from "vue";
 import AppHeader from "src/components/ui/AppHeader.vue";
 import { useMerchantFeedStore } from "src/stores/merchantFeed";
 import { kmrsAsset } from "src/services/kmrsAssets";
+import { useAppStore } from "src/stores/app";
 
 const feed = useMerchantFeedStore();
+const app = useAppStore();
+
+const categoryCopy = {
+  ru: {
+    title: "Категории",
+    refresh: "Обновить",
+    heading: "Выберите вкус",
+    subtitle: "Категории собраны из ресторанов, доступных сейчас в вашей зоне доставки.",
+    emptyTitle: "Категории не найдены",
+    emptyText: "Измените адрес доставки или обновите список ресторанов.",
+    one: "ресторан",
+    few: "ресторана",
+    many: "ресторанов",
+  },
+  tk: {
+    title: "Kategoriýalar",
+    refresh: "Täzele",
+    heading: "Tagam saýlaň",
+    subtitle: "Kategoriýalar häzirki eltip beriş zolagyňyzdaky restoranlardan ýygnaldy.",
+    emptyTitle: "Kategoriýa tapylmady",
+    emptyText: "Eltip beriş salgysyny üýtgediň ýa-da restoran sanawyny täzeläň.",
+    one: "restoran",
+    few: "restoran",
+    many: "restoran",
+  },
+  en: {
+    title: "Categories",
+    refresh: "Refresh",
+    heading: "Choose a craving",
+    subtitle: "Categories are built from restaurants currently available in your delivery zone.",
+    emptyTitle: "No categories found",
+    emptyText: "Change your delivery address or refresh the restaurant list.",
+    one: "restaurant",
+    few: "restaurants",
+    many: "restaurants",
+  },
+};
+
+const copy = computed(() => categoryCopy[app.language] || categoryCopy.ru);
 
 const cuisineNames = (restaurant) => {
   const cuisine = restaurant?.cuisine || restaurant?.cuisines || restaurant?.cuisine_name;
@@ -75,7 +115,15 @@ const restaurantCountLabel = (count) => {
   const value = Number(count) || 0;
   const mod10 = value % 10;
   const mod100 = value % 100;
-  const word = mod10 === 1 && mod100 !== 11 ? "ресторан" : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? "ресторана" : "ресторанов";
+  const word = app.language === "ru"
+    ? mod10 === 1 && mod100 !== 11
+      ? copy.value.one
+      : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)
+        ? copy.value.few
+        : copy.value.many
+    : value === 1
+      ? copy.value.one
+      : copy.value.many;
   return `${value} ${word}`;
 };
 

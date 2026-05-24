@@ -103,11 +103,11 @@
             <div class="min-w-0">
               <h3 class="m-0 text-lg font-extrabold leading-tight" v-html="restaurant.restaurant_name" />
               <p class="muted m-0 mt-1 text-sm">
-                {{ restaurant.estimation }} min · {{ restaurant.distance_pretty }} ·
+                {{ restaurant.estimation }} min / {{ restaurant.distance_pretty }} /
                 {{ restaurant.free_delivery ? app.copy.home.freeDelivery : app.copy.home.deliveryAvailable }}
               </p>
               <p v-if="restaurant.cuisine?.length" class="muted mt-2 line-clamp-1 text-xs">
-                {{ restaurant.cuisine.join(" · ") }}
+                {{ restaurant.cuisine.join(" / ") }}
               </p>
             </div>
             <span class="tagam-pill is-active h-fit min-h-0 px-3 py-1 text-xs">
@@ -121,7 +121,7 @@
     <div v-if="selectedCuisines.length" class="filter-clear-fab">
       <button class="primary-button tap-motion px-5 shadow-2xl" type="button" @click.stop="clearCuisines">
         <X :size="18" />
-        {{ app.copy.home.clear || "Очистить" }}
+        {{ app.copy.home.clear }}
         <span class="rounded-full bg-black/10 px-2 py-0.5 text-xs">{{ selectedCuisines.length }}</span>
       </button>
     </div>
@@ -141,6 +141,28 @@ const app = useAppStore();
 const feed = useMerchantFeedStore();
 const session = useSessionStore();
 const selectedCuisines = ref([]);
+
+const insightLabels = {
+  ru: {
+    places: "мест рядом",
+    categories: "категорий",
+    freeDelivery: "без доставки",
+    fast: "быстро",
+  },
+  tk: {
+    places: "ýer golaýda",
+    categories: "kategoriýa",
+    freeDelivery: "mugt eltip",
+    fast: "çalt",
+  },
+  en: {
+    places: "nearby",
+    categories: "categories",
+    freeDelivery: "free delivery",
+    fast: "fast",
+  },
+};
+const insightCopy = computed(() => insightLabels[app.language] || insightLabels.ru);
 
 const decodeHtml = (value) => {
   const element = document.createElement("div");
@@ -181,12 +203,12 @@ const homeInsights = computed(() => {
   if (!feed.rows.length) return [];
 
   return [
-    { label: "мест рядом", value: feed.rows.length, icon: MapPin },
-    cuisines.value.length ? { label: "категорий", value: cuisines.value.length, icon: Sparkles } : null,
+    { label: insightCopy.value.places, value: feed.rows.length, icon: MapPin },
+    cuisines.value.length ? { label: insightCopy.value.categories, value: cuisines.value.length, icon: Sparkles } : null,
     freeDeliveryCount.value
-      ? { label: "без доставки", value: freeDeliveryCount.value, icon: ShoppingBag }
+      ? { label: insightCopy.value.freeDelivery, value: freeDeliveryCount.value, icon: ShoppingBag }
       : fastRestaurantCount.value
-        ? { label: "быстро", value: fastRestaurantCount.value, icon: Flame }
+        ? { label: insightCopy.value.fast, value: fastRestaurantCount.value, icon: Flame }
         : null,
   ].filter(Boolean);
 });

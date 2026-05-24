@@ -52,8 +52,8 @@
 
       <div class="restaurant-stats tagam-card grid p-3 text-center" :class="promoCount ? 'grid-cols-3' : 'grid-cols-2'">
         <div class="restaurant-stat">
-          <strong>{{ distanceLabel }}</strong>
-          <span class="muted block text-xs">от вас</span>
+          <strong>{{ distanceLabel || "-" }}</strong>
+          <span class="muted block text-xs">{{ distanceCaption }}</span>
         </div>
         <div v-if="promoCount" class="restaurant-stat">
           <strong>{{ promoCount }}</strong>
@@ -68,15 +68,15 @@
       <div class="grid grid-cols-3 gap-2">
         <button class="tagam-pill tap-motion px-3 py-2" :class="{ 'is-active': activePanel === 'menu' }" type="button" @click="activePanel = 'menu'">
           <ShoppingBag :size="16" />
-          Меню
+          {{ app.copy.restaurant.menu }}
         </button>
         <button class="tagam-pill tap-motion px-3 py-2" :class="{ 'is-active': activePanel === 'search' }" type="button" @click="activePanel = 'search'">
           <Search :size="16" />
-          Поиск
+          {{ searchCopy.title }}
         </button>
         <button class="tagam-pill tap-motion px-3 py-2" :class="{ 'is-active': activePanel === 'info' }" type="button" @click="activePanel = 'info'">
           <Info :size="16" />
-          Инфо
+          {{ infoCopy.info }}
         </button>
       </div>
 
@@ -96,20 +96,20 @@
         </div>
         <button class="tagam-pill tap-motion justify-self-start px-4 py-2" type="button" @click="loadReviews">
           <Star :size="16" />
-          Отзывы
+          {{ infoCopy.reviews }}
         </button>
 
         <div v-if="reviewsOpen" class="grid gap-3 border-t border-white/10 pt-4">
           <div class="section-title">
-            <h2>Отзывы</h2>
+            <h2>{{ infoCopy.reviews }}</h2>
             <span class="muted text-sm">{{ reviews.length }}</span>
           </div>
           <div v-if="reviewsLoading" class="warm-skeleton h-20 rounded-[8px]" />
           <article v-for="review in reviews" :key="review.id || review.review_id || review.uuid" class="soft-card p-3">
-            <strong>{{ review.customer_name || review.full_name || review.client_name || "KMRS" }}</strong>
+            <strong>{{ review.customer_name || review.full_name || review.client_name || infoCopy.guest }}</strong>
             <p class="muted m-0 mt-1 text-sm">{{ review.review || review.comment || review.message || review.content }}</p>
           </article>
-          <p v-if="!reviewsLoading && !reviews.length" class="muted m-0 text-sm">У этого ресторана пока нет отзывов.</p>
+          <p v-if="!reviewsLoading && !reviews.length" class="muted m-0 text-sm">{{ infoCopy.noReviews }}</p>
         </div>
       </div>
 
@@ -118,9 +118,9 @@
         <input
           v-model="menuQuery"
           class="min-w-0 flex-1 bg-transparent text-base font-bold outline-none placeholder:text-[var(--app-muted)]"
-          placeholder="Поиск по меню"
+          :placeholder="searchCopy.menuPlaceholder"
         />
-        <button v-if="menuQuery" class="icon-button !h-9 !w-9" type="button" aria-label="Очистить" @click="menuQuery = ''">
+        <button v-if="menuQuery" class="icon-button !h-9 !w-9" type="button" :aria-label="searchCopy.clear" @click="menuQuery = ''">
           <X :size="17" />
         </button>
       </label>
@@ -154,7 +154,7 @@
         class="category-section grid gap-3 scroll-mt-24"
       >
         <div class="section-title">
-          <h2>{{ decodeHtml(category.category_name) }}</h2>
+            <h2>{{ infoCopy.reviews }}</h2>
           <span class="muted text-sm">{{ (category.item_list || []).length }} {{ app.copy.restaurant.itemCount }}</span>
         </div>
 
@@ -241,7 +241,24 @@ const reviewsLoading = ref(false);
 const reviews = ref([]);
 let categoryObserver;
 
+const localCopy = {
+  ru: {
+    search: { title: "Поиск", menuPlaceholder: "Поиск по меню", clear: "Очистить" },
+    info: { info: "Инфо", reviews: "Отзывы", guest: "Гость", noReviews: "У этого ресторана пока нет отзывов.", distanceAway: "от вас" },
+  },
+  tk: {
+    search: { title: "Gözleg", menuPlaceholder: "Menýudan gözle", clear: "Arassala" },
+    info: { info: "Info", reviews: "Synlar", guest: "Myhman", noReviews: "Bu restoranda entek syn ýok.", distanceAway: "sizden" },
+  },
+  en: {
+    search: { title: "Search", menuPlaceholder: "Search menu", clear: "Clear" },
+    info: { info: "Info", reviews: "Reviews", guest: "Guest", noReviews: "This restaurant has no reviews yet.", distanceAway: "away" },
+  },
+};
+
 const slug = computed(() => String(route.params.slug || ""));
+const searchCopy = computed(() => (localCopy[app.language] || localCopy.ru).search);
+const infoCopy = computed(() => (localCopy[app.language] || localCopy.ru).info);
 const deepLinkItem = computed(() => ({
   catId: route.query.cat ? String(route.query.cat) : "",
   itemUuid: route.query.item ? String(route.query.item) : "",
@@ -299,6 +316,7 @@ const distanceLabel = computed(() => {
 
   return normalizeDistanceLabel(distance);
 });
+const distanceCaption = computed(() => app.copy.restaurant.distanceAway || infoCopy.value.distanceAway);
 
 const normalizeDistanceLabel = (value) => {
   const decoded = decodeHtml(value ?? "").trim();

@@ -33,7 +33,7 @@
       <section v-if="bookingDetail && showCancel" class="soft-card p-4">
         <p class="brand-kicker m-0">CANCEL BOOKING</p>
         <h2 class="m-0 mt-1 text-xl font-black">Причина отмены</h2>
-        <p class="muted m-0 mt-1 text-sm">KMRS сохранит причину и обновит статус бронирования.</p>
+        <p class="muted m-0 mt-1 text-sm">Сервис сохранит причину и обновит статус бронирования.</p>
 
         <div class="mt-4 grid gap-2">
           <button

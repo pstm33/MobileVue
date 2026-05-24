@@ -1,25 +1,25 @@
 <template>
   <section class="page fade-up">
-    <AppHeader title="Платежи" :icon="CreditCard" action-label="Оплата" />
+    <AppHeader :title="copy.title" :icon="CreditCard" :action-label="copy.action" />
 
     <AuthBridge v-if="!client.authenticated" @authenticated="load" />
 
     <template v-else>
       <div class="tagam-card p-5">
-        <p class="brand-kicker m-0">SAVED PAYMENTS</p>
-        <h1 class="m-0 mt-1 text-2xl font-black">Платежные методы</h1>
-        <p class="muted m-0 mt-1 text-sm">Здесь будут карты и способы оплаты, сохраненные после оформления заказа.</p>
+        <p class="brand-kicker m-0">{{ copy.savedKicker }}</p>
+        <h1 class="m-0 mt-1 text-2xl font-black">{{ copy.heading }}</h1>
+        <p class="muted m-0 mt-1 text-sm">{{ copy.intro }}</p>
         <button class="primary-button tap-motion mt-4 w-full" type="button" @click="providersOpen = !providersOpen">
-          {{ providersOpen ? "Скрыть способы" : "Добавить способ оплаты" }}
+          {{ providersOpen ? copy.hideProviders : copy.addPayment }}
         </button>
       </div>
 
       <section v-if="providersOpen" class="soft-card p-4">
         <div class="flex items-start justify-between gap-3">
           <div>
-            <p class="brand-kicker m-0">AVAILABLE PROVIDERS</p>
-            <h2 class="m-0 mt-1 text-xl font-black">Доступная оплата</h2>
-            <p class="muted m-0 mt-1 text-sm">Список приходит из KMRS. Сохранение карт проходит через checkout или страницу провайдера.</p>
+            <p class="brand-kicker m-0">{{ copy.providersKicker }}</p>
+            <h2 class="m-0 mt-1 text-xl font-black">{{ copy.providersTitle }}</h2>
+            <p class="muted m-0 mt-1 text-sm">{{ copy.providersHint }}</p>
           </div>
           <button class="icon-button h-11 w-11 shrink-0" type="button" @click="loadProviders">
             <RefreshCw :size="18" />
@@ -36,12 +36,12 @@
               <CreditCard v-else class="text-[var(--app-accent)]" :size="22" />
               <div class="min-w-0 flex-1">
                 <h3 class="m-0 truncate text-base font-black">{{ provider.payment_name || provider.payment_code }}</h3>
-                <p class="muted m-0 mt-0.5 text-xs">{{ provider.payment_description || "Будет доступно при оформлении заказа" }}</p>
+                <p class="muted m-0 mt-0.5 text-xs">{{ provider.payment_description || copy.providerFallback }}</p>
               </div>
             </div>
           </article>
           <RouterLink class="tagam-pill tap-motion px-4 py-3 text-center" to="/checkout">
-            Открыть checkout
+            {{ copy.openCheckout }}
           </RouterLink>
         </div>
       </section>
@@ -68,17 +68,17 @@
         </div>
         <div class="mt-4 grid grid-cols-2 gap-2">
           <button v-if="payment.payment_uuid" class="tagam-pill tap-motion px-4 py-2" type="button" @click="setDefault(payment)">
-            По умолчанию
+            {{ copy.makeDefault }}
           </button>
           <button v-if="payment.payment_uuid" class="tagam-pill tap-motion px-4 py-2 text-rose-200" type="button" @click="remove(payment)">
-            Удалить
+            {{ copy.remove }}
           </button>
         </div>
       </article>
 
       <div v-if="!customer.paymentsLoading && !customer.paymentList.length" class="soft-card p-5 text-center">
-        <h2 class="m-0 text-xl font-black">Сохраненных оплат нет</h2>
-        <p class="muted m-0 mt-2 text-sm">После оплаты заказа сохраненный способ появится здесь.</p>
+        <h2 class="m-0 text-xl font-black">{{ copy.emptyTitle }}</h2>
+        <p class="muted m-0 mt-2 text-sm">{{ copy.emptyText }}</p>
       </div>
     </template>
   </section>
@@ -86,20 +86,85 @@
 
 <script setup>
 import { CreditCard, RefreshCw } from "@lucide/vue";
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import APIinterface from "src/api/APIinterface";
 import AppHeader from "src/components/ui/AppHeader.vue";
 import AuthBridge from "src/components/checkout/AuthBridge.vue";
+import { useAppStore } from "src/stores/app";
 import { useClientAuthStore } from "src/stores/clientAuth";
 import { useCustomerStore } from "src/stores/customer";
 
+const app = useAppStore();
 const client = useClientAuthStore();
 const customer = useCustomerStore();
 const providersOpen = ref(false);
 const providersLoading = ref(false);
 const providers = ref([]);
+const copy = computed(() => {
+  if (app.language === "tk") {
+    return {
+      title: "Tölegler",
+      action: "Töleg",
+      savedKicker: "SAKLANAN TÖLEGLER",
+      heading: "Töleg usullary",
+      intro: "Sargyt tölenenden soň saklanan kartlar we töleg usullary şu ýerde görüner.",
+      hideProviders: "Usullary gizle",
+      addPayment: "Töleg usulyny goş",
+      providersKicker: "ELÝETERLI PROVIDERLER",
+      providersTitle: "Elýeterli töleg",
+      providersHint: "Kart saklamak sargyt töleginde ýa-da töleg provideriniň sahypasynda tamamlanýar.",
+      providerFallback: "Sargyt töleginde elýeterli bolar",
+      openCheckout: "Sargyt tölegine geç",
+      makeDefault: "Esasy et",
+      remove: "Poz",
+      emptyTitle: "Saklanan töleg ýok",
+      emptyText: "Sargyt tölenenden soň saklanan usul şu ýerde peýda bolar.",
+      fallbackTitle: "Töleg usuly",
+    };
+  }
+  if (app.language === "en") {
+    return {
+      title: "Payments",
+      action: "Payment",
+      savedKicker: "SAVED PAYMENTS",
+      heading: "Payment methods",
+      intro: "Saved cards and payment methods will appear here after checkout.",
+      hideProviders: "Hide methods",
+      addPayment: "Add payment method",
+      providersKicker: "AVAILABLE PROVIDERS",
+      providersTitle: "Available payment",
+      providersHint: "Cards are saved during order payment or on the payment provider page.",
+      providerFallback: "Available during order payment",
+      openCheckout: "Open order payment",
+      makeDefault: "Make default",
+      remove: "Remove",
+      emptyTitle: "No saved payments",
+      emptyText: "A saved method will appear here after you pay for an order.",
+      fallbackTitle: "Payment method",
+    };
+  }
+  return {
+    title: "Платежи",
+    action: "Оплата",
+    savedKicker: "СОХРАНЕННЫЕ ОПЛАТЫ",
+    heading: "Платежные методы",
+    intro: "Здесь появятся карты и способы оплаты, сохраненные после оформления заказа.",
+    hideProviders: "Скрыть способы",
+    addPayment: "Добавить способ оплаты",
+    providersKicker: "ДОСТУПНЫЕ ПРОВАЙДЕРЫ",
+    providersTitle: "Доступная оплата",
+    providersHint: "Сохранение карты завершается при оплате заказа или на странице платежного провайдера.",
+    providerFallback: "Будет доступно при оплате заказа",
+    openCheckout: "Перейти к оплате заказа",
+    makeDefault: "По умолчанию",
+    remove: "Удалить",
+    emptyTitle: "Сохраненных оплат нет",
+    emptyText: "После оплаты заказа сохраненный способ появится здесь.",
+    fallbackTitle: "Способ оплаты",
+  };
+});
 
-const paymentTitle = (payment) => payment.attr1 || payment.card_name || payment.payment_name || payment.provider || "Способ оплаты";
+const paymentTitle = (payment) => payment.attr1 || payment.card_name || payment.payment_name || payment.provider || copy.value.fallbackTitle;
 const paymentSubtitle = (payment) => payment.attr2 || payment.card_number || "";
 
 const load = () => {

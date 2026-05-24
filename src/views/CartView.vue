@@ -1,6 +1,6 @@
 <template>
   <section class="page fade-up">
-    <AppHeader title="Корзина" :icon="ShoppingBag" action-label="Cart" />
+    <AppHeader :title="copy.title" :icon="ShoppingBag" :action-label="copy.title" />
 
     <div v-if="cart.loading && !cart.cart" class="grid gap-4">
       <div class="soft-card warm-skeleton h-24" />
@@ -13,17 +13,17 @@
         <ShoppingBag :size="28" />
       </div>
       <div>
-        <h1 class="m-0 text-2xl font-black">Корзина пуста</h1>
-        <p class="muted mt-2 text-sm">Выберите ресторан и добавьте любимые блюда в заказ.</p>
+        <h1 class="m-0 text-2xl font-black">{{ copy.emptyTitle }}</h1>
+        <p class="muted mt-2 text-sm">{{ copy.emptyText }}</p>
       </div>
-      <RouterLink class="primary-button tap-motion" to="/home">К ресторанам</RouterLink>
+      <RouterLink class="primary-button tap-motion" to="/home">{{ copy.toRestaurants }}</RouterLink>
     </div>
 
     <div v-else-if="cart.error" class="soft-card p-5">
-      <h1 class="m-0 text-2xl font-black">Корзина недоступна</h1>
+      <h1 class="m-0 text-2xl font-black">{{ copy.unavailable }}</h1>
       <p class="muted mt-2 text-sm">{{ cart.error }}</p>
       <button class="primary-button tap-motion mt-4 w-full" type="button" @click="cart.refresh()">
-        Повторить
+        {{ copy.retry }}
       </button>
     </div>
 
@@ -36,15 +36,15 @@
           :alt="cart.merchant.restaurant_name"
         />
         <div class="min-w-0 flex-1">
-          <p class="m-0 text-xs font-black uppercase tracking-[0.16em] text-emerald-300">Заказ из</p>
+          <p class="m-0 text-xs font-black uppercase tracking-[0.16em] text-emerald-300">{{ copy.orderFrom }}</p>
           <h1 class="m-0 truncate text-xl font-black">{{ cart.merchant.restaurant_name }}</h1>
           <p class="muted m-0 truncate text-xs">{{ cart.merchant.merchant_address }}</p>
         </div>
       </section>
 
       <section v-if="!cart.items.length" class="soft-card grid gap-4 p-5 text-center">
-        <h2 class="m-0 text-2xl font-black">В корзине нет блюд</h2>
-        <RouterLink class="primary-button" :to="restaurantLink">Открыть меню</RouterLink>
+        <h2 class="m-0 text-2xl font-black">{{ copy.noItems }}</h2>
+        <RouterLink class="primary-button" :to="restaurantLink">{{ copy.openMenu }}</RouterLink>
       </section>
 
       <section v-else class="grid gap-3">
@@ -66,7 +66,7 @@
                   <h2 class="m-0 text-base font-black">{{ decodeHtml(item.item_name) }}</h2>
                   <p v-if="item.price?.size_name" class="muted m-0 text-xs">{{ item.price.size_name }}</p>
                 </div>
-                <button class="icon-button !h-9 !w-9" type="button" aria-label="Remove item" @click="cart.removeItem(item.cart_row, slug)">
+                <button class="icon-button !h-9 !w-9" type="button" :aria-label="copy.remove" @click="cart.removeItem(item.cart_row, slug)">
                   <Trash2 :size="16" />
                 </button>
               </div>
@@ -86,7 +86,7 @@
               <button
                 class="icon-button !h-9 !w-9"
                 type="button"
-                aria-label="Decrease quantity"
+                :aria-label="copy.decrease"
                 :disabled="cart.loading"
                 @click="changeQty(item, -1)"
               >
@@ -96,7 +96,7 @@
               <button
                 class="icon-button !h-9 !w-9"
                 type="button"
-                aria-label="Increase quantity"
+                :aria-label="copy.increase"
                 :disabled="cart.loading"
                 @click="changeQty(item, 1)"
               >
@@ -117,10 +117,10 @@
 
       <div v-if="cart.items.length" class="sticky bottom-4 z-20 grid gap-3">
         <button class="surface-button rounded-full px-4 py-3 text-sm font-black" type="button" @click="cart.clear">
-          Очистить корзину
+          {{ copy.clear }}
         </button>
         <RouterLink class="primary-button tap-motion w-full justify-between px-5" to="/checkout">
-          <span>К оформлению</span>
+          <span>{{ copy.checkout }}</span>
           <strong>{{ cart.totalLabel }}</strong>
         </RouterLink>
       </div>
@@ -132,11 +132,66 @@
 import { computed, onMounted } from "vue";
 import { Minus, Plus, ShoppingBag, Trash2 } from "@lucide/vue";
 import AppHeader from "src/components/ui/AppHeader.vue";
+import { useAppStore } from "src/stores/app";
 import { useCartStore } from "src/stores/cart";
 
+const app = useAppStore();
 const cart = useCartStore();
 const slug = computed(() => cart.merchant?.slug || "");
 const restaurantLink = computed(() => (slug.value ? `/restaurant/${slug.value}` : "/home"));
+
+const cartCopy = {
+  ru: {
+    title: "Корзина",
+    emptyTitle: "Корзина пустая",
+    emptyText: "Выберите ресторан и добавьте любимые блюда в заказ.",
+    toRestaurants: "К ресторанам",
+    unavailable: "Корзина недоступна",
+    retry: "Повторить",
+    orderFrom: "Заказ из",
+    noItems: "В корзине нет блюд",
+    openMenu: "Открыть меню",
+    remove: "Удалить блюдо",
+    decrease: "Уменьшить количество",
+    increase: "Увеличить количество",
+    clear: "Очистить корзину",
+    checkout: "К оформлению",
+  },
+  tk: {
+    title: "Sebet",
+    emptyTitle: "Sebet boş",
+    emptyText: "Restoran saýlaň we halaýan tagamlaryňyzy sargyda goşuň.",
+    toRestaurants: "Restoranlara",
+    unavailable: "Sebet elýeterli däl",
+    retry: "Gaýtadan",
+    orderFrom: "Sargyt",
+    noItems: "Sebetde tagam ýok",
+    openMenu: "Menýuny aç",
+    remove: "Tagamy aýyr",
+    decrease: "Sany azalt",
+    increase: "Sany köpelt",
+    clear: "Sebedi arassala",
+    checkout: "Resmileşdirmek",
+  },
+  en: {
+    title: "Cart",
+    emptyTitle: "Your cart is empty",
+    emptyText: "Choose a restaurant and add your favorite dishes to the order.",
+    toRestaurants: "Browse restaurants",
+    unavailable: "Cart is unavailable",
+    retry: "Retry",
+    orderFrom: "Order from",
+    noItems: "No dishes in the cart",
+    openMenu: "Open menu",
+    remove: "Remove item",
+    decrease: "Decrease quantity",
+    increase: "Increase quantity",
+    clear: "Clear cart",
+    checkout: "Checkout",
+  },
+};
+
+const copy = computed(() => cartCopy[app.language] || cartCopy.ru);
 
 const decodeHtml = (value) => {
   const element = document.createElement("div");

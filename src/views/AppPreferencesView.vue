@@ -1,18 +1,18 @@
 <template>
   <section class="page fade-up">
-    <AppHeader title="Язык и тема" :icon="Languages" action-label="Назад" @action="router.back()" />
+    <AppHeader :title="copy.title" :icon="Languages" :action-label="copy.back" @action="router.back()" />
 
     <div class="premium-card p-5">
       <p class="brand-kicker m-0">TAGAM DELIVERY</p>
-      <h1 class="m-0 mt-2 text-3xl font-black">Настройки приложения</h1>
+      <h1 class="m-0 mt-2 text-3xl font-black">{{ copy.heading }}</h1>
       <p class="muted m-0 mt-2 text-sm">
-        Выбор применяется сразу ко всему приложению и сохраняется на этом устройстве.
+        {{ copy.subtitle }}
       </p>
     </div>
 
     <section class="soft-card overflow-hidden">
       <div class="border-b border-white/10 p-4">
-        <p class="muted m-0 mb-3 text-xs font-black uppercase tracking-[0.14em]">Язык</p>
+        <p class="muted m-0 mb-3 text-xs font-black uppercase tracking-[0.14em]">{{ copy.language }}</p>
         <div class="grid grid-cols-3 gap-2">
           <button
             v-for="item in languages"
@@ -29,7 +29,7 @@
       </div>
 
       <div class="p-4">
-        <p class="muted m-0 mb-3 text-xs font-black uppercase tracking-[0.14em]">Тема</p>
+        <p class="muted m-0 mb-3 text-xs font-black uppercase tracking-[0.14em]">{{ copy.theme }}</p>
         <div class="grid grid-cols-2 gap-2">
           <button
             v-for="item in themes"
@@ -46,7 +46,7 @@
       </div>
 
       <div class="border-t border-white/10 p-4">
-        <p class="muted m-0 mb-3 text-xs font-black uppercase tracking-[0.14em]">Валюта</p>
+        <p class="muted m-0 mb-3 text-xs font-black uppercase tracking-[0.14em]">{{ copy.currency }}</p>
         <div class="grid grid-cols-2 gap-2">
           <button
             v-for="item in currencies"
@@ -60,7 +60,7 @@
             <small>{{ item.label }}</small>
           </button>
         </div>
-        <p v-if="settings.loading" class="muted m-0 mt-3 text-xs">Загружаем доступные валюты...</p>
+        <p v-if="settings.loading" class="muted m-0 mt-3 text-xs">{{ copy.loadingCurrencies }}</p>
       </div>
     </section>
 
@@ -68,15 +68,15 @@
       <div class="flex items-center justify-between gap-3">
         <div>
           <p class="brand-kicker m-0">TAGAM DELIVERY</p>
-          <h2 class="m-0 mt-1 text-xl font-black">Готово к заказу</h2>
-          <p class="muted m-0 mt-1 text-sm">Откройте рестораны рядом с выбранной локацией.</p>
+          <h2 class="m-0 mt-1 text-xl font-black">{{ copy.ready }}</h2>
+          <p class="muted m-0 mt-1 text-sm">{{ copy.readyText }}</p>
         </div>
         <div class="grid h-14 w-14 place-items-center rounded-full bg-[var(--app-accent)] text-black">
           <Sparkles :size="28" />
         </div>
       </div>
       <button class="primary-button mt-5 w-full" type="button" @click="router.push('/home')">
-        Смотреть главную
+        {{ copy.openHome }}
         <ArrowRight :size="18" />
       </button>
     </section>
@@ -96,16 +96,66 @@ const router = useRouter();
 const app = useAppStore();
 const settings = useAppSettingsStore();
 
+const preferenceCopy = {
+  ru: {
+    title: "Язык и тема",
+    back: "Назад",
+    heading: "Настройки приложения",
+    subtitle: "Выбор применяется сразу ко всему приложению и сохраняется на этом устройстве.",
+    language: "Язык",
+    theme: "Тема",
+    currency: "Валюта",
+    loadingCurrencies: "Загружаем доступные валюты...",
+    ready: "Готово к заказу",
+    readyText: "Откройте рестораны рядом с выбранной локацией.",
+    openHome: "Смотреть главную",
+    dark: "Темная",
+    light: "Светлая",
+  },
+  tk: {
+    title: "Dil we tema",
+    back: "Yza",
+    heading: "Programma sazlamalary",
+    subtitle: "Saýlaw derrew tutuş programma ulanylýar we şu enjamda saklanýar.",
+    language: "Dil",
+    theme: "Tema",
+    currency: "Pul birligi",
+    loadingCurrencies: "Elýeterli pul birlikleri ýüklenýär...",
+    ready: "Sargyt bermäge taýýar",
+    readyText: "Saýlanan ýeriňiziň golaýyndaky restoranlary açyň.",
+    openHome: "Baş sahypany aç",
+    dark: "Garaňky",
+    light: "Ýagty",
+  },
+  en: {
+    title: "Language & theme",
+    back: "Back",
+    heading: "App settings",
+    subtitle: "Your choice applies across the app immediately and stays saved on this device.",
+    language: "Language",
+    theme: "Theme",
+    currency: "Currency",
+    loadingCurrencies: "Loading available currencies...",
+    ready: "Ready to order",
+    readyText: "Open restaurants near your selected location.",
+    openHome: "Open home",
+    dark: "Dark",
+    light: "Light",
+  },
+};
+
+const copy = computed(() => preferenceCopy[app.language] || preferenceCopy.ru);
+
 const languages = [
   { code: "ru", short: "RU", label: "Русский" },
   { code: "tk", short: "TK", label: "Türkmen" },
   { code: "en", short: "EN", label: "English" },
 ];
 
-const themes = [
-  { code: "dark", label: "Темная", icon: Moon },
-  { code: "light", label: "Светлая", icon: Sun },
-];
+const themes = computed(() => [
+  { code: "dark", label: copy.value.dark, icon: Moon },
+  { code: "light", label: copy.value.light, icon: Sun },
+]);
 
 const currencies = computed(() => {
   const value = settings.data?.currency_list;

@@ -1,12 +1,12 @@
 <template>
   <section class="page fade-up">
-    <AppHeader title="Акции" :icon="BadgePercent" action-label="Обновить" @action="load(true)" />
+    <AppHeader :title="copy.title" :icon="BadgePercent" :action-label="copy.refresh" @action="load(true)" />
 
     <div class="tagam-card tagam-glow p-5">
       <p class="brand-kicker m-0">TAGAM OFFERS</p>
-      <h1 class="m-0 mt-2 text-3xl font-black">Выгодные рестораны рядом</h1>
+      <h1 class="m-0 mt-2 text-3xl font-black">{{ copy.heading }}</h1>
       <p class="muted m-0 mt-2 text-sm">
-        {{ totalLabel || "Показываем только реальные предложения, которые вернул KMRS." }}
+        {{ totalLabel || copy.subtitle }}
       </p>
     </div>
 
@@ -44,29 +44,29 @@
           <div class="grid grid-cols-3 gap-2 p-3 text-center">
             <div class="rounded-[8px] bg-[var(--app-control)] p-3">
               <strong>{{ restaurant.estimation || "..." }}</strong>
-              <span class="muted mt-1 block text-xs">мин</span>
+              <span class="muted mt-1 block text-xs">{{ copy.min }}</span>
             </div>
             <div class="rounded-[8px] bg-[var(--app-control)] p-3">
               <strong>{{ restaurant.distance_pretty || "..." }}</strong>
-              <span class="muted mt-1 block text-xs">рядом</span>
+              <span class="muted mt-1 block text-xs">{{ copy.near }}</span>
             </div>
             <div class="rounded-[8px] bg-[var(--app-control)] p-3">
               <strong>{{ restaurant.reviews?.ratings || "NEW" }}</strong>
-              <span class="muted mt-1 block text-xs">рейтинг</span>
+              <span class="muted mt-1 block text-xs">{{ copy.rating }}</span>
             </div>
           </div>
         </RouterLink>
       </article>
 
       <button v-if="hasMore" class="tagam-pill tap-motion mx-auto px-5 py-3" type="button" :disabled="loading" @click="load()">
-        {{ loading ? "Загружаем..." : "Показать еще" }}
+        {{ loading ? copy.loading : copy.more }}
       </button>
     </section>
 
     <div v-if="!loading && !rows.length && !error" class="soft-card p-5 text-center">
       <BadgePercent class="mx-auto text-[var(--app-accent)]" :size="28" />
-      <h2 class="m-0 mt-3 text-xl font-black">Акций сейчас нет</h2>
-      <p class="muted m-0 mt-2 text-sm">KMRS не вернул ресторанов с активными предложениями для этой локации.</p>
+      <h2 class="m-0 mt-3 text-xl font-black">{{ copy.emptyTitle }}</h2>
+      <p class="muted m-0 mt-2 text-sm">{{ copy.emptyText }}</p>
     </div>
   </section>
 </template>
@@ -90,6 +90,48 @@ const loading = ref(false);
 const error = ref("");
 
 const totalLabel = computed(() => details.value?.total_pretty || "");
+const offerCopy = {
+  ru: {
+    title: "Акции",
+    refresh: "Обновить",
+    heading: "Выгодные рестораны рядом",
+    subtitle: "Показываем только реальные предложения, доступные сейчас.",
+    min: "мин",
+    near: "рядом",
+    rating: "рейтинг",
+    loading: "Загружаем...",
+    more: "Показать еще",
+    emptyTitle: "Акций сейчас нет",
+    emptyText: "Для этой локации сейчас нет ресторанов с активными предложениями.",
+  },
+  tk: {
+    title: "Aksiýalar",
+    refresh: "Täzele",
+    heading: "Ýakyndaky amatly restoranlar",
+    subtitle: "Häzirki elýeterli hakyky teklipleri görkezýäris.",
+    min: "min",
+    near: "ýakynda",
+    rating: "reýting",
+    loading: "Ýüklenýär...",
+    more: "Has köp görkez",
+    emptyTitle: "Häzir aksiýa ýok",
+    emptyText: "Bu ýer üçin häzirki wagtda aktiw teklipli restoran ýok.",
+  },
+  en: {
+    title: "Offers",
+    refresh: "Refresh",
+    heading: "Deals near you",
+    subtitle: "Showing real offers available right now.",
+    min: "min",
+    near: "nearby",
+    rating: "rating",
+    loading: "Loading...",
+    more: "Show more",
+    emptyTitle: "No offers right now",
+    emptyText: "There are no restaurants with active offers for this location.",
+  },
+};
+const copy = computed(() => offerCopy[app.language] || offerCopy.ru);
 
 const decodeHtml = (value) => {
   const element = document.createElement("div");

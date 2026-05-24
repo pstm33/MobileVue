@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div v-if="itemDetail.open" class="fixed inset-0 z-50 flex items-end bg-black/70 backdrop-blur-sm">
-      <button class="absolute inset-0 cursor-default" type="button" aria-label="Close item" @click="itemDetail.close" />
+      <button class="absolute inset-0 cursor-default" type="button" :aria-label="copy.close" @click="itemDetail.close" />
 
       <section class="relative max-h-[92vh] w-full overflow-hidden rounded-t-[8px] border border-white/10 bg-[#101416] shadow-2xl">
         <div class="h-1.5 w-full bg-gradient-to-r from-emerald-300 via-cyan-300 to-rose-400" />
@@ -13,10 +13,10 @@
         </div>
 
         <div v-else-if="itemDetail.error" class="p-5">
-          <h2 class="m-0 text-2xl font-black">Не удалось открыть товар</h2>
+          <h2 class="m-0 text-2xl font-black">{{ copy.unavailable }}</h2>
           <p class="muted mt-2 text-sm">{{ itemDetail.error }}</p>
           <button class="primary-button mt-4 w-full" type="button" @click="itemDetail.close">
-            Закрыть
+            {{ copy.close }}
           </button>
         </div>
 
@@ -41,7 +41,7 @@
                     </p>
                     <h2 class="m-0 mt-1 text-3xl font-black">{{ itemName }}</h2>
                   </div>
-                  <button class="icon-button" type="button" aria-label="Close item" @click="itemDetail.close">
+                  <button class="icon-button" type="button" :aria-label="copy.close" @click="itemDetail.close">
                     <X :size="19" />
                   </button>
                 </div>
@@ -49,7 +49,7 @@
               </div>
 
               <div v-if="itemDetail.prices.length > 1" class="grid gap-2">
-                <h3 class="m-0 text-sm font-black uppercase text-white/60">Размер</h3>
+                <h3 class="m-0 text-sm font-black uppercase text-white/60">{{ copy.size }}</h3>
                 <button
                   v-for="price in itemDetail.prices"
                   :key="price.item_size_id"
@@ -58,7 +58,7 @@
                   type="button"
                   @click="itemDetail.selectedSizeId = String(price.item_size_id)"
                 >
-                  <span class="font-bold">{{ price.size_name || "Обычный" }}</span>
+                  <span class="font-bold">{{ price.size_name || copy.regular }}</span>
                   <strong>{{ price.pretty_price_after_discount !== "0,00" ? price.pretty_price_after_discount : price.pretty_price }}</strong>
                 </button>
               </div>
@@ -75,7 +75,7 @@
                     v-if="group.require_addon == 1"
                     class="rounded-full bg-amber-300 px-2 py-1 text-[10px] font-black text-black"
                   >
-                    Обязательно
+                    {{ copy.required }}
                   </span>
                 </div>
 
@@ -101,11 +101,11 @@
               </section>
 
               <label class="grid gap-2">
-                <span class="text-sm font-black uppercase text-white/60">Комментарий к блюду</span>
+                <span class="text-sm font-black uppercase text-white/60">{{ copy.comment }}</span>
                 <textarea
                   v-model="itemDetail.specialInstructions"
                   class="min-h-24 resize-none rounded-[8px] border border-white/10 bg-white/[0.04] p-3 text-sm outline-none focus:border-emerald-300"
-                  placeholder="Например: без лука"
+                  :placeholder="copy.commentPlaceholder"
                 />
               </label>
             </div>
@@ -117,16 +117,16 @@
             </div>
             <div class="flex items-center gap-3">
               <div class="glass flex items-center rounded-[8px] p-1">
-                <button class="icon-button !h-10 !w-10" type="button" aria-label="Decrease" @click="itemDetail.quantity = Math.max(1, itemDetail.quantity - 1)">
+                <button class="icon-button !h-10 !w-10" type="button" :aria-label="copy.decrease" @click="itemDetail.quantity = Math.max(1, itemDetail.quantity - 1)">
                   <Minus :size="17" />
                 </button>
                 <strong class="w-10 text-center">{{ itemDetail.quantity }}</strong>
-                <button class="icon-button !h-10 !w-10" type="button" aria-label="Increase" @click="itemDetail.quantity += 1">
+                <button class="icon-button !h-10 !w-10" type="button" :aria-label="copy.increase" @click="itemDetail.quantity += 1">
                   <Plus :size="17" />
                 </button>
               </div>
               <button class="primary-button flex-1" type="button" :disabled="!canSubmit || cart.adding" @click="addToCart">
-                {{ cart.adding ? "Добавляем..." : `Добавить · ${totalLabel}` }}
+                {{ cart.adding ? copy.adding : `${copy.add} · ${totalLabel}` }}
               </button>
             </div>
           </div>
@@ -139,13 +139,65 @@
 <script setup>
 import { computed } from "vue";
 import { Check, Minus, Plus, X } from "@lucide/vue";
+import { useAppStore } from "src/stores/app";
 import { useCartStore } from "src/stores/cart";
 import { useItemDetailStore } from "src/stores/itemDetail";
 import { kmrsAsset } from "src/services/kmrsAssets";
 
 const emit = defineEmits(["added"]);
+const app = useAppStore();
 const cart = useCartStore();
 const itemDetail = useItemDetailStore();
+
+const sheetCopy = {
+  ru: {
+    close: "Закрыть",
+    unavailable: "Не удалось открыть блюдо",
+    size: "Размер",
+    regular: "Обычный",
+    required: "Обязательно",
+    comment: "Комментарий к блюду",
+    commentPlaceholder: "Например: без лука",
+    decrease: "Уменьшить",
+    increase: "Увеличить",
+    adding: "Добавляем...",
+    add: "Добавить",
+    choose: "Выберите",
+    notAvailable: "Это блюдо сейчас недоступно для заказа",
+  },
+  tk: {
+    close: "Ýap",
+    unavailable: "Tagamy açyp bolmady",
+    size: "Ölçeg",
+    regular: "Adaty",
+    required: "Hökmany",
+    comment: "Tagam üçin bellik",
+    commentPlaceholder: "Meselem: sogansyz",
+    decrease: "Azalt",
+    increase: "Köpelt",
+    adding: "Goşulýar...",
+    add: "Goş",
+    choose: "Saýlaň",
+    notAvailable: "Bu tagam häzir sargyt üçin elýeterli däl",
+  },
+  en: {
+    close: "Close",
+    unavailable: "Could not open item",
+    size: "Size",
+    regular: "Regular",
+    required: "Required",
+    comment: "Item note",
+    commentPlaceholder: "For example: no onion",
+    decrease: "Decrease",
+    increase: "Increase",
+    adding: "Adding...",
+    add: "Add",
+    choose: "Choose",
+    notAvailable: "This item is currently unavailable",
+  },
+};
+
+const copy = computed(() => sheetCopy[app.language] || sheetCopy.ru);
 
 const decodeHtml = (value) => {
   const element = document.createElement("div");
@@ -185,8 +237,8 @@ const validationMessage = computed(() => {
     return !group.sub_items.some((subItem) => subItem.checked);
   });
 
-  if (missing) return `Выберите: ${decodeHtml(missing.subcategory_name)}`;
-  if (itemDetail.item?.not_for_sale) return "Это блюдо сейчас недоступно для заказа";
+  if (missing) return `${copy.value.choose}: ${decodeHtml(missing.subcategory_name)}`;
+  if (itemDetail.item?.not_for_sale) return copy.value.notAvailable;
   return "";
 });
 const canSubmit = computed(() => !validationMessage.value && itemDetail.selectedSizeId);

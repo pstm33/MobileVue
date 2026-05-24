@@ -8,7 +8,7 @@
       <div class="points-hero tagam-card tagam-glow p-5">
         <p class="brand-kicker m-0">TAGAM POINTS</p>
         <h1 class="m-0 mt-2 text-4xl font-black">{{ balanceLabel }}</h1>
-        <p class="muted m-0 mt-2 text-sm">Доступные бонусы и история начислений из KMRS.</p>
+        <p class="muted m-0 mt-2 text-sm">Доступные бонусы и история начислений по вашему аккаунту.</p>
       </div>
 
       <div class="grid grid-cols-2 gap-2 rounded-[8px] bg-[var(--app-control)] p-1">
@@ -55,7 +55,7 @@
       <div v-if="!loading && !rows.length && !error" class="soft-card p-5 text-center">
         <Gift class="mx-auto text-[var(--app-accent)]" :size="28" />
         <h2 class="m-0 mt-3 text-xl font-black">История пуста</h2>
-        <p class="muted m-0 mt-2 text-sm">Когда KMRS начислит или спишет баллы, операции появятся здесь.</p>
+        <p class="muted m-0 mt-2 text-sm">Когда баллы будут начислены или списаны, операции появятся здесь.</p>
       </div>
     </template>
   </section>

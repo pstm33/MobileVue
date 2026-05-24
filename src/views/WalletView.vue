@@ -1,6 +1,6 @@
 <template>
   <section class="page fade-up">
-    <AppHeader :title="title" :icon="WalletCards" action-label="Обновить" @action="load" />
+    <AppHeader :title="copy.title" :icon="WalletCards" :action-label="copy.refresh" @action="load" />
 
     <AuthBridge v-if="!client.authenticated" @authenticated="load" />
 
@@ -8,19 +8,19 @@
       <div class="tagam-card tagam-glow p-5">
         <p class="brand-kicker m-0">TAGAM WALLET</p>
         <h1 class="m-0 mt-2 text-4xl font-black">{{ walletBalance }}</h1>
-        <p class="muted m-0 mt-2 text-sm">Ваш баланс, бонусы и операции по аккаунту.</p>
+        <p class="muted m-0 mt-2 text-sm">{{ copy.intro }}</p>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
         <div class="soft-card p-4">
           <Gift class="text-[var(--app-accent)]" :size="22" />
           <strong class="mt-3 block text-xl">{{ pointsBalance }}</strong>
-          <span class="muted text-sm">Бонусные баллы</span>
+          <span class="muted text-sm">{{ copy.points }}</span>
         </div>
         <div class="soft-card p-4">
           <ReceiptText class="text-[var(--app-accent)]" :size="22" />
           <strong class="mt-3 block text-xl">{{ transactions.length }}</strong>
-          <span class="muted text-sm">Операции</span>
+          <span class="muted text-sm">{{ copy.transactions }}</span>
         </div>
       </div>
 
@@ -28,7 +28,7 @@
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="brand-kicker m-0">TOP UP</p>
-            <h2 class="m-0 mt-1 text-xl font-black">Пополнить кошелек</h2>
+            <h2 class="m-0 mt-1 text-xl font-black">{{ copy.topupTitle }}</h2>
             <p class="muted m-0 mt-1 text-sm">{{ topupHint }}</p>
           </div>
           <button class="icon-button h-11 w-11 shrink-0" type="button" @click="loadDefaultPayment">
@@ -43,11 +43,11 @@
           <div class="flex gap-2">
             <input v-model.number="topupAmount" class="field min-w-0 flex-1" inputmode="decimal" min="1" type="number" />
             <button class="primary-button shrink-0 px-5" type="button" :disabled="topupLoading" @click="prepareTopup">
-              {{ topupLoading ? "..." : "Пополнить" }}
+              {{ topupLoading ? "..." : copy.topup }}
             </button>
           </div>
           <RouterLink v-if="!defaultPaymentName" class="tagam-pill tap-motion px-4 py-3 text-center" to="/payments">
-            Добавить способ оплаты
+            {{ copy.addPayment }}
           </RouterLink>
           <p v-if="topupMessage" class="m-0 rounded-[8px] border border-emerald-300/20 bg-emerald-300/10 p-3 text-sm font-bold text-emerald-100">
             {{ topupMessage }}
@@ -72,13 +72,13 @@
 
       <section class="grid gap-3">
         <div class="flex items-center justify-between gap-3">
-          <h2 class="m-0 text-xl font-black">История кошелька</h2>
+          <h2 class="m-0 text-xl font-black">{{ copy.history }}</h2>
           <span class="muted text-sm">{{ transactions.length }}</span>
         </div>
 
         <article v-for="item in transactions" :key="item.transaction_uuid || item.id || JSON.stringify(item)" class="soft-card flex items-center justify-between gap-3 p-4">
           <div class="min-w-0">
-            <h3 class="m-0 text-base font-black">{{ item.transaction_description || item.description || item.transaction_type || "Операция кошелька" }}</h3>
+            <h3 class="m-0 text-base font-black">{{ item.transaction_description || item.description || item.transaction_type || copy.walletOperation }}</h3>
             <p class="muted m-0 mt-1 text-sm">{{ item.transaction_date || item.created_at || "" }}</p>
           </div>
           <strong :class="item.transaction_type === 'debit' ? 'text-rose-200' : 'text-[var(--app-accent)]'">
@@ -87,8 +87,8 @@
         </article>
 
         <div v-if="!loading && !transactions.length" class="soft-card p-5 text-center">
-          <h2 class="m-0 text-xl font-black">Операций нет</h2>
-          <p class="muted m-0 mt-2 text-sm">Пока не было начислений, списаний или возвратов.</p>
+          <h2 class="m-0 text-xl font-black">{{ copy.emptyTitle }}</h2>
+          <p class="muted m-0 mt-2 text-sm">{{ copy.emptyText }}</p>
         </div>
       </section>
     </template>
@@ -104,8 +104,10 @@ import APIinterface from "src/api/APIinterface";
 import AppHeader from "src/components/ui/AppHeader.vue";
 import AuthBridge from "src/components/checkout/AuthBridge.vue";
 import { useAccountProfileStore } from "src/stores/accountProfile";
+import { useAppStore } from "src/stores/app";
 import { useClientAuthStore } from "src/stores/clientAuth";
 
+const app = useAppStore();
 const client = useClientAuthStore();
 const profile = useAccountProfileStore();
 const loading = ref(false);
@@ -116,7 +118,81 @@ const topupAmount = ref(100);
 const topupLoading = ref(false);
 const topupMessage = ref("");
 
-const title = computed(() => "Кошелек и баллы");
+const copy = computed(() => {
+  if (app.language === "tk") {
+    return {
+      title: "Gapjyk we ballar",
+      refresh: "Täzele",
+      intro: "Balansyňyz, bonuslaryňyz we hasap amallaryňyz.",
+      points: "Bonus ballary",
+      transactions: "Amallar",
+      topupTitle: "Gapjygy doldur",
+      topup: "Doldur",
+      addPayment: "Töleg usulyny goş",
+      history: "Gapjyk taryhy",
+      walletOperation: "Gapjyk amaly",
+      emptyTitle: "Amal ýok",
+      emptyText: "Häzirlikçe hasaplama, çykdajy ýa-da yzyna gaýtaryş ýok.",
+      defaultPayment: "Esasy töleg usuly",
+      topupWithDefault: "Mukdary saýlaň, servis saklanan usul arkaly goragly tölegi taýýarlar.",
+      topupNeedsPayment: "Ilki online töleg usulyny saklaň, soňra gapjygy doldurmak açylar.",
+      addOnlinePaymentFirst: "Ilki online töleg usulyny goşuň.",
+      enterTopupAmount: "Doldurmak mukdaryny giriziň.",
+      topupPrepared: "Doldurmak taýýarlandy.",
+      level: "Dereje",
+      orders: "Sargytlar",
+      repeatOrders: "Gaýtalanýan sargytlar",
+    };
+  }
+  if (app.language === "en") {
+    return {
+      title: "Wallet & points",
+      refresh: "Refresh",
+      intro: "Your balance, rewards and account activity.",
+      points: "Reward points",
+      transactions: "Transactions",
+      topupTitle: "Top up wallet",
+      topup: "Top up",
+      addPayment: "Add payment method",
+      history: "Wallet history",
+      walletOperation: "Wallet operation",
+      emptyTitle: "No operations",
+      emptyText: "There have been no credits, charges or refunds yet.",
+      defaultPayment: "Default payment method",
+      topupWithDefault: "Choose an amount and the service will prepare a secure payment with your saved method.",
+      topupNeedsPayment: "Save an online payment method first, then wallet top-up will be available here.",
+      addOnlinePaymentFirst: "Add an online payment method first.",
+      enterTopupAmount: "Enter a top-up amount.",
+      topupPrepared: "Top-up is ready.",
+      level: "Level",
+      orders: "Orders",
+      repeatOrders: "Repeat orders",
+    };
+  }
+  return {
+    title: "Кошелек и баллы",
+    refresh: "Обновить",
+    intro: "Ваш баланс, бонусы и операции по аккаунту.",
+    points: "Бонусные баллы",
+    transactions: "Операции",
+    topupTitle: "Пополнить кошелек",
+    topup: "Пополнить",
+    addPayment: "Добавить способ оплаты",
+    history: "История кошелька",
+    walletOperation: "Операция кошелька",
+    emptyTitle: "Операций нет",
+    emptyText: "Пока не было начислений, списаний или возвратов.",
+    defaultPayment: "Способ оплаты по умолчанию",
+    topupWithDefault: "Выберите сумму, и сервис подготовит защищенную оплату через сохраненный способ.",
+    topupNeedsPayment: "Сначала сохраните онлайн-оплату, после этого здесь появится пополнение.",
+    addOnlinePaymentFirst: "Сначала добавьте онлайн-оплату.",
+    enterTopupAmount: "Введите сумму пополнения.",
+    topupPrepared: "Пополнение подготовлено.",
+    level: "Уровень",
+    orders: "Заказы",
+    repeatOrders: "Повторные заказы",
+  };
+});
 const status = computed(() => profile.accountStatus?.details?.data ?? profile.accountStatus?.details ?? profile.accountStatus ?? {});
 const customerInfo = computed(() => profile.customerInfo?.details?.data ?? profile.customerInfo?.details ?? profile.customerInfo ?? {});
 
@@ -131,11 +207,11 @@ const firstValue = (...keys) => {
 const walletBalance = computed(() => firstValue("wallet_balance", "balance", "digital_wallet_balance", "available_balance"));
 const pointsBalance = computed(() => firstValue("points", "points_balance", "reward_points", "available_points"));
 const defaultPaymentName = computed(() => defaultPayment.value?.attr1 || defaultPayment.value?.payment_name || defaultPayment.value?.payment_code || "");
-const defaultPaymentSubtitle = computed(() => defaultPayment.value?.attr2 || defaultPayment.value?.card_number || "Способ оплаты по умолчанию");
+const defaultPaymentSubtitle = computed(() => defaultPayment.value?.attr2 || defaultPayment.value?.card_number || copy.value.defaultPayment);
 const topupHint = computed(() =>
   defaultPaymentName.value
-    ? "Выберите сумму, KMRS подготовит защищенную оплату через сохраненный способ."
-    : "Сначала сохраните онлайн-оплату в checkout, после этого здесь появится пополнение."
+    ? copy.value.topupWithDefault
+    : copy.value.topupNeedsPayment
 );
 const displayError = computed(() => {
   const message = error.value || profile.error;
@@ -150,9 +226,9 @@ const displayError = computed(() => {
 });
 const statusRows = computed(() =>
   [
-    ["Уровень", firstValue("membership_type", "membership_name", "member_type")],
-    ["Заказы", firstValue("total_orders", "orders", "order_count")],
-    ["Повторные заказы", firstValue("repeat_orders", "reorder_rate", "orders_repeat")],
+    [copy.value.level, firstValue("membership_type", "membership_name", "member_type")],
+    [copy.value.orders, firstValue("total_orders", "orders", "order_count")],
+    [copy.value.repeatOrders, firstValue("repeat_orders", "reorder_rate", "orders_repeat")],
   ]
     .filter(([, value]) => value !== "" && value !== "0")
     .map(([label, value]) => ({ label, value }))
@@ -191,11 +267,11 @@ const prepareTopup = async () => {
   topupMessage.value = "";
   error.value = "";
   if (!defaultPayment.value?.payment_code && !defaultPayment.value?.payment_uuid) {
-    error.value = "Сначала добавьте онлайн-оплату.";
+    error.value = copy.value.addOnlinePaymentFirst;
     return;
   }
   if (!Number(topupAmount.value) || Number(topupAmount.value) <= 0) {
-    error.value = "Введите сумму пополнения.";
+    error.value = copy.value.enterTopupAmount;
     return;
   }
 
@@ -211,7 +287,7 @@ const prepareTopup = async () => {
     const response = await APIinterface.fetchDataByTokenPost("prepareAddFunds", params);
     const details = response?.details ?? {};
     const paymentUrl = details.redirect_url || details.payment_url || details.url || details.redirect;
-    topupMessage.value = response?.msg || "Пополнение подготовлено.";
+    topupMessage.value = response?.msg || copy.value.topupPrepared;
     if (paymentUrl) {
       if (Capacitor.isNativePlatform()) await Browser.open({ url: paymentUrl });
       else window.location.href = paymentUrl;

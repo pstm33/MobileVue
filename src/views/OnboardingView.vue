@@ -93,7 +93,7 @@ const translations = {
     lightTheme: "Светлая тема",
     next: "Дальше",
     continue: "Продолжить",
-    note: "После этого выберем локацию, чтобы KMRS вернул рестораны именно из доступной зоны доставки.",
+    note: "После этого выберем локацию и покажем рестораны именно из доступной зоны доставки.",
     slides: [
       {
         kicker: "Discover",
@@ -104,7 +104,7 @@ const translations = {
       {
         kicker: "Customize",
         title: "Заказывайте блюда под себя",
-        text: "Выбирайте любимые блюда или собирайте свой вариант из доступных размеров, добавок и свежих ингредиентов. Все настройки заказа остаются совместимыми с KMRS.",
+        text: "Выбирайте любимые блюда или собирайте свой вариант из доступных размеров, добавок и свежих ингредиентов.",
         image: "/onboarding-2.svg",
       },
       {
@@ -122,7 +122,7 @@ const translations = {
     lightTheme: "Ýagty tema",
     next: "Indiki",
     continue: "Dowam et",
-    note: "Soňra KMRS eltip berilýän zolakdaky hakyky restoranlary görkezmegi üçin ýerleşýän ýeriňizi saýlarys.",
+    note: "Soňra eltip berilýän zolakdaky hakyky restoranlary görkezmek üçin ýerleşýän ýeriňizi saýlarys.",
     slides: [
       {
         kicker: "Discover",
@@ -151,7 +151,7 @@ const translations = {
     lightTheme: "Light theme",
     next: "Next",
     continue: "Continue",
-    note: "Next we will choose your location so KMRS can return restaurants from the active delivery zone.",
+    note: "Next we will choose your location and show restaurants from the active delivery zone.",
     slides: [
       {
         kicker: "Discover",
@@ -168,7 +168,7 @@ const translations = {
       {
         kicker: "Delivery",
         title: "Faster delivery",
-        text: "Enjoy meals delivered straight to your doorstep. After location selection, KMRS shows real restaurants and delivery options.",
+        text: "Enjoy meals delivered straight to your doorstep. After location selection, Tagam shows real restaurants and delivery options.",
         image: "/onboarding-3.svg",
       },
     ],
