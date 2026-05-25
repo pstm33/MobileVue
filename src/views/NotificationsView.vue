@@ -70,9 +70,11 @@
 <script setup>
 import { FCM } from "@capacitor-community/fcm";
 import { Capacitor } from "@capacitor/core";
+import { Device } from "@capacitor/device";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { Bell, CalendarDays, ShoppingBag, Trash2 } from "@lucide/vue";
 import { computed, onMounted, ref, watch } from "vue";
+import APIinterface from "src/api/APIinterface";
 import AppHeader from "src/components/ui/AppHeader.vue";
 import AuthBridge from "src/components/checkout/AuthBridge.vue";
 import { useClientAuthStore } from "src/stores/clientAuth";
@@ -106,6 +108,58 @@ const remove = (item) => {
 
 const clientTopic = computed(() => client.user?.client_uuid || client.user?.uuid || client.user?.client_id || "");
 
+const waitForPushToken = async () =>
+  new Promise((resolve, reject) => {
+    let settled = false;
+    let registrationHandle = null;
+    let errorHandle = null;
+    const cleanup = () => {
+      registrationHandle?.remove?.();
+      errorHandle?.remove?.();
+    };
+    const finish = (callback, value) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      callback(value);
+    };
+    const timeout = window.setTimeout(() => finish(reject, new Error("Не удалось получить push token.")), 9000);
+
+    PushNotifications.addListener("registration", (token) => {
+      window.clearTimeout(timeout);
+      finish(resolve, token.value);
+    }).then((handle) => {
+      registrationHandle = handle;
+    });
+
+    PushNotifications.addListener("registrationError", (error) => {
+      window.clearTimeout(timeout);
+      finish(reject, error);
+    }).then((handle) => {
+      errorHandle = handle;
+    });
+
+    PushNotifications.register();
+  });
+
+const subscribePushOnServer = async () => {
+  if (!Capacitor.isNativePlatform()) return;
+  const registeredToken = await waitForPushToken().catch(() => "");
+  const fcmToken = await FCM.getToken().then((result) => result?.token).catch(() => "");
+  const token = fcmToken || registeredToken;
+  if (!token) return;
+
+  const device = await Device.getId().catch(() => ({}));
+  await APIinterface.fetchDataByTokenPost(
+    "PushSubscribe",
+    new URLSearchParams({
+      platform: Capacitor.getPlatform(),
+      token,
+      device_uiid: device.identifier || "",
+    }).toString()
+  ).catch(() => {});
+};
+
 const enableNativePush = async () => {
   if (!Capacitor.isNativePlatform()) return true;
 
@@ -115,6 +169,7 @@ const enableNativePush = async () => {
     throw new Error("Разрешите уведомления в настройках телефона, чтобы получать статусы заказов.");
   }
 
+  await subscribePushOnServer();
   if (clientTopic.value) {
     await FCM.subscribeTo({ topic: clientTopic.value }).catch(() => {});
   }

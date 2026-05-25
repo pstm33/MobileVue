@@ -39,7 +39,16 @@
                 <p class="muted m-0 mt-0.5 text-xs">{{ provider.payment_description || copy.providerFallback }}</p>
               </div>
             </div>
+            <button class="tagam-pill tap-motion mt-3 w-full px-4 py-2" type="button" :disabled="providerSaving === provider.payment_code" @click="addProvider(provider)">
+              {{ providerSaving === provider.payment_code ? providerSavingText : providerChooseText }}
+            </button>
           </article>
+          <p v-if="providerError" class="m-0 rounded-[8px] border border-amber-300/20 bg-amber-300/10 p-3 text-sm font-bold text-amber-50">
+            {{ providerError }}
+          </p>
+          <p v-if="providerMessage" class="m-0 rounded-[8px] border border-emerald-300/20 bg-emerald-300/10 p-3 text-sm font-bold text-emerald-100">
+            {{ providerMessage }}
+          </p>
           <RouterLink class="tagam-pill tap-motion px-4 py-3 text-center" to="/checkout">
             {{ copy.openCheckout }}
           </RouterLink>
@@ -100,6 +109,11 @@ const customer = useCustomerStore();
 const providersOpen = ref(false);
 const providersLoading = ref(false);
 const providers = ref([]);
+const providerSaving = ref("");
+const providerError = ref("");
+const providerMessage = ref("");
+const providerChooseText = computed(() => (app.language === "tk" ? "Saýla" : app.language === "en" ? "Choose" : "Выбрать"));
+const providerSavingText = computed(() => (app.language === "tk" ? "Saklanýar..." : app.language === "en" ? "Saving..." : "Сохраняем..."));
 const copy = computed(() => {
   if (app.language === "tk") {
     return {
@@ -181,13 +195,40 @@ const setDefault = (payment) => {
 
 const loadProviders = async () => {
   providersLoading.value = true;
+  providerError.value = "";
   try {
     const response = await APIinterface.PaymentMethod();
-    providers.value = Array.isArray(response?.details?.data) ? response.details.data : [];
+    const data = response?.details?.data ?? response?.details ?? [];
+    providers.value = Array.isArray(data) ? data : Object.values(data);
   } catch {
     providers.value = [];
   } finally {
     providersLoading.value = false;
+  }
+};
+
+const addProvider = async (provider) => {
+  if (!provider?.payment_code) return;
+  providerSaving.value = provider.payment_code;
+  providerError.value = "";
+  providerMessage.value = "";
+  try {
+    const response = await APIinterface.SavedPaymentProvider({
+      merchant_id: provider?.credentials?.merchant_id || provider?.merchant_id || "",
+      payment_code: provider.payment_code,
+    });
+    providerMessage.value = response?.msg || provider.payment_name || provider.payment_code;
+    const details = response?.details ?? {};
+    const paymentUrl = details.payment_url || details.redirect_url || details.url || details.redirect;
+    if (paymentUrl) {
+      window.location.href = paymentUrl;
+      return;
+    }
+    await customer.loadPayments().catch(() => {});
+  } catch (caught) {
+    providerError.value = caught?.message ?? String(caught);
+  } finally {
+    providerSaving.value = "";
   }
 };
 

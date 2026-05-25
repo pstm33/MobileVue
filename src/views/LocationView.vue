@@ -2,7 +2,7 @@
   <section class="page fade-up">
     <AppHeader :title="app.copy.location.title" :icon="MapPin" :action-label="app.copy.location.action" />
 
-    <MapPicker @confirm="confirmLocation" />
+    <MapPicker :auto-locate="isNewCheckoutAddress" @confirm="confirmLocation" />
 
     <div class="glass grid gap-3 rounded-[8px] p-4">
       <div>
@@ -24,6 +24,7 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { MapPin } from "@lucide/vue";
 import AppHeader from "src/components/ui/AppHeader.vue";
@@ -37,6 +38,7 @@ const app = useAppStore();
 const session = useSessionStore();
 
 const target = () => String(route.query.redirect || "/home");
+const isNewCheckoutAddress = computed(() => route.query.new_address === "1" && target() === "/checkout");
 const goNext = () => router.replace(target());
 
 const confirmLocation = async ({ coordinates, placeData }) => {

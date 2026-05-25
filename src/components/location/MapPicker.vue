@@ -108,6 +108,12 @@ import { useAppStore } from "src/stores/app";
 import { useSessionStore } from "src/stores/session";
 
 const emit = defineEmits(["confirm"]);
+const props = defineProps({
+  autoLocate: {
+    type: Boolean,
+    default: false,
+  },
+});
 const app = useAppStore();
 const session = useSessionStore();
 
@@ -308,7 +314,9 @@ onMounted(async () => {
     await syncFromMapCenter();
   });
 
-  if (session.placeData) {
+  if (props.autoLocate) {
+    useBrowserLocation();
+  } else if (session.placeData) {
     placeData.value = session.placeData;
   } else {
     await reverseGeocode();

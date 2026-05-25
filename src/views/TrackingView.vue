@@ -19,7 +19,7 @@
       </div>
     </div>
 
-    <div v-else class="tracking-map-shell glass relative overflow-hidden rounded-[8px]">
+    <div v-else-if="showDeliveryMap" class="tracking-map-shell glass relative overflow-hidden rounded-[8px]">
       <div ref="mapEl" class="h-[420px] min-h-[52vh] w-full bg-[#111820]" />
 
       <div class="pointer-events-none absolute inset-x-0 top-0 z-[410] p-4">
@@ -43,6 +43,18 @@
       </div>
     </div>
 
+    <div v-else-if="canTrack" class="soft-card grid gap-4 p-5">
+      <div>
+        <p class="brand-kicker m-0">{{ etaLabel }}</p>
+        <h1 class="headline m-0 mt-2">{{ headline }}</h1>
+        <p v-if="statusDetails" class="muted m-0 mt-2 text-sm">{{ statusDetails }}</p>
+      </div>
+      <div class="rounded-[8px] border border-white/10 bg-white/[0.03] p-4">
+        <p class="m-0 text-xs font-black uppercase tracking-[0.14em] text-[var(--app-accent)]">{{ restaurantLabel }}</p>
+        <p class="muted m-0 mt-1 text-sm">{{ destinationLabel }}</p>
+      </div>
+    </div>
+
     <div v-if="canTrack && orders.detailsLoading" class="soft-card p-4">
       <div class="warm-skeleton h-5 w-2/3 rounded" />
       <div class="warm-skeleton mt-3 h-12 rounded" />
@@ -62,13 +74,13 @@
       </div>
 
       <div class="mb-5 grid gap-2" :style="{ gridTemplateColumns: `repeat(${stageLabels.length}, minmax(0, 1fr))` }">
-        <div v-for="(stage, index) in stageLabels" :key="stage[0]" class="grid gap-2">
-          <div class="h-1.5 rounded-full" :class="orderProgress >= index + 1 ? 'bg-[var(--app-accent)]' : 'bg-white/15'" />
+        <div v-for="stage in stageLabels" :key="stage.key" class="grid gap-2">
+          <div class="h-1.5 rounded-full" :class="orderProgress >= stage.progress ? 'bg-[var(--app-accent)]' : 'bg-white/15'" />
           <div
             class="grid h-10 w-10 place-items-center rounded-full border"
-            :class="orderProgress >= index + 1 ? 'border-[var(--app-accent)] bg-[var(--app-accent)] text-black' : 'border-white/15 bg-white/5 text-[var(--app-muted)]'"
+            :class="orderProgress >= stage.progress ? 'border-[var(--app-accent)] bg-[var(--app-accent)] text-black' : 'border-white/15 bg-white/5 text-[var(--app-muted)]'"
           >
-            <component :is="stage[2]" :size="18" />
+            <component :is="stage.icon" :size="18" />
           </div>
         </div>
       </div>
@@ -110,7 +122,7 @@
 
 <script setup>
 import "leaflet/dist/leaflet.css";
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import L from "leaflet";
 import { Bike, Check, ChefHat, Home, MessageCircle, PackageCheck, ReceiptText, Store, UserRound } from "@lucide/vue";
@@ -131,6 +143,7 @@ const mapEl = ref(null);
 const map = ref(null);
 const markers = [];
 const routeLines = [];
+let trackingTimer = null;
 
 const orderUuid = computed(() => String(route.query.order_uuid || route.params.order_uuid || ""));
 const canTrack = computed(() => client.authenticated && Boolean(orderUuid.value));
@@ -151,10 +164,10 @@ const trackingText = computed(() => {
       records: "ýazgy",
       stage: "tapgyr",
       stages: {
-        accepted: "Restoran kabul etdi",
-        cooking: "Aşhana taýýarlaýar",
-        courier: "Kurýer ýolda",
-        delivered: "Eltildi",
+        received: "Sargyt ugradyldy",
+        restaurant: "Restoran ýagdaýy",
+        courier: "Eltip bermek",
+        delivered: "Tamamlamak",
         ready: "Tabşyrmaga taýýar",
       },
       record: "Ýazgy",
@@ -177,10 +190,10 @@ const trackingText = computed(() => {
       records: "records",
       stage: "stage",
       stages: {
-        accepted: "Restaurant accepted",
-        cooking: "Kitchen is cooking",
-        courier: "Courier on the way",
-        delivered: "Delivered",
+        received: "Order sent",
+        restaurant: "Restaurant status",
+        courier: "Delivery",
+        delivered: "Completion",
         ready: "Ready for handoff",
       },
       record: "Record",
@@ -202,10 +215,10 @@ const trackingText = computed(() => {
     records: "записей",
     stage: "этап",
     stages: {
-      accepted: "Ресторан принял",
-      cooking: "Кухня готовит",
-      courier: "Курьер в пути",
-      delivered: "Доставлено",
+      received: "Заказ отправлен",
+      restaurant: "Статус ресторана",
+      courier: "Доставка",
+      delivered: "Завершение",
       ready: "Готов к передаче",
     },
     record: "Запись",
@@ -232,6 +245,11 @@ const statusDictionary = computed(() => details.value?.order_delivery_status ?? 
 const statusLabel = computed(() => progressData.value.order_status || orderStatus.value.status || orderInfo.value.status || orderInfo.value.status_raw || "");
 const statusDetails = computed(() => progressData.value.order_status_details || orderInfo.value.status_details || "");
 const orderProgress = computed(() => Number(progressData.value.order_progress ?? details.value?.progress?.order_progress ?? 0));
+const showDeliveryMap = computed(() => canTrack.value && orderType.value === "delivery" && orderProgress.value === 3);
+const isOrderOngoing = computed(() => {
+  if (progressData.value?.is_order_ongoing !== undefined) return Boolean(progressData.value.is_order_ongoing);
+  return orderProgress.value > 0 && orderProgress.value < 4;
+});
 const orderType = computed(() => orderInfo.value.order_type || "delivery");
 const driverInfo = computed(() => progressData.value.driver_info || details.value?.driver_info || null);
 const driverName = computed(() => [driverInfo.value?.first_name, driverInfo.value?.last_name].filter(Boolean).join(" "));
@@ -374,18 +392,20 @@ const destinationLabel = computed(() =>
 
 const stageLabels = computed(() => {
   const stages = trackingText.value.stages;
+  const currentTitle = statusLabel.value || trackingText.value.liveStatus;
+  const currentMeta = statusDetails.value || etaLabel.value || restaurantLabel.value;
   if (orderType.value === "delivery") {
     return [
-      [stages.accepted, restaurantLabel.value, Store],
-      [stages.cooking, statusDetails.value || statusLabel.value || etaLabel.value, ChefHat],
-      [stages.courier, driverInfo.value?.full_name || destinationLabel.value, Bike],
-      [stages.delivered, destinationLabel.value, Home],
+      { key: "received", progress: 1, label: stages.received, meta: restaurantLabel.value, icon: Store },
+      { key: "restaurant", progress: 2, label: orderProgress.value >= 2 ? currentTitle : stages.restaurant, meta: currentMeta, icon: ChefHat },
+      { key: "courier", progress: 3, label: stages.courier, meta: orderProgress.value >= 3 ? driverInfo.value?.full_name || destinationLabel.value : "", icon: Bike },
+      { key: "delivered", progress: 4, label: stages.delivered, meta: orderProgress.value >= 4 ? destinationLabel.value : "", icon: Home },
     ];
   }
   return [
-    [stages.accepted, restaurantLabel.value, Store],
-    [stages.cooking, statusDetails.value || statusLabel.value || etaLabel.value, ChefHat],
-    [stages.ready, destinationLabel.value, PackageCheck],
+    { key: "received", progress: 1, label: stages.received, meta: restaurantLabel.value, icon: Store },
+    { key: "restaurant", progress: 2, label: orderProgress.value >= 2 ? currentTitle : stages.restaurant, meta: currentMeta, icon: ChefHat },
+    { key: "ready", progress: 3, label: stages.ready, meta: orderProgress.value >= 3 ? destinationLabel.value : "", icon: PackageCheck },
   ];
 });
 
@@ -415,16 +435,16 @@ const steps = computed(() => {
       label: item.label || item.status || item.title || item.name || `${trackingText.value.status} ${index + 1}`,
       meta: item.description || item.subtitle || item.sub_title || item.date || item.date_created || item.meta || "",
       done: Boolean(item.active || item.done || item.completed || item.checked || item.is_done || item.passed),
-      icon: stageLabels.value[index]?.[2] || Check,
+      icon: stageLabels.value[index]?.icon || Check,
     }));
   }
 
   if (details.value) {
-    return stageLabels.value.map(([label, meta, icon], index) => ({
-      label,
-      meta,
-      done: orderProgress.value === 0 ? false : orderProgress.value >= index + 1,
-      icon,
+    return stageLabels.value.map((stage) => ({
+      label: stage.label,
+      meta: stage.meta,
+      done: orderProgress.value === 0 ? false : orderProgress.value >= stage.progress,
+      icon: stage.icon,
     }));
   }
 
@@ -441,7 +461,8 @@ const makeIcon = (className, label) =>
 
 const addTrackingMap = async () => {
   await nextTick();
-  if (!mapEl.value) return;
+  if (!mapEl.value || !showDeliveryMap.value) return;
+  if (map.value) return;
 
   const routePoints = [restaurantPoint.value, courierPoint.value, deliveryPoint.value];
   map.value = L.map(mapEl.value, {
@@ -484,18 +505,55 @@ const addTrackingMap = async () => {
   });
 };
 
+const removeTrackingMap = () => {
+  markers.splice(0).forEach((marker) => marker.remove());
+  routeLines.splice(0).forEach((line) => line.remove());
+  map.value?.remove();
+  map.value = null;
+};
+
+const refreshTracking = async () => {
+  if (!canTrack.value) return;
+  await orders.loadTracking(orderUuid.value).catch(() => {});
+  if (isOrderOngoing.value) return;
+  clearInterval(trackingTimer);
+  trackingTimer = null;
+};
+
+const startTrackingTimer = () => {
+  if (trackingTimer || !isOrderOngoing.value) return;
+  trackingTimer = setInterval(refreshTracking, 50000);
+};
+
 onMounted(async () => {
   if (canTrack.value) {
     await orders.loadDetails(orderUuid.value, true).catch(() => {});
     await orders.loadTracking(orderUuid.value).catch(() => {});
     await addTrackingMap();
+    startTrackingTimer();
   }
 });
 
 onBeforeUnmount(() => {
-  markers.splice(0).forEach((marker) => marker.remove());
-  routeLines.splice(0).forEach((line) => line.remove());
-  map.value?.remove();
+  clearInterval(trackingTimer);
+  removeTrackingMap();
+});
+
+watch(showDeliveryMap, async (visible) => {
+  if (visible) {
+    await addTrackingMap();
+  } else {
+    removeTrackingMap();
+  }
+});
+
+watch(isOrderOngoing, (ongoing) => {
+  if (ongoing) {
+    startTrackingTimer();
+    return;
+  }
+  clearInterval(trackingTimer);
+  trackingTimer = null;
 });
 </script>
 

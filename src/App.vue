@@ -6,7 +6,12 @@
 
     <nav v-if="!route.meta.hideTabbar" class="tabbar" aria-label="Primary">
       <RouterLink v-for="item in tabs" :key="item.to" :to="item.to" class="tabbar-item" :class="{ 'router-link-active': isTabActive(item) }">
-        <component :is="item.icon" :size="20" stroke-width="2.2" />
+        <span class="tabbar-icon">
+          <component :is="item.icon" :size="20" stroke-width="2.2" />
+          <span v-if="item.to === '/cart' && cart.itemsCount" class="tabbar-badge">
+            {{ cartBadge }}
+          </span>
+        </span>
         <span>{{ item.label }}</span>
       </RouterLink>
     </nav>
@@ -18,9 +23,12 @@ import { Home, MapPinned, Search, ShoppingBag, UserRound } from "@lucide/vue";
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 import { useAppStore } from "src/stores/app";
+import { useCartStore } from "src/stores/cart";
 
 const route = useRoute();
 const app = useAppStore();
+const cart = useCartStore();
+const cartBadge = computed(() => (cart.itemsCount > 99 ? "99+" : String(cart.itemsCount)));
 
 const tabs = computed(() => [
   { to: "/home", label: app.copy.tabs.home, icon: Home, match: ["/home", "/feed"] },

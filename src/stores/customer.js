@@ -161,7 +161,10 @@ export const useCustomerStore = defineStore("customer", {
       if (!paymentUuid) return null;
       this.paymentsError = "";
       try {
-        const response = await APIinterface.setDefaultPayment(paymentUuid);
+        const response = await APIinterface.fetchDataByTokenPost(
+          "setPrimaryPayment",
+          new URLSearchParams({ payment_uuid: paymentUuid, as_default: "1" }).toString()
+        ).catch(() => APIinterface.setDefaultPayment(paymentUuid));
         this.paymentMessage = response?.msg || "Платежный метод выбран по умолчанию.";
         await this.loadPayments().catch(() => {});
         return response;
@@ -219,7 +222,7 @@ export const useCustomerStore = defineStore("customer", {
       this.notificationsLoading = true;
       this.notificationsError = "";
       try {
-        this.notifications = await APIinterface.fetchDataByTokenGet("getNotification", { page });
+        this.notifications = await APIinterface.getNotification(page);
         return this.notifications;
       } catch (error) {
         this.notifications = null;
@@ -247,7 +250,9 @@ export const useCustomerStore = defineStore("customer", {
       this.notificationsError = "";
       this.notificationMessage = "";
       try {
-        const response = await APIinterface.fetchDataByTokenPost("saveNotifications", `push=${push ? 1 : 0}`);
+        const response = await APIinterface.fetchDataByTokenPost("saveNotifications", `push=${push ? 1 : 0}`).catch(() =>
+          APIinterface.fetchDataByTokenPost("savenotifications", `push=${push ? 1 : 0}`)
+        );
         const settings = response?.details?.user_settings;
         if (settings) {
           LocalStorage.set("user_settings", settings);

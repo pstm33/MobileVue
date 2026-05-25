@@ -1,8 +1,10 @@
 # Tagam Delivery Customer App
 
-Vue 3 + Vite + TailwindCSS + Capacitor 7 customer app for the KMRS backend.
+Customer app для KMRS backend.
 
-## Commands
+Стек: Vue 3 + Vite + TailwindCSS + Capacitor 7.
+
+## Команды
 
 ```powershell
 npm install
@@ -14,14 +16,19 @@ npx cap sync android
 
 ## Environment
 
-Copy `.env.example` to `.env.local` and set the KMRS public API token.
+Скопировать `.env.example` в `.env.local` и указать публичный KMRS API token.
 
-`VITE_ENABLE_PLACE_ORDER=true` enables real order creation through KMRS `PlaceOrder`.
-Keep it `false` for visual demos that must not mutate server data.
+`VITE_ENABLE_PLACE_ORDER=true` включает реальное создание заказов через KMRS `PlaceOrder`.
+Для визуальных демо, где нельзя менять данные на сервере, держать `false`.
 
-## Release Outputs
+## Заметки KMRS
 
-Prepared artifacts are copied into `release/`:
+- Схема статусов заказа: [docs/order-status-flow.md](docs/order-status-flow.md)
+- Аудит расхождений с коробкой: [docs/functionality-gap-audit.md](docs/functionality-gap-audit.md)
+
+## Release outputs
+
+Готовые артефакты копируются в `release/`:
 
 - `tagam-delivery-web-dist.zip`
 - `tagam-delivery-debug.apk`

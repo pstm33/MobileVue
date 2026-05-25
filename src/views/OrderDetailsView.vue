@@ -96,7 +96,7 @@
           <RefreshCcw :size="17" />
           {{ text.repeat }}
         </button>
-        <RouterLink v-if="canReview" class="tagam-pill tap-motion px-4 py-3" :to="{ path: '/order/write-review', query: { order_uuid: orderUuid } }">
+        <RouterLink v-if="canReview" class="tagam-pill tap-motion px-4 py-3" :to="{ path: '/order/rate-driver', query: { order_uuid: orderUuid } }">
           <Star :size="17" />
           {{ text.review }}
         </RouterLink>
@@ -184,9 +184,10 @@ const labels = {
       canceled: "Отменен",
     },
     defaultProgress: [
-      ["Ресторан принял заказ", "Заказ передан в ресторан", true],
-      ["Кухня готовит", "Статус обновляется из KMRS", true],
-      ["Курьер или передача клиенту", "Ожидаем следующий статус", false],
+      ["Заказ отправлен", "Заказ отправлен в ресторан", 1],
+      ["Статус ресторана", "", 2],
+      ["Доставка", "", 3],
+      ["Завершение", "", 4],
     ],
   },
   tk: {
@@ -225,9 +226,10 @@ const labels = {
       canceled: "Ýatyryldy",
     },
     defaultProgress: [
-      ["Restoran sargydy kabul etdi", "Sargyt restorana geçirildi", true],
-      ["Aşhana taýýarlaýar", "Ýagdaý KMRS-den täzelenýär", true],
-      ["Kurýer ýa-da müşderä gowşuryş", "Indiki ýagdaýa garaşylýar", false],
+      ["Sargyt ugradyldy", "Sargyt restorana ugradyldy", 1],
+      ["Restoranyň ýagdaýy", "", 2],
+      ["Eltip bermek", "", 3],
+      ["Tamamlamak", "", 4],
     ],
   },
   en: {
@@ -266,9 +268,10 @@ const labels = {
       canceled: "Cancelled",
     },
     defaultProgress: [
-      ["Restaurant accepted", "Order sent to the restaurant", true],
-      ["Kitchen is preparing", "Status updates from KMRS", true],
-      ["Courier or handoff", "Waiting for the next status", false],
+      ["Order sent", "Order sent to the restaurant", 1],
+      ["Restaurant status", "", 2],
+      ["Delivery", "", 3],
+      ["Completion", "", 4],
     ],
   },
 };
@@ -290,7 +293,16 @@ const merchant = computed(() => details.value?.merchant ?? details.value?.mercha
 const orderItems = computed(() => details.value?.items ?? details.value?.order_items ?? []);
 const summaryRows = computed(() => details.value?.summary ?? details.value?.order?.summary ?? []);
 const orderStatus = computed(() => details.value?.order_status ?? details.value?.status ?? {});
-const statusLabel = computed(() => orderStatus.value.status || orderInfo.value.status || orderInfo.value.status_raw || text.value.statuses.new);
+const progress = computed(() => details.value?.progress ?? {});
+const orderProgress = computed(() => Number(progress.value?.order_progress ?? 1));
+const statusLabel = computed(() =>
+  progress.value?.order_status ||
+  orderStatus.value.status ||
+  orderInfo.value.status ||
+  orderInfo.value.status_raw ||
+  text.value.statuses.new
+);
+const statusDetails = computed(() => progress.value?.order_status_details || "");
 const readableStatus = computed(() => {
   const status = String(statusLabel.value || "").toLowerCase();
   return text.value.statuses[status] || statusLabel.value;
@@ -329,15 +341,22 @@ const totalLabel = computed(() =>
   ""
 );
 const progressLines = computed(() => {
-  const progress = details.value?.progress;
-  if (Array.isArray(progress)) {
-    return progress.map((item) => ({
+  if (Array.isArray(progress.value)) {
+    return progress.value.map((item) => ({
       title: item.label || item.status || item.title,
       subtitle: item.description || item.subtitle || item.date,
       done: item.active || item.done || item.completed,
     }));
   }
-  return text.value.defaultProgress.map(([title, subtitle, done]) => ({ title, subtitle, done }));
+  return text.value.defaultProgress.map(([title, subtitle, requiredProgress]) => {
+    const done = orderProgress.value >= requiredProgress;
+    const isCurrent = done && orderProgress.value === requiredProgress;
+    return {
+      title: isCurrent ? readableStatus.value || title : title,
+      subtitle: isCurrent ? statusDetails.value || subtitle : subtitle,
+      done,
+    };
+  });
 });
 
 const decodeHtml = (value) => {

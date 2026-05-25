@@ -24,6 +24,13 @@ export const checkoutPayload = [
   "estimation",
   "transaction_info",
   "standard_estimation",
+  "summary",
+  "total",
+  "discount",
+  "points",
+  "points_discount",
+  "wallet",
+  "payment_method",
 ];
 
 export const useCartStore = defineStore("cart", {

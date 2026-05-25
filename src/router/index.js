@@ -177,7 +177,8 @@ const routes = [
   },
   {
     path: "/order/rate-driver",
-    redirect: (to) => ({ path: "/order/write-review", query: to.query }),
+    name: "rate-driver",
+    component: () => import("src/views/RateDriverView.vue"),
   },
   {
     path: "/orders",
@@ -244,7 +245,8 @@ const routes = [
   },
   {
     path: "/booking/search",
-    redirect: (to) => ({ path: "/search", query: { booking: "1", ...to.query } }),
+    name: "booking-search",
+    component: () => import("src/views/BookingView.vue"),
   },
   {
     path: "/update-app",

@@ -115,6 +115,21 @@
             <div v-if="validationMessage" class="mb-3 rounded-[8px] bg-amber-300/10 p-3 text-xs font-bold text-amber-100">
               {{ validationMessage }}
             </div>
+            <div v-else-if="cartSwapPrompt" class="mb-3 rounded-[8px] border border-amber-300/25 bg-amber-300/10 p-3">
+              <p class="m-0 text-sm font-black text-amber-100">{{ copy.replaceCartTitle }}</p>
+              <p class="muted m-0 mt-1 text-xs">
+                {{ copy.replaceCartText }}
+                <span v-if="cartMerchantName" class="font-bold text-[var(--app-fg)]">{{ cartMerchantName }}</span>
+              </p>
+              <div class="mt-3 grid grid-cols-2 gap-2">
+                <button class="surface-button rounded-full px-3 py-2 text-xs font-black" type="button" :disabled="cart.adding" @click="cartSwapPrompt = false">
+                  {{ copy.keepCart }}
+                </button>
+                <button class="primary-button !min-h-9 px-3 py-2 text-xs" type="button" :disabled="cart.adding" @click="confirmCartSwap">
+                  {{ cart.adding ? copy.adding : copy.replaceCart }}
+                </button>
+              </div>
+            </div>
             <div class="flex items-center gap-3">
               <div class="glass flex items-center rounded-[8px] p-1">
                 <button class="icon-button !h-10 !w-10" type="button" :aria-label="copy.decrease" @click="itemDetail.quantity = Math.max(1, itemDetail.quantity - 1)">
@@ -125,7 +140,7 @@
                   <Plus :size="17" />
                 </button>
               </div>
-              <button class="primary-button flex-1" type="button" :disabled="!canSubmit || cart.adding" @click="addToCart">
+              <button class="primary-button flex-1" type="button" :disabled="!canSubmit || cart.adding" @click="handleAddClick">
                 {{ cart.adding ? copy.adding : `${copy.add} · ${totalLabel}` }}
               </button>
             </div>
@@ -137,7 +152,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { Check, Minus, Plus, X } from "@lucide/vue";
 import { useAppStore } from "src/stores/app";
 import { useCartStore } from "src/stores/cart";
@@ -148,6 +163,7 @@ const emit = defineEmits(["added"]);
 const app = useAppStore();
 const cart = useCartStore();
 const itemDetail = useItemDetailStore();
+const cartSwapPrompt = ref(false);
 
 const sheetCopy = {
   ru: {
@@ -164,6 +180,10 @@ const sheetCopy = {
     add: "Добавить",
     choose: "Выберите",
     notAvailable: "Это блюдо сейчас недоступно для заказа",
+    replaceCartTitle: "Очистить текущую корзину?",
+    replaceCartText: "В корзине уже есть блюда из другого ресторана:",
+    keepCart: "Оставить",
+    replaceCart: "Очистить и добавить",
   },
   tk: {
     close: "Ýap",
@@ -179,6 +199,10 @@ const sheetCopy = {
     add: "Goş",
     choose: "Saýlaň",
     notAvailable: "Bu tagam häzir sargyt üçin elýeterli däl",
+    replaceCartTitle: "Häzirki sebedi arassalamalymy?",
+    replaceCartText: "Sebetde başga restorandan tagamlar bar:",
+    keepCart: "Galdyr",
+    replaceCart: "Arassala we goş",
   },
   en: {
     close: "Close",
@@ -194,6 +218,10 @@ const sheetCopy = {
     add: "Add",
     choose: "Choose",
     notAvailable: "This item is currently unavailable",
+    replaceCartTitle: "Clear current cart?",
+    replaceCartText: "Your cart already has items from another restaurant:",
+    keepCart: "Keep cart",
+    replaceCart: "Clear and add",
   },
 };
 
@@ -242,6 +270,25 @@ const validationMessage = computed(() => {
   return "";
 });
 const canSubmit = computed(() => !validationMessage.value && itemDetail.selectedSizeId);
+const normalizeMerchantKey = (value) => decodeHtml(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+const cartMerchant = computed(() => cart.merchant ?? cart.data?.data?.merchant_info ?? {});
+const cartMerchantName = computed(() =>
+  decodeHtml(cartMerchant.value?.restaurant_name || cartMerchant.value?.merchant_name || "")
+);
+const cartMerchantSlug = computed(() =>
+  String(cartMerchant.value?.restaurant_slug || cartMerchant.value?.merchant_slug || cartMerchant.value?.slug || "")
+);
+const cartHasAnotherRestaurant = computed(() => {
+  if (!cart.cartUuid || !cart.itemsCount) return false;
+
+  const currentName = normalizeMerchantKey(itemDetail.restaurantName);
+  const existingName = normalizeMerchantKey(cartMerchantName.value);
+  if (currentName && existingName) return currentName !== existingName;
+
+  const existingSlug = normalizeMerchantKey(cartMerchantSlug.value);
+  const currentSlug = normalizeMerchantKey(itemDetail.slug);
+  return Boolean(existingSlug && currentSlug && existingSlug !== currentSlug);
+});
 
 const isSelected = (group, subItem) =>
   group.multi_option === "one" ? subItem.sub_item_id === group.sub_items_checked : subItem.checked;
@@ -278,4 +325,29 @@ const addToCart = async () => {
   itemDetail.close();
   emit("added");
 };
+
+const handleAddClick = async () => {
+  if (!canSubmit.value) return;
+  if (cartHasAnotherRestaurant.value) {
+    cartSwapPrompt.value = true;
+    return;
+  }
+
+  await addToCart();
+};
+
+const confirmCartSwap = async () => {
+  if (!canSubmit.value) return;
+
+  await cart.clear();
+  cartSwapPrompt.value = false;
+  await addToCart();
+};
+
+watch(
+  () => [itemDetail.open, itemDetail.itemUuid, itemDetail.selectedSizeId],
+  () => {
+    cartSwapPrompt.value = false;
+  }
+);
 </script>
