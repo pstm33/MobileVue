@@ -273,6 +273,12 @@ cd android
   - автоматическая загрузка AAB через браузер не завершилась, потому что Play Console использует системный file picker, а на машине нет настроенного Play Developer API/fastlane/gcloud/service-account;
   - в Play Console dashboard на 2026-05-26 видно `В тестировании участвует 4 человека`;
   - для ручной загрузки нужен файл `C:\Users\ps\Documents\Codex\2026-05-21\kmrs-tagam-delivery-15151-root-ias141328ia\kmrs-customer-app\android\app\build\outputs\bundle\release\app-release.aab`.
+- Xcode Cloud разбор и исправление, 2026-05-26:
+  - App Store Connect / Xcode Cloud build `44` падал на `Archive - iOS` с ошибкой `Running ci_post_clone.sh script failed (exited with code 1)`;
+  - build `45` показал точный лог: `npx cap sync ios` падал на `pod install`, CocoaPods/Nanaimo не мог прочитать `ios/App/App.xcodeproj/project.pbxproj` из-за UTF-8 BOM: `Invalid character "\xEF" in unquoted string`, первая строка была `﻿// !$*UTF8*$!`;
+  - добавлен коммит `5cea40a Make Xcode Cloud CocoaPods setup robust`: post-clone скрипты стали устойчивее к отсутствию CocoaPods и пробуют Homebrew/RubyGems fallback;
+  - добавлен коммит `8378a63 Remove BOM from Xcode project`: из `project.pbxproj` убран BOM, первая строка стала `// !$*UTF8*$!`;
+  - Xcode Cloud build `46` на коммите `8378a63` завершился успешно: `Успешно Archive - iOS`, build errors `0`, warnings `47`.
 
 Ближайшие шаги:
 
