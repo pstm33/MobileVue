@@ -43,6 +43,18 @@ if command -v brew >/dev/null 2>&1; then
   fi
 fi
 
+if ! command -v pod >/dev/null 2>&1; then
+  echo "Installing CocoaPods with RubyGems"
+  export GEM_HOME="$HOME/.gem"
+  export PATH="$GEM_HOME/bin:$PATH"
+  retry 3 20 gem install cocoapods --no-document --user-install
+fi
+
+if ! command -v pod >/dev/null 2>&1; then
+  echo "CocoaPods is not available after installation attempts" >&2
+  exit 1
+fi
+
 echo "Node: $(node -v)"
 echo "NPM: $(npm -v)"
 echo "Ruby: $(ruby -v)"
