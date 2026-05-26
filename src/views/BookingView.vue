@@ -1,17 +1,23 @@
 <template>
-  <section class="page fade-up">
+  <section class="page booking-page fade-up">
     <AppHeader :title="headerTitle" :icon="CalendarDays" action-label="Обновить" @action="load" />
+
+    <div v-if="!client.authenticated" class="premium-card booking-hero p-5">
+      <p class="brand-kicker m-0">TAGAM BOOKING</p>
+      <h1 class="m-0 mt-2 text-3xl font-black">Брони ресторанов</h1>
+      <p class="muted m-0 mt-2 text-sm">Войдите или продолжите как гость, чтобы видеть брони, статусы, поиск и управление столиками.</p>
+    </div>
 
     <AuthBridge v-if="!client.authenticated" @authenticated="load" />
 
     <template v-else>
-      <div class="premium-card p-5">
+      <div class="premium-card booking-hero p-5">
         <p class="brand-kicker m-0">TAGAM BOOKING</p>
         <h1 class="m-0 mt-2 text-3xl font-black">{{ summaryTitle }}</h1>
         <p class="muted m-0 mt-2 text-sm">{{ introText }}</p>
       </div>
 
-      <section v-if="isSearch" class="tagam-card p-4">
+      <section v-if="isSearch" class="tagam-card booking-search-card p-4">
         <p class="brand-kicker m-0">BOOKING SEARCH</p>
         <h2 class="m-0 mt-1 text-xl font-black">Поиск брони</h2>
         <form class="mt-4 flex gap-2" @submit.prevent="runSearch">
@@ -22,7 +28,7 @@
         </form>
       </section>
 
-      <section v-if="bookingDetail && !isSearch" class="tagam-card p-4">
+      <section v-if="bookingDetail && !isSearch" class="tagam-card booking-detail-card p-4">
         <p class="brand-kicker m-0">RESERVATION DETAILS</p>
         <h2 class="m-0 mt-1 text-xl font-black">{{ detailData.restaurant_name || detailMerchant.restaurant_name || "Бронь ресторана" }}</h2>
 
@@ -61,7 +67,7 @@
         </div>
       </section>
 
-      <section v-if="bookingDetail && showUpdate && !isSearch" class="soft-card p-4">
+      <section v-if="bookingDetail && showUpdate && !isSearch" class="soft-card booking-form-card p-4">
         <p class="brand-kicker m-0">UPDATE BOOKING</p>
         <h2 class="m-0 mt-1 text-xl font-black">Изменить бронирование</h2>
         <form class="mt-4 grid gap-3" @submit.prevent="updateReservation">
@@ -114,7 +120,7 @@
         </form>
       </section>
 
-      <section v-if="bookingDetail && showCancel && !isSearch" class="soft-card p-4">
+      <section v-if="bookingDetail && showCancel && !isSearch" class="soft-card booking-form-card p-4">
         <p class="brand-kicker m-0">CANCEL BOOKING</p>
         <h2 class="m-0 mt-1 text-xl font-black">Причина отмены</h2>
         <p class="muted m-0 mt-1 text-sm">Сервис сохранит причину и обновит статус бронирования.</p>
@@ -138,7 +144,7 @@
         </button>
       </section>
 
-      <div v-if="!isSearch" class="sticky-rail -mt-1">
+      <div v-if="!isSearch" class="sticky-rail booking-status-rail -mt-1">
         <div class="hide-scrollbar flex gap-2 overflow-x-auto px-4 py-3">
           <button
             v-for="tab in statusTabs"
@@ -164,7 +170,7 @@
         {{ message }}
       </p>
 
-      <article v-for="item in visibleBookings" :key="item.reservation_uuid || item.reservation_id || JSON.stringify(item)" class="tagam-card p-4">
+      <article v-for="item in visibleBookings" :key="item.reservation_uuid || item.reservation_id || JSON.stringify(item)" class="tagam-card booking-card p-4">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="brand-kicker m-0">{{ item.status || item.status_pretty || "Booking" }}</p>
@@ -230,7 +236,8 @@ const cancelReasons = ref([]);
 const cancelReason = ref("");
 const cancelLoading = ref(false);
 const updateLoading = ref(false);
-const searchQuery = ref(String(route.query.q || ""));
+const routeSearchQuery = () => String(route.query.q || route.query.query || "");
+const searchQuery = ref(routeSearchQuery());
 
 const updateForm = reactive({
   first_name: "",
@@ -541,7 +548,7 @@ watch(
     status.value = String(route.query.status || "all");
     showCancel.value = route.query.action === "cancel";
     showUpdate.value = route.query.action === "update";
-    searchQuery.value = String(route.query.q || "");
+    searchQuery.value = routeSearchQuery();
     load();
   }
 );

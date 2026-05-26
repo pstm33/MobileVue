@@ -15,6 +15,7 @@ const asArray = (value) => {
 
 const unwrap = (response) => response?.details?.data ?? response?.details ?? response?.data ?? response ?? {};
 const readableError = (error) => error?.message ?? String(error);
+const isEmptyResultError = (error) => /no results|record not found/i.test(readableError(error));
 
 export const useCustomerStore = defineStore("customer", {
   state: () => ({
@@ -93,6 +94,7 @@ export const useCustomerStore = defineStore("customer", {
         return this.addresses;
       } catch (error) {
         this.addresses = null;
+        if (isEmptyResultError(error)) return null;
         this.addressesError = readableError(error);
         throw error;
       } finally {

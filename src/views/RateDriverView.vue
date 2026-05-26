@@ -9,7 +9,7 @@
 
     <div v-else-if="error" class="soft-card grid gap-4 p-5 text-center">
       <h1 class="m-0 text-2xl font-black">{{ copy.unavailable }}</h1>
-      <p class="muted m-0 text-sm">{{ error }}</p>
+      <p class="muted m-0 text-sm">{{ errorText }}</p>
       <button class="primary-button tap-motion" type="button" @click="openOrderReview">{{ copy.reviewOrder }}</button>
     </div>
 
@@ -98,6 +98,7 @@ const copyMap = {
     likePlaceholder: "Например: быстро, аккуратно, вежливо",
     sending: "Отправляем...",
     submit: "Отправить отзыв",
+    missingOrder: "Мы не нашли этот заказ. Откройте отзыв к существующему заказу из истории.",
   },
   tk: {
     title: "Kurýer",
@@ -111,6 +112,7 @@ const copyMap = {
     likePlaceholder: "Meselem: çalt, arassa, sypaýy",
     sending: "Iberilýär...",
     submit: "Syn iber",
+    missingOrder: "Bu sargyt tapylmady. Bar bolan sargyt üçin syny taryhdan açyň.",
   },
   en: {
     title: "Courier",
@@ -124,10 +126,13 @@ const copyMap = {
     likePlaceholder: "For example: fast, careful, polite",
     sending: "Sending...",
     submit: "Send review",
+    missingOrder: "We could not find this order. Open a review for an existing order from history.",
   },
 };
 
 const copy = computed(() => copyMap[app.language] || copyMap.ru);
+const isMissingOrderError = (value) => /order not found|record not found|no results/i.test(String(value || ""));
+const errorText = computed(() => (isMissingOrderError(error.value) ? copy.value.missingOrder : error.value));
 const orderUuid = computed(() => String(route.query.order_uuid || route.params.order_uuid || ""));
 const initialRating = computed(() => Number(route.query.rate || 0));
 const loading = ref(false);

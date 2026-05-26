@@ -1,8 +1,9 @@
 {
   "name": "Tagam Delivery",
   "short_name": "Tagam",
-  "description": "Modern KMRS customer delivery app.",
-  "start_url": "/#/home",
+  "description": "TAGAM Delivery — restaurants, menus, offers, checkout and live order tracking.",
+  "start_url": "/home",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#090b10",
   "theme_color": "#090b10",

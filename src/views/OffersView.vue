@@ -1,8 +1,8 @@
 <template>
-  <section class="page fade-up">
+  <section class="page offers-page fade-up">
     <AppHeader :title="copy.title" :icon="BadgePercent" :action-label="copy.refresh" @action="load(true)" />
 
-    <div class="tagam-card tagam-glow p-5">
+    <div class="tagam-card tagam-glow offers-hero p-5">
       <p class="brand-kicker m-0">TAGAM OFFERS</p>
       <h1 class="m-0 mt-2 text-3xl font-black">{{ copy.heading }}</h1>
       <p class="muted m-0 mt-2 text-sm">
@@ -18,11 +18,11 @@
       {{ error }}
     </p>
 
-    <section v-if="rows.length" class="grid gap-3">
+    <section v-if="rows.length" class="offers-grid grid gap-3">
       <article
         v-for="(restaurant, index) in rows"
         :key="restaurant.merchant_uuid || restaurant.merchant_id"
-        class="tagam-card stagger-item tap-motion overflow-hidden"
+        class="tagam-card offer-card stagger-item tap-motion overflow-hidden"
         :style="{ '--stagger-delay': `${Math.min(index, 8) * 45}ms` }"
       >
         <RouterLink :to="`/restaurant/${restaurant.restaurant_slug}`" class="block">
@@ -63,7 +63,7 @@
       </button>
     </section>
 
-    <div v-if="!loading && !rows.length && !error" class="soft-card p-5 text-center">
+    <div v-if="!loading && !rows.length && !error" class="soft-card offers-empty-card p-5 text-center">
       <BadgePercent class="mx-auto text-[var(--app-accent)]" :size="28" />
       <h2 class="m-0 mt-3 text-xl font-black">{{ copy.emptyTitle }}</h2>
       <p class="muted m-0 mt-2 text-sm">{{ copy.emptyText }}</p>

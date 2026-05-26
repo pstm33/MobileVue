@@ -1,6 +1,12 @@
 <template>
-  <section class="page fade-up">
+  <section class="page points-page fade-up">
     <AppHeader title="Баллы" :icon="Gift" action-label="Обновить" @action="load(true)" />
+
+    <div v-if="!client.authenticated" class="points-hero tagam-card tagam-glow p-5">
+      <p class="brand-kicker m-0">TAGAM POINTS</p>
+      <h1 class="m-0 mt-2 text-4xl font-black">Баллы</h1>
+      <p class="muted m-0 mt-2 text-sm">Войдите или продолжите как гость, чтобы открыть бонусы, историю начислений и списания.</p>
+    </div>
 
     <AuthBridge v-if="!client.authenticated" @authenticated="load(true)" />
 
@@ -11,7 +17,7 @@
         <p class="muted m-0 mt-2 text-sm">Доступные бонусы и история начислений по вашему аккаунту.</p>
       </div>
 
-      <div class="grid grid-cols-2 gap-2 rounded-[8px] bg-[var(--app-control)] p-1">
+      <div class="points-tabs grid grid-cols-2 gap-2 rounded-[8px] bg-[var(--app-control)] p-1">
         <button
           v-for="tab in tabs"
           :key="tab.code"
@@ -32,7 +38,7 @@
         {{ error }}
       </p>
 
-      <section v-if="rows.length" class="soft-card overflow-hidden">
+      <section v-if="rows.length" class="soft-card points-history overflow-hidden">
         <article
           v-for="item in rows"
           :key="item.transaction_uuid || item.merchant_id || item.restaurant_name || JSON.stringify(item)"
@@ -52,7 +58,7 @@
         {{ loading ? "Загружаем..." : "Показать еще" }}
       </button>
 
-      <div v-if="!loading && !rows.length && !error" class="soft-card p-5 text-center">
+      <div v-if="!loading && !rows.length && !error" class="soft-card points-empty-card p-5 text-center">
         <Gift class="mx-auto text-[var(--app-accent)]" :size="28" />
         <h2 class="m-0 mt-3 text-xl font-black">История пуста</h2>
         <p class="muted m-0 mt-2 text-sm">Когда баллы будут начислены или списаны, операции появятся здесь.</p>
@@ -87,6 +93,26 @@ const balanceLabel = computed(() => balance.value || "0");
 
 const methodForTab = () => (activeTab.value === "points_merchant" ? "getPointsTransactionMerchant" : "getPointsTransaction");
 const amountClass = (item) => (item.transaction_type === "debit" ? "text-rose-200" : "text-[var(--app-accent)]");
+const isEmptyPointsError = (err) => /no results|record not found|invalid card id|ничего не найдено/i.test(err?.message ?? String(err));
+const normalizeRows = (value) => {
+  const rows = Array.isArray(value) ? value : Object.values(value ?? {});
+  return rows.filter((item) => {
+    const rowText = Object.values(item ?? {}).join(" ");
+    if (/ничего не найдено|no results|invalid card id/i.test(rowText)) return false;
+
+    return item &&
+      typeof item === "object" &&
+      (
+      item.transaction_uuid ||
+      item.transaction_description ||
+      item.transaction_amount ||
+      item.restaurant_name ||
+      item.merchant_id ||
+      item.points ||
+      item.total_earning
+      );
+  });
+};
 
 const loadBalance = async () => {
   const response = await APIinterface.fetchDataByTokenPost("getAvailablePoints", "");
@@ -115,14 +141,22 @@ const load = async (reset = false) => {
     }
 
     if (listResult.status === "rejected") {
+      if (isEmptyPointsError(listResult.reason)) {
+        hasMore.value = false;
+        return;
+      }
       throw listResult.reason;
     }
 
-    const nextRows = listResult.value?.details?.data ?? [];
+    const nextRows = normalizeRows(listResult.value?.details?.data ?? []);
     rows.value = reset ? nextRows : [...rows.value, ...nextRows];
     hasMore.value = nextRows.length > 0 && !listResult.value?.details?.is_last_page;
     page.value += 1;
   } catch (err) {
+    if (isEmptyPointsError(err)) {
+      hasMore.value = false;
+      return;
+    }
     error.value = err?.message ?? String(err);
     hasMore.value = false;
   } finally {

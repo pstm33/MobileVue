@@ -26,6 +26,7 @@ const clientUuidFrom = (user) =>
   user?.user_uuid ||
   LocalStorage.getItem("client_uuid") ||
   "";
+const isEmptyResultError = (error) => /no results|record not found/i.test(error?.message ?? String(error));
 
 export const useAccountProfileStore = defineStore("accountProfile", {
   state: () => ({
@@ -84,6 +85,7 @@ export const useAccountProfileStore = defineStore("accountProfile", {
 
       const failures = results
         .filter((result) => result.status === "rejected")
+        .filter((result) => !isEmptyResultError(result.reason))
         .map((result) => result.reason?.message ?? String(result.reason));
       this.error = failures[0] || "";
       this.loading = false;

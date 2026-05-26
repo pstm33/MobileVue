@@ -13,6 +13,7 @@ const cartContext = {
 };
 
 const currencyCode = () => LocalStorage.getItem("currency_code") || cartContext.currency_code;
+const isMissingCartError = (error) => /no results|record not found/i.test(error?.message ?? String(error));
 
 export const checkoutPayload = [
   "items",
@@ -98,6 +99,12 @@ export const useCartStore = defineStore("cart", {
         this.rememberCart(response.details?.cart_uuid);
         return response.details;
       } catch (error) {
+        if (isMissingCartError(error)) {
+          this.cartUuid = "";
+          this.data = null;
+          LocalStorage.remove(cartStorageKey);
+          return null;
+        }
         this.error = error?.message ?? String(error);
         throw error;
       } finally {

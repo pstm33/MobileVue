@@ -7,6 +7,12 @@ const androidGoogleWebClientId =
   import.meta.env.VITE_ANDROID_GOOGLE_WEB_CLIENT_ID ||
   "85413186790-0o8kcqikbiph15vhqii0q46gja3u8rcd.apps.googleusercontent.com";
 
+const iosGoogleClientId =
+  import.meta.env.VITE_IOS_GOOGLE_CLIENT_ID ||
+  "85413186790-c7f0j7h7h9icgqtulo7ffp0n6c3egkt0.apps.googleusercontent.com";
+
+const facebookLoginDisabled = import.meta.env.VITE_ENABLE_FACEBOOK_LOGIN === "false";
+
 export const useAppSettingsStore = defineStore("appSettings", {
   state: () => ({
     loading: false,
@@ -21,15 +27,19 @@ export const useAppSettingsStore = defineStore("appSettings", {
 
       return {
         google: Boolean(state.data?.app_enabled_google_login),
-        facebook: Boolean(state.data?.app_enabled_fb_login),
+        facebook: !facebookLoginDisabled && Boolean(state.data?.app_enabled_fb_login),
         apple: Boolean(state.data?.app_enabled_apple_login),
         googleClientId: useAndroidGoogleClient ? androidGoogleWebClientId : kmrsGoogleClientId,
+        googleIosClientId: iosGoogleClientId,
+        googleIosServerClientId: androidGoogleWebClientId,
         googleKmrsClientId: kmrsGoogleClientId,
         googleAndroidClientId: androidGoogleWebClientId,
         googleUsesAndroidClient: useAndroidGoogleClient,
         facebookAppId: state.data?.app_facebook_id || "",
         facebookClientToken: state.data?.app_facebook_client_token || "",
         appleClientId: state.data?.app_apple_app_id || "",
+        appleAppRedirectUrl: state.data?.apple_app_redirect_uri || state.data?.apple_web_redirect_uri || "",
+        appleWebRedirectUrl: state.data?.apple_web_redirect_uri || state.data?.apple_app_redirect_uri || "",
         appleRedirectUrl: state.data?.apple_app_redirect_uri || state.data?.apple_web_redirect_uri || "",
       };
     },

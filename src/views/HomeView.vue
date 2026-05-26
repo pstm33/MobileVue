@@ -1,10 +1,11 @@
 <template>
-  <section class="page fade-up">
-    <AppHeader :title="`${app.copy.home.delivery}: ${session.locationLabel}`" :icon="ShoppingBag" />
+  <section class="page home-page fade-up">
+    <AppHeader :title="homeTitle" :icon="ShoppingBag" />
 
     <div class="home-hero tagam-card tagam-glow p-5">
       <div class="flex items-start justify-between gap-4">
         <div>
+          <img class="home-hero-logo mb-4" src="/tagam-logo.svg" alt="TAGAM" />
           <p class="brand-kicker m-0">{{ app.copy.home.pick }}</p>
           <h2 class="headline m-0 mt-2">{{ app.copy.home.hero }}</h2>
           <p class="muted mt-3 max-w-[20rem] text-sm">
@@ -15,7 +16,7 @@
           <img class="h-16 w-16 object-contain" src="/iconsplash.png" alt="" />
         </div>
       </div>
-      <RouterLink class="primary-button tap-motion mt-5 w-full" to="/search">
+      <RouterLink class="primary-button tap-motion mt-5 w-full" to="/offers">
         <Sparkles :size="18" />
         {{ app.copy.home.offers }}
       </RouterLink>
@@ -29,7 +30,24 @@
       </div>
     </section>
 
-    <div v-if="cuisines.length" class="sticky-rail sticky top-0 z-10 py-3">
+    <section class="home-actions grid grid-cols-2 gap-3">
+      <RouterLink
+        v-for="action in quickActions"
+        :key="action.to"
+        class="home-action-card tagam-card tap-motion p-4"
+        :to="action.to"
+      >
+        <span class="home-action-icon">
+          <component :is="action.icon" :size="20" />
+        </span>
+        <span>
+          <strong>{{ action.title }}</strong>
+          <small>{{ action.text }}</small>
+        </span>
+      </RouterLink>
+    </section>
+
+    <div v-if="cuisines.length" class="sticky-rail home-cuisine-rail sticky top-0 z-10 py-3">
       <div class="hide-scrollbar flex gap-2 overflow-x-auto px-4">
         <button
           class="tagam-pill tap-motion shrink-0 px-4 py-2"
@@ -80,7 +98,7 @@
       v-for="(restaurant, index) in filteredRestaurants"
       v-else
       :key="restaurant.merchant_uuid || restaurant.merchant_id"
-      class="tagam-card stagger-item tap-motion"
+      class="tagam-card home-restaurant-card stagger-item tap-motion"
       :style="{ '--stagger-delay': `${Math.min(index, 8) * 55}ms` }"
     >
       <RouterLink :to="`/restaurant/${restaurant.restaurant_slug}`" class="block">
@@ -130,7 +148,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { Flame, MapPin, ShoppingBag, Sparkles, X } from "@lucide/vue";
+import { BadgePercent, CalendarDays, Flame, Gift, Heart, LayoutGrid, MapPin, ReceiptText, ShoppingBag, Sparkles, WalletCards, X } from "@lucide/vue";
 import { useAppStore } from "src/stores/app";
 import { useMerchantFeedStore } from "src/stores/merchantFeed";
 import { useSessionStore } from "src/stores/session";
@@ -141,6 +159,13 @@ const app = useAppStore();
 const feed = useMerchantFeedStore();
 const session = useSessionStore();
 const selectedCuisines = ref([]);
+const homeTitle = computed(() => {
+  const location = String(session.locationLabel || "").trim();
+  if (!location || /выберите|choose|saýla/i.test(location)) {
+    return "TAGAM Delivery";
+  }
+  return `${app.copy.home.delivery}: ${location}`;
+});
 
 const insightLabels = {
   ru: {
@@ -163,6 +188,37 @@ const insightLabels = {
   },
 };
 const insightCopy = computed(() => insightLabels[app.language] || insightLabels.ru);
+const quickActionLabels = {
+  ru: [
+    { to: "/offers", title: "Акции", text: "Выгодные рестораны", icon: BadgePercent },
+    { to: "/categories", title: "Категории", text: "Кухни и вкусы", icon: LayoutGrid },
+    { to: "/booking", title: "Бронь", text: "Столики и гости", icon: CalendarDays },
+    { to: "/orders", title: "Заказы", text: "Повтор и статус", icon: ReceiptText },
+    { to: "/wallet", title: "Кошелек", text: "Баланс и оплата", icon: WalletCards },
+    { to: "/favourites", title: "Избранное", text: "Любимые места", icon: Heart },
+  ],
+  tk: [
+    { to: "/offers", title: "Aksiyalar", text: "Amatly restoranlar", icon: BadgePercent },
+    { to: "/categories", title: "Kategoriya", text: "As we tagamlar", icon: LayoutGrid },
+    { to: "/booking", title: "Bron", text: "Stollar we myhmanlar", icon: CalendarDays },
+    { to: "/orders", title: "Sargytlar", text: "Gaytala we status", icon: ReceiptText },
+    { to: "/wallet", title: "Gapjyk", text: "Balans we toleg", icon: WalletCards },
+    { to: "/favourites", title: "Halanlarym", text: "Halan yerler", icon: Heart },
+  ],
+  en: [
+    { to: "/offers", title: "Offers", text: "Best restaurant deals", icon: BadgePercent },
+    { to: "/categories", title: "Categories", text: "Cuisines and cravings", icon: LayoutGrid },
+    { to: "/booking", title: "Book", text: "Tables and guests", icon: CalendarDays },
+    { to: "/orders", title: "Orders", text: "Repeat and status", icon: ReceiptText },
+    { to: "/wallet", title: "Wallet", text: "Balance and payments", icon: WalletCards },
+    { to: "/favourites", title: "Favourites", text: "Saved places", icon: Heart },
+  ],
+};
+const quickActions = computed(() => {
+  const actions = quickActionLabels[app.language] || quickActionLabels.ru;
+  if (app.language === "ru") return actions;
+  return actions.map((action) => (action.to === "/wallet" ? { ...action, icon: Gift } : action));
+});
 
 const decodeHtml = (value) => {
   const element = document.createElement("div");

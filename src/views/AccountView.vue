@@ -1,8 +1,8 @@
 <template>
-  <section class="page fade-up">
+  <section class="page account-page fade-up">
     <AppHeader :title="accountCopy.title" :icon="Settings" :action-label="accountCopy.action" @action="router.push('/account/language')" />
 
-    <div class="tagam-card p-5">
+    <div class="tagam-card account-hero p-5">
       <div class="flex items-start gap-4">
         <div class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[var(--app-accent)] text-xl font-black text-black shadow-[0_14px_34px_rgba(242,138,0,0.24)]">
           {{ initials }}
@@ -23,7 +23,7 @@
 
     <AuthBridge v-if="!client.authenticated" @authenticated="loadProfile" />
 
-    <section v-if="!client.authenticated" class="soft-card overflow-hidden">
+    <section v-if="!client.authenticated" class="soft-card account-menu overflow-hidden">
       <RouterLink class="account-row tap-motion" to="/cart">
         <span><ShoppingBag :size="20" /> {{ accountCopy.cartCheckout }}</span>
         <ChevronRight :size="18" />
@@ -43,8 +43,8 @@
     </section>
 
     <template v-else>
-      <div class="grid grid-cols-2 gap-3">
-        <div v-for="metric in metrics" :key="metric.label" class="tagam-card p-4">
+      <div class="account-metrics grid grid-cols-2 gap-3">
+        <div v-for="metric in metrics" :key="metric.label" class="tagam-card account-metric-card p-4">
           <component :is="metric.icon" class="text-[var(--app-accent)]" :size="22" />
           <strong class="mt-3 block text-xl">{{ metric.value }}</strong>
           <span class="muted text-sm">{{ metric.label }}</span>
@@ -60,7 +60,7 @@
         {{ profile.error }}
       </div>
 
-      <section class="soft-card overflow-hidden">
+      <section class="soft-card account-menu overflow-hidden">
         <RouterLink class="account-row tap-motion" to="/profile">
           <span><UserRound :size="20" /> {{ accountCopy.profile }}</span>
           <ChevronRight :size="18" />

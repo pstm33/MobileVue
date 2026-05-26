@@ -1,17 +1,23 @@
 <template>
-  <section class="page fade-up">
+  <section class="page wallet-page fade-up">
     <AppHeader :title="copy.title" :icon="WalletCards" :action-label="copy.refresh" @action="load" />
+
+    <div v-if="!client.authenticated" class="tagam-card tagam-glow wallet-hero p-5">
+      <p class="brand-kicker m-0">{{ copy.kicker }}</p>
+      <h1 class="m-0 mt-2 text-4xl font-black">{{ copy.title }}</h1>
+      <p class="muted m-0 mt-2 text-sm">{{ copy.intro }}</p>
+    </div>
 
     <AuthBridge v-if="!client.authenticated" @authenticated="load" />
 
     <template v-else>
-      <div class="tagam-card tagam-glow p-5">
-        <p class="brand-kicker m-0">TAGAM WALLET</p>
+      <div class="tagam-card tagam-glow wallet-hero p-5">
+        <p class="brand-kicker m-0">{{ copy.kicker }}</p>
         <h1 class="m-0 mt-2 text-4xl font-black">{{ walletBalance }}</h1>
         <p class="muted m-0 mt-2 text-sm">{{ copy.intro }}</p>
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
+      <div class="wallet-metrics grid grid-cols-2 gap-3">
         <div class="soft-card p-4">
           <Gift class="text-[var(--app-accent)]" :size="22" />
           <strong class="mt-3 block text-xl">{{ pointsBalance }}</strong>
@@ -24,10 +30,10 @@
         </div>
       </div>
 
-      <section class="soft-card p-4">
+      <section class="soft-card wallet-topup-card p-4">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <p class="brand-kicker m-0">TOP UP</p>
+            <p class="brand-kicker m-0">{{ copy.topupKicker }}</p>
             <h2 class="m-0 mt-1 text-xl font-black">{{ copy.topupTitle }}</h2>
             <p class="muted m-0 mt-1 text-sm">{{ topupHint }}</p>
           </div>
@@ -63,14 +69,14 @@
         {{ displayError }}
       </p>
 
-      <section v-if="statusRows.length" class="soft-card overflow-hidden">
+      <section v-if="statusRows.length" class="soft-card wallet-status-card overflow-hidden">
         <div v-for="row in statusRows" :key="row.label" class="account-row border-t border-white/10 first:border-t-0">
           <span>{{ row.label }}</span>
           <strong class="text-right">{{ row.value }}</strong>
         </div>
       </section>
 
-      <section class="grid gap-3">
+      <section class="wallet-history grid gap-3">
         <div class="flex items-center justify-between gap-3">
           <h2 class="m-0 text-xl font-black">{{ copy.history }}</h2>
           <span class="muted text-sm">{{ transactions.length }}</span>
@@ -122,11 +128,13 @@ const copy = computed(() => {
   if (app.language === "tk") {
     return {
       title: "Gapjyk we ballar",
+      kicker: "TAGAM GAPJYK",
       refresh: "Täzele",
       intro: "Balansyňyz, bonuslaryňyz we hasap amallaryňyz.",
       points: "Bonus ballary",
       transactions: "Amallar",
       topupTitle: "Gapjygy doldur",
+      topupKicker: "DOLDURMAK",
       topup: "Doldur",
       addPayment: "Töleg usulyny goş",
       history: "Gapjyk taryhy",
@@ -147,11 +155,13 @@ const copy = computed(() => {
   if (app.language === "en") {
     return {
       title: "Wallet & points",
+      kicker: "TAGAM WALLET",
       refresh: "Refresh",
       intro: "Your balance, rewards and account activity.",
       points: "Reward points",
       transactions: "Transactions",
       topupTitle: "Top up wallet",
+      topupKicker: "TOP UP",
       topup: "Top up",
       addPayment: "Add payment method",
       history: "Wallet history",
@@ -171,11 +181,13 @@ const copy = computed(() => {
   }
   return {
     title: "Кошелек и баллы",
+    kicker: "TAGAM КОШЕЛЕК",
     refresh: "Обновить",
     intro: "Ваш баланс, бонусы и операции по аккаунту.",
     points: "Бонусные баллы",
     transactions: "Операции",
     topupTitle: "Пополнить кошелек",
+    topupKicker: "ПОПОЛНЕНИЕ",
     topup: "Пополнить",
     addPayment: "Добавить способ оплаты",
     history: "История кошелька",
@@ -218,7 +230,7 @@ const displayError = computed(() => {
   if (!message) return "";
 
   const normalized = message.toLowerCase();
-  if (normalized.includes("invalid card id")) {
+  if (/invalid card id|no results|record not found|ничего не найдено/.test(normalized)) {
     return "";
   }
 

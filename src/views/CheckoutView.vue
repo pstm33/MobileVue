@@ -1,5 +1,5 @@
 <template>
-  <section class="page fade-up">
+  <section class="page checkout-page fade-up">
     <AppHeader :title="copy.title" :icon="CreditCard" action-label="Checkout" />
 
     <div v-if="checkout.loading && !cart.cart" class="grid gap-4">
@@ -14,7 +14,7 @@
       <RouterLink class="primary-button tap-motion" :to="{ path: '/order/success', query: { order_uuid: checkout.placedOrder.order_uuid } }">{{ copy.openOrder }}</RouterLink>
     </div>
 
-    <div v-else-if="!cart.cartUuid || !cart.items.length" class="soft-card grid gap-4 p-5 text-center">
+    <div v-else-if="!cart.cartUuid || !cart.items.length" class="soft-card checkout-empty-card grid gap-4 p-5 text-center">
       <h1 class="m-0 text-2xl font-black">{{ copy.emptyCart }}</h1>
       <p class="muted m-0 text-sm">{{ copy.emptyCartText }}</p>
       <RouterLink class="primary-button tap-motion" to="/home">{{ copy.toRestaurants }}</RouterLink>
@@ -25,7 +25,7 @@
         <p v-for="error in cart.data.error" :key="error" class="m-0">{{ error }}</p>
       </div>
 
-      <section class="glass grid gap-4 rounded-[8px] p-4">
+      <section class="checkout-restaurant-card glass grid gap-4 rounded-[8px] p-4">
         <div class="flex items-center justify-between gap-3">
           <div class="min-w-0">
             <p class="m-0 text-xs font-black uppercase tracking-[0.16em] text-[var(--app-accent)]">{{ copy.restaurant }}</p>
@@ -54,7 +54,7 @@
 
       <AuthBridge @authenticated="afterCheckoutAuth" />
 
-      <section v-if="transactionType === 'delivery'" class="soft-card grid gap-3 p-4">
+      <section v-if="transactionType === 'delivery'" class="soft-card checkout-main-card grid gap-3 p-4">
         <div class="flex items-start gap-3">
           <div class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--app-accent)]/10 text-[var(--app-accent)]">
             <MapPin :size="20" />
@@ -114,7 +114,7 @@
         </div>
       </section>
 
-      <section class="soft-card grid gap-3 p-4">
+      <section class="soft-card checkout-main-card grid gap-3 p-4">
         <div class="flex items-center justify-between gap-3">
           <div>
             <h2 class="m-0 text-lg font-black">{{ copy.time }}</h2>
@@ -169,7 +169,7 @@
                 type="button"
                 @click="checkout.selectedDeliveryDate = date.value"
               >
-                {{ date.label }}
+                {{ localizedDeliveryDateLabel(date) }}
               </button>
             </div>
 
@@ -191,7 +191,7 @@
         </div>
       </section>
 
-      <section class="soft-card grid gap-3 p-4">
+      <section class="soft-card checkout-side-card checkout-order-card grid gap-3 p-4">
         <h2 class="m-0 text-lg font-black">{{ copy.yourOrder }}</h2>
         <article v-for="item in cart.items" :key="item.cart_row" class="flex items-center justify-between gap-3 border-t border-white/10 pt-3">
           <div class="min-w-0">
@@ -202,7 +202,7 @@
         </article>
       </section>
 
-      <section class="soft-card grid gap-3 p-4">
+      <section class="soft-card checkout-side-card grid gap-3 p-4">
         <div class="flex items-center justify-between">
           <h2 class="m-0 text-lg font-black">{{ copy.tips }}</h2>
           <Sparkles class="text-[var(--app-accent)]" :size="20" />
@@ -222,7 +222,7 @@
         <p v-else class="muted m-0 text-sm">{{ checkout.tipsError || copy.tipsUnavailable }}</p>
       </section>
 
-      <section class="soft-card grid gap-3 p-4">
+      <section class="soft-card checkout-side-card grid gap-3 p-4">
         <div class="flex items-center justify-between">
           <h2 class="m-0 text-lg font-black">{{ copy.promoPoints }}</h2>
           <BadgePercent class="text-[var(--app-accent)]" :size="20" />
@@ -320,10 +320,10 @@
         </div>
       </section>
 
-      <section v-if="checkout.cartWallet || checkout.cartWalletError" class="soft-card grid gap-3 p-4">
+      <section v-if="checkout.cartWallet || checkout.cartWalletError" class="soft-card checkout-side-card grid gap-3 p-4">
         <div class="flex items-center justify-between gap-3">
           <div class="min-w-0">
-            <p class="brand-kicker m-0">WALLET</p>
+            <p class="brand-kicker m-0">{{ copy.walletKicker }}</p>
             <h2 class="m-0 mt-1 text-lg font-black">{{ copy.wallet }}</h2>
             <p class="muted m-0 mt-1 text-sm">
               {{ checkout.cartWalletLabel || copy.walletAfterLogin }}
@@ -355,7 +355,7 @@
         </p>
       </section>
 
-      <section class="soft-card grid gap-3 p-4">
+      <section class="soft-card checkout-side-card grid gap-3 p-4">
         <h2 class="m-0 text-lg font-black">{{ copy.payment }}</h2>
         <template v-if="paymentList.length">
           <button
@@ -367,7 +367,7 @@
             @click="checkout.selectPayment(payment)"
           >
             <span>
-              <span class="block font-black">{{ payment.payment_name || payment.attr1 || payment.payment_code }}</span>
+              <span class="block font-black">{{ paymentDisplayName(payment) }}</span>
               <span v-if="payment.attr2" class="muted text-xs">{{ payment.attr2 }}</span>
             </span>
             <CheckCircle2 v-if="checkout.selectedPaymentUuid === payment.payment_uuid" class="text-[var(--app-accent)]" :size="19" />
@@ -384,7 +384,7 @@
         </label>
       </section>
 
-      <section v-if="cart.summary.length" class="soft-card grid gap-3 p-4">
+      <section v-if="cart.summary.length" class="soft-card checkout-side-card checkout-summary-card grid gap-3 p-4">
         <div v-for="row in cart.summary" :key="row.type || row.name" class="flex items-center justify-between gap-3">
           <span class="muted">{{ row.name }}</span>
           <span class="flex items-center gap-2">
@@ -489,6 +489,7 @@ const copy = computed(() => {
       apply: "Ulan",
       noPromo: "Sebet üçin elýeterli teklipler bolsa, olar şu ýerde peýda bolar.",
       wallet: "Gapjyk",
+      walletKicker: "Gapjyk",
       walletAfterLogin: "Balans gireniňizden soň elýeterli",
       payFromWallet: "Gapjykdan töle",
       walletApplied: "Balans sebede ulanyldy",
@@ -544,6 +545,7 @@ const copy = computed(() => {
       apply: "Apply",
       noPromo: "Active promos will appear here if offers are available for this cart.",
       wallet: "Wallet",
+      walletKicker: "Wallet",
       walletAfterLogin: "Balance is available after sign-in",
       payFromWallet: "Pay from wallet",
       walletApplied: "Balance applied to cart",
@@ -598,6 +600,7 @@ const copy = computed(() => {
     apply: "Применить",
     noPromo: "Активные промо появятся здесь, если для корзины будут доступны предложения.",
     wallet: "Кошелек",
+    walletKicker: "Кошелек",
     walletAfterLogin: "Баланс доступен после входа",
     payFromWallet: "Оплатить из кошелька",
     walletApplied: "Баланс применен к корзине",
@@ -625,9 +628,11 @@ const transactionType = computed(() => transactionInfo.value.transaction_type ??
 const deliveryType = computed(() => transactionInfo.value.whento_deliver ?? "now");
 const merchantId = computed(() => cart.data?.merchant_id || cart.merchant?.merchant_id || cart.merchant?.merchant_uuid || "");
 const scheduleCopy = computed(() => {
+  const isDelivery = transactionType.value === "delivery";
+
   if (app.language === "tk") {
     return {
-      title: "Eltip beriljek wagty",
+      title: isDelivery ? "Eltip beriljek wagty" : "Sargyt wagty",
       hint: "Elyeterli guni we wagty saylan.",
       loading: "Wagtlar alynýar...",
       noSlots: "Bu gun ucin elyeterli wagt yok.",
@@ -635,19 +640,61 @@ const scheduleCopy = computed(() => {
   }
   if (app.language === "en") {
     return {
-      title: "Delivery time",
+      title: isDelivery ? "Delivery time" : "Order time",
       hint: "Choose an available day and time slot.",
       loading: "Loading time slots...",
       noSlots: "No time slots are available for this day.",
     };
   }
   return {
-    title: "Время доставки",
+    title: isDelivery ? "Время доставки" : "Время заказа",
     hint: "Выберите доступный день и слот.",
     loading: "Загружаем слоты...",
     noSlots: "На этот день нет доступных слотов.",
   };
 });
+const relativeDateLabels = {
+  ru: {
+    today: "Сегодня",
+    tomorrow: "Завтра",
+  },
+  tk: {
+    today: "Şu gün",
+    tomorrow: "Ertir",
+  },
+  en: {
+    today: "Today",
+    tomorrow: "Tomorrow",
+  },
+};
+const localizedDeliveryDateLabel = (date) => {
+  const label = String(date?.label ?? date?.value ?? "");
+  const labels = relativeDateLabels[app.language] || relativeDateLabels.ru;
+
+  return label
+    .replace(/^Today\b/i, labels.today)
+    .replace(/^Tomorrow\b/i, labels.tomorrow);
+};
+const paymentDisplayName = (payment) => {
+  const code = String(payment?.payment_code ?? "").toLowerCase();
+  const rawName = payment?.payment_name || payment?.attr1 || payment?.payment_code || "";
+
+  if (code === "cod") {
+    if (app.language === "en") return "Cash on delivery";
+    if (app.language === "tk") return "Eltip berlende nagt töleg";
+    return "Наличными при получении";
+  }
+
+  return rawName;
+};
+const paymentDedupKey = (payment) => {
+  const code = String(payment?.payment_code ?? "").toLowerCase();
+  const rawName = String(payment?.payment_name || payment?.attr1 || "").toLowerCase();
+
+  if (code === "cod" || /cash\s+on\s+delivery/.test(rawName)) return "cod";
+
+  return payment?.payment_uuid || code || rawName;
+};
 const checkoutActionCopy = computed(() => {
   if (app.language === "en") {
     return {
@@ -684,10 +731,19 @@ const checkoutActionCopy = computed(() => {
     onlineRedirect: "Открываем страницу оплаты...",
   };
 });
-const paymentList = computed(() => [
-  ...Object.values(cart.data?.payment_list ?? {}),
-  ...checkout.paymentList,
-]);
+const paymentList = computed(() => {
+  const seen = new Set();
+  return [
+    ...Object.values(cart.data?.payment_list ?? {}),
+    ...checkout.paymentList,
+  ].filter((payment) => {
+    const key = paymentDedupKey(payment);
+    if (!key) return true;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+});
 const savedAddresses = computed(() => customer.addressList ?? []);
 const canPlaceOrder = computed(() =>
   placeOrderEnabled &&

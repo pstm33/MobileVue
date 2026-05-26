@@ -10,7 +10,7 @@
 
     <div v-else-if="orders.detailsError" class="soft-card p-5">
       <h1 class="m-0 text-2xl font-black">{{ text.notFound }}</h1>
-      <p class="muted m-0 mt-2 text-sm">{{ orders.detailsError }}</p>
+      <p class="muted m-0 mt-2 text-sm">{{ detailsErrorText }}</p>
       <button class="primary-button tap-motion mt-4 w-full" type="button" @click="load">
         {{ text.retry }}
       </button>
@@ -154,6 +154,7 @@ const labels = {
     notFound: "Заказ не найден",
     retry: "Повторить",
     openProfile: "Открыть профиль",
+    missingText: "Мы не нашли этот заказ. Откройте историю заказов или профиль, чтобы выбрать существующий заказ.",
     detailsKicker: "Детали заказа",
     restaurant: "Ресторан",
     payment: "Оплата",
@@ -196,6 +197,7 @@ const labels = {
     notFound: "Sargyt tapylmady",
     retry: "Gaýtadan synan",
     openProfile: "Profili aç",
+    missingText: "Bu sargyt tapylmady. Bar bolan sargydy saýlamak üçin sargyt taryhyny ýa-da profili açyň.",
     detailsKicker: "Sargyt maglumatlary",
     restaurant: "Restoran",
     payment: "Töleg",
@@ -238,6 +240,7 @@ const labels = {
     notFound: "Order not found",
     retry: "Retry",
     openProfile: "Open profile",
+    missingText: "We could not find this order. Open your order history or profile to choose an existing order.",
     detailsKicker: "Order details",
     restaurant: "Restaurant",
     payment: "Payment",
@@ -285,6 +288,8 @@ const itemsOpen = ref(true);
 const cancelOpen = ref(false);
 
 const text = computed(() => labels[app.language] || labels.ru);
+const isMissingOrderError = (value) => /order not found|record not found|no results/i.test(String(value || ""));
+const detailsErrorText = computed(() => (isMissingOrderError(orders.detailsError) ? text.value.missingText : orders.detailsError));
 const orderUuid = computed(() => String(route.query.order_uuid || route.params.order_uuid || ""));
 const isSuccess = computed(() => route.name === "order-success");
 const details = computed(() => orders.orderDetails(orderUuid.value));

@@ -1,5 +1,5 @@
 <template>
-  <section class="page fade-up">
+  <section class="page restaurant-page fade-up">
     <AppHeader :title="pageTitle" :icon="Heart" :action-label="app.copy.restaurant.save" />
 
     <div v-if="restaurant.loading" class="grid gap-4">
@@ -19,7 +19,7 @@
     </div>
 
     <template v-else-if="restaurant.restaurant">
-      <div class="tagam-card tagam-glow restaurant-hero">
+      <div class="tagam-card tagam-glow restaurant-hero restaurant-main-hero">
         <img
           v-if="restaurant.heroImage"
           class="aspect-[2/1] w-full object-cover"
@@ -50,7 +50,7 @@
         </div>
       </div>
 
-      <div class="restaurant-stats tagam-card grid p-3 text-center" :class="promoCount ? 'grid-cols-3' : 'grid-cols-2'">
+      <div class="restaurant-stats tagam-card restaurant-side-card grid p-3 text-center" :class="promoCount ? 'grid-cols-3' : 'grid-cols-2'">
         <div class="restaurant-stat">
           <strong>{{ distanceLabel || "-" }}</strong>
           <span class="muted block text-xs">{{ distanceCaption }}</span>
@@ -65,7 +65,7 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-3 gap-2">
+      <div class="restaurant-tabs grid grid-cols-3 gap-2">
         <button class="tagam-pill tap-motion px-3 py-2" :class="{ 'is-active': activePanel === 'menu' }" type="button" @click="activePanel = 'menu'">
           <ShoppingBag :size="16" />
           {{ app.copy.restaurant.menu }}
@@ -80,7 +80,7 @@
         </button>
       </div>
 
-      <div v-if="activePanel === 'info'" class="tagam-card grid gap-4 p-4">
+      <div v-if="activePanel === 'info'" class="tagam-card restaurant-info-panel grid gap-4 p-4">
         <div>
           <p class="brand-kicker m-0">Store info</p>
           <h2 class="m-0 mt-1 text-2xl font-black">{{ restaurantName }}</h2>
@@ -113,7 +113,7 @@
         </div>
       </div>
 
-      <label v-if="activePanel === 'search'" class="tagam-card flex min-h-14 items-center gap-3 px-4">
+      <label v-if="activePanel === 'search'" class="tagam-card restaurant-menu-search flex min-h-14 items-center gap-3 px-4">
         <Search :size="20" class="text-emerald-300" />
         <input
           v-model="menuQuery"
@@ -125,7 +125,7 @@
         </button>
       </label>
 
-      <nav v-if="displayCategories.length && activePanel !== 'info'" class="sticky-rail sticky top-0 z-10 py-3">
+      <nav v-if="displayCategories.length && activePanel !== 'info'" class="sticky-rail restaurant-category-rail sticky top-0 z-10 py-3">
         <div class="hide-scrollbar flex gap-2 overflow-x-auto px-4">
           <button
             v-for="category in displayCategories"
@@ -154,14 +154,14 @@
         class="category-section grid gap-3 scroll-mt-24"
       >
         <div class="section-title">
-            <h2>{{ infoCopy.reviews }}</h2>
+          <h2>{{ decodeHtml(category.category_name) }}</h2>
           <span class="muted text-sm">{{ (category.item_list || []).length }} {{ app.copy.restaurant.itemCount }}</span>
         </div>
 
         <article
           v-for="(item, itemIndex) in category.item_list"
           :key="item.item_uuid || item.item_id"
-          class="tagam-card group stagger-item flex gap-4 p-3"
+          class="tagam-card restaurant-item-card group stagger-item flex gap-4 p-3"
           :style="{ '--stagger-delay': `${Math.min(itemIndex, 6) * 42}ms` }"
         >
           <div class="image-treatment h-28 w-28 shrink-0 rounded-[8px]">
@@ -188,12 +188,13 @@
             <div class="mt-3 flex items-center justify-between gap-3">
               <strong class="text-lg">{{ priceLabel(item) }}</strong>
               <button
-                class="icon-button tap-motion !h-9 !w-9"
+                class="restaurant-add-button tagam-pill tap-motion px-3 py-2 text-xs"
                 type="button"
                 :aria-label="app.copy.restaurant.openItem"
                 @click="openItem(category, item)"
               >
                 <Plus :size="18" />
+                <span>{{ itemActionLabel }}</span>
               </button>
             </div>
           </div>
@@ -259,6 +260,11 @@ const localCopy = {
 const slug = computed(() => String(route.params.slug || ""));
 const searchCopy = computed(() => (localCopy[app.language] || localCopy.ru).search);
 const infoCopy = computed(() => (localCopy[app.language] || localCopy.ru).info);
+const itemActionLabel = computed(() => {
+  if (app.language === "en") return "Add";
+  if (app.language === "tk") return "Gos";
+  return "Добавить";
+});
 const deepLinkItem = computed(() => ({
   catId: route.query.cat ? String(route.query.cat) : "",
   itemUuid: route.query.item ? String(route.query.item) : "",

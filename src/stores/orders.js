@@ -29,6 +29,7 @@ const asArray = (value) => {
 };
 
 const unwrapOrderDetails = (response) => response?.details?.data ?? response?.details ?? {};
+const isEmptyResultError = (error) => /no results|record not found/i.test(error?.message ?? String(error));
 
 export const useOrdersStore = defineStore("orders", {
   state: () => ({
@@ -74,6 +75,10 @@ export const useOrdersStore = defineStore("orders", {
         return this.history;
       } catch (error) {
         this.history = [];
+        if (isEmptyResultError(error)) {
+          this.historyError = "";
+          return [];
+        }
         this.historyError = error?.message ?? String(error);
         throw error;
       } finally {

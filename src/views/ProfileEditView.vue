@@ -1,5 +1,5 @@
 <template>
-  <section class="page fade-up">
+  <section class="page profile-page fade-up">
     <AppHeader :title="text.title" :icon="UserRound" :action-label="text.title" />
 
     <AuthBridge v-if="!client.authenticated" @authenticated="load" />

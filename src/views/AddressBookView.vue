@@ -1,5 +1,5 @@
 <template>
-  <section class="page fade-up">
+  <section class="page address-page fade-up">
     <AppHeader :title="copy.title" :icon="MapPin" :action-label="copy.map" />
 
     <AuthBridge v-if="!client.authenticated" @authenticated="load" />

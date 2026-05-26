@@ -1,8 +1,8 @@
 <template>
-  <section class="page fade-up">
+  <section class="page categories-page fade-up">
     <AppHeader :title="copy.title" :icon="LayoutGrid" :action-label="copy.refresh" @action="load" />
 
-    <div class="tagam-card p-5">
+    <div class="tagam-card categories-hero p-5">
       <p class="brand-kicker m-0">REAL CUISINES</p>
       <h1 class="m-0 mt-1 text-3xl font-black">{{ copy.heading }}</h1>
       <p class="muted m-0 mt-2 text-sm">{{ copy.subtitle }}</p>
@@ -16,11 +16,11 @@
       {{ feed.error }}
     </p>
 
-    <div v-else class="grid grid-cols-2 gap-3">
+    <div v-else class="categories-grid grid grid-cols-2 gap-3">
       <RouterLink
         v-for="category in categories"
         :key="category.name"
-        class="group relative isolate aspect-[5/4] overflow-hidden rounded-[8px] border border-[var(--app-border)] bg-[var(--app-card)] p-4 tap-motion"
+        class="category-card group relative isolate aspect-[5/4] overflow-hidden rounded-[8px] border border-[var(--app-border)] bg-[var(--app-card)] p-4 tap-motion"
         :to="{ path: '/search', query: { cuisine: category.name } }"
       >
         <img

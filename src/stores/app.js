@@ -24,8 +24,8 @@ const copy = {
     home: {
       delivery: "Доставка",
       pick: "Выбор сегодня",
-      hero: "Реальные рестораны, напрямую из KMRS.",
-      loading: "Загружаем реальные данные Tagam Delivery из production API.",
+      hero: "Рестораны рядом, доставка прямо к вам.",
+      loading: "Загружаем рестораны Tagam Delivery.",
       offers: "Смотреть предложения",
       popular: "Популярное рядом",
       viewAll: "Все",
@@ -127,8 +127,8 @@ const copy = {
     home: {
       delivery: "Eltip bermek",
       pick: "Şu gün saýlanan",
-      hero: "KMRS-den göni hakyky restoranlar.",
-      loading: "Tagam Delivery maglumatlary production API-den ýüklenýär.",
+      hero: "Ýakyndaky restoranlar, eltip bermek göni size.",
+      loading: "Tagam Delivery restoranlary ýüklenýär.",
       offers: "Teklipleri gör",
       popular: "Ýakynda meşhur",
       viewAll: "Ählisi",
@@ -230,8 +230,8 @@ const copy = {
     home: {
       delivery: "Delivery",
       pick: "Today's pick",
-      hero: "Real restaurants, live from KMRS.",
-      loading: "Loading Tagam Delivery data from the production API.",
+      hero: "Nearby restaurants, delivered to you.",
+      loading: "Loading Tagam Delivery restaurants.",
       offers: "Explore offers",
       popular: "Popular nearby",
       viewAll: "View all",

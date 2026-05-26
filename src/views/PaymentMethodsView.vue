@@ -1,5 +1,5 @@
 <template>
-  <section class="page fade-up">
+  <section class="page payment-page fade-up">
     <AppHeader :title="copy.title" :icon="CreditCard" :action-label="copy.action" />
 
     <AuthBridge v-if="!client.authenticated" @authenticated="load" />
@@ -69,7 +69,7 @@
       <article v-for="payment in customer.paymentList" v-else :key="payment.payment_uuid || payment.id || payment.payment_code" class="tagam-card p-4">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <p class="brand-kicker m-0">{{ payment.payment_name || payment.payment_code || "SAVED PAYMENT" }}</p>
+            <p class="brand-kicker m-0">{{ paymentKicker(payment) }}</p>
             <h2 class="m-0 mt-1 truncate text-xl font-black">{{ paymentTitle(payment) }}</h2>
             <p class="muted m-0 mt-1 text-sm">{{ paymentSubtitle(payment) }}</p>
           </div>
@@ -178,7 +178,28 @@ const copy = computed(() => {
   };
 });
 
-const paymentTitle = (payment) => payment.attr1 || payment.card_name || payment.payment_name || payment.provider || copy.value.fallbackTitle;
+const isCodPayment = (payment) => {
+  const code = String(payment?.payment_code ?? "").toLowerCase();
+  const name = String(payment?.payment_name || payment?.attr1 || "").toLowerCase();
+  return code === "cod" || /cash\s+on\s+delivery/.test(name);
+};
+const paymentDisplayName = (payment) => {
+  if (isCodPayment(payment)) {
+    if (app.language === "en") return "Cash on delivery";
+    if (app.language === "tk") return "Eltip berlende nagt töleg";
+    return "Наличными при получении";
+  }
+  return payment.attr1 || payment.card_name || payment.payment_name || payment.provider || copy.value.fallbackTitle;
+};
+const paymentKicker = (payment) => {
+  if (isCodPayment(payment)) {
+    if (app.language === "en") return "Cash";
+    if (app.language === "tk") return "Nagt";
+    return "Наличные";
+  }
+  return payment.payment_name || payment.payment_code || "SAVED PAYMENT";
+};
+const paymentTitle = (payment) => paymentDisplayName(payment);
 const paymentSubtitle = (payment) => payment.attr2 || payment.card_number || "";
 
 const load = () => {

@@ -1,11 +1,17 @@
 <template>
-  <section class="page fade-up">
+  <section class="page favourites-page fade-up">
     <AppHeader :title="text.title" :icon="Heart" :action-label="text.refresh" @action="load" />
+
+    <div v-if="!client.authenticated" class="tagam-card favourites-hero p-5">
+      <p class="brand-kicker m-0">TAGAM FAVOURITES</p>
+      <h1 class="m-0 mt-1 text-2xl font-black">{{ text.hero }}</h1>
+      <p class="muted m-0 mt-1 text-sm">{{ text.description }}</p>
+    </div>
 
     <AuthBridge v-if="!client.authenticated" @authenticated="load" />
 
     <template v-else>
-      <div class="tagam-card p-5">
+      <div class="tagam-card favourites-hero p-5">
         <p class="brand-kicker m-0">TAGAM FAVOURITES</p>
         <h1 class="m-0 mt-1 text-2xl font-black">{{ text.hero }}</h1>
         <p class="muted m-0 mt-1 text-sm">{{ text.description }}</p>
@@ -22,7 +28,7 @@
         <div v-for="index in 3" :key="index" class="warm-skeleton h-28 rounded-[8px]" />
       </div>
 
-      <article v-for="item in favourites" v-else :key="itemKey(item)" class="tagam-card tap-motion overflow-hidden">
+      <article v-for="item in favourites" v-else :key="itemKey(item)" class="tagam-card favourite-card tap-motion overflow-hidden">
         <RouterLink class="grid grid-cols-[104px_1fr] gap-3 p-3" :to="itemLink(item)">
           <img v-if="imageOf(item)" class="h-[92px] w-[104px] rounded-[8px] object-cover" :src="imageOf(item)" :alt="titleOf(item)" />
           <div v-else class="grid h-[92px] w-[104px] place-items-center rounded-[8px] bg-[var(--app-control)]">
@@ -39,7 +45,7 @@
         </button>
       </article>
 
-      <div v-if="!customer.favouritesLoading && !favourites.length" class="soft-card p-5 text-center">
+      <div v-if="!customer.favouritesLoading && !favourites.length" class="soft-card favourites-empty-card p-5 text-center">
         <h2 class="m-0 text-xl font-black">{{ text.emptyTitle }}</h2>
         <p class="muted m-0 mt-2 text-sm">{{ text.emptyText }}</p>
       </div>

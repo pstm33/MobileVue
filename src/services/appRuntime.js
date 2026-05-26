@@ -288,8 +288,8 @@ const setupPush = async (router) => {
     await safeCall("push channel", () =>
       PushNotifications.createChannel({
         id: config.channel,
-        name: "KMRS",
-        description: "KMRS order and chat notifications",
+        name: "Tagam Delivery",
+        description: "Order and chat notifications",
         importance: 5,
         visibility: 1,
         sound: config.sound,

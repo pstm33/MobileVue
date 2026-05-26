@@ -24,18 +24,19 @@
             <input
               v-model="searchQuery"
               class="min-w-0 flex-1 bg-transparent text-sm font-black text-white outline-none placeholder:text-white/55"
-              placeholder="Введите адрес, район или ориентир"
+              :placeholder="copy.searchPlaceholder"
               @input="queueSearch"
             />
           </label>
 
           <div v-if="searchLoading || suggestions.length" class="mt-2 grid max-h-56 gap-1 overflow-y-auto rounded-[8px] bg-black/68 p-1 backdrop-blur-xl">
-            <div v-if="searchLoading" class="px-3 py-2 text-xs font-black text-white/70">Ищем адрес...</div>
+            <div v-if="searchLoading" class="px-3 py-2 text-xs font-black text-white/70">{{ copy.searching }}</div>
             <button
               v-for="suggestion in suggestions"
               :key="suggestion.id"
               class="flex items-start gap-3 rounded-[8px] px-3 py-2 text-left text-white hover:bg-white/10"
               type="button"
+              :aria-label="suggestionLabel(suggestion)"
               @click="chooseSuggestion(suggestion)"
             >
               <MapPin :size="16" class="mt-0.5 shrink-0 text-[var(--app-accent)]" />
@@ -50,7 +51,7 @@
 
       <div class="pointer-events-none absolute inset-x-4 bottom-4 z-[410]">
         <div class="mx-auto w-fit rounded-full border border-white/10 bg-black/70 px-4 py-2 text-center text-xs font-black text-white shadow-2xl backdrop-blur-xl">
-          {{ moving ? "Отпустите карту, чтобы выбрать точку" : "Двигайте карту, пин остается в центре" }}
+          {{ moving ? copy.moving : copy.idle }}
         </div>
       </div>
     </div>
@@ -67,23 +68,12 @@
       </div>
 
       <div class="grid grid-cols-2 gap-3">
-        <label class="grid gap-2">
-          <span class="text-xs font-black uppercase text-white/55">Lat</span>
-          <input v-model="latInput" class="field" inputmode="decimal" @change="applyManualCoordinates" />
-        </label>
-        <label class="grid gap-2">
-          <span class="text-xs font-black uppercase text-white/55">Lng</span>
-          <input v-model="lngInput" class="field" inputmode="decimal" @change="applyManualCoordinates" />
-        </label>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3">
         <button class="rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm font-black" type="button" :disabled="loading" @click="useBrowserLocation">
           <LocateFixed :size="17" class="inline align-[-3px]" />
-          Моя геопозиция
+          {{ copy.myLocation }}
         </button>
         <button class="rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm font-black" type="button" :disabled="loading || !suggestions.length" @click="clearSearch">
-          Очистить поиск
+          {{ copy.clearSearch }}
         </button>
       </div>
 
@@ -116,6 +106,50 @@ const props = defineProps({
 });
 const app = useAppStore();
 const session = useSessionStore();
+const copy = computed(() => {
+  const map = {
+    ru: {
+      searchPlaceholder: "Введите адрес, район или ориентир",
+      searching: "Ищем адрес...",
+      moving: "Отпустите карту, чтобы выбрать точку",
+      idle: "Двигайте карту, пин остается в центре",
+      myLocation: "Моя геопозиция",
+      clearSearch: "Очистить поиск",
+      locationDenied: "Доступ к геопозиции не разрешен. Можно выбрать точку на карте вручную.",
+      locationUnavailable: "Не удалось получить GPS. Можно выбрать точку на карте вручную.",
+      unsupported: "Браузер не поддерживает геолокацию.",
+      pinSubtitle: "Выбранная точка на карте",
+      detailsFailed: "Не удалось получить координаты для этого адреса.",
+    },
+    tk: {
+      searchPlaceholder: "Salgy, etrap ýa-da ugur giriziň",
+      searching: "Salgy gözlenýär...",
+      moving: "Nokat saýlamak üçin kartany goýberiň",
+      idle: "Kartany süýşüriň, bellik merkezde galar",
+      myLocation: "Meniň ýerleşýän ýerim",
+      clearSearch: "Gözlegi arassala",
+      locationDenied: "Ýerleşýän ýere rugsat berilmedi. Nokady kartadan el bilen saýlap bilersiňiz.",
+      locationUnavailable: "GPS alyp bolmady. Nokady kartadan el bilen saýlap bilersiňiz.",
+      unsupported: "Brauzer geolokasiýany goldamaýar.",
+      pinSubtitle: "Kartada saýlanan nokat",
+      detailsFailed: "Bu salgy üçin koordinatlary alyp bolmady.",
+    },
+    en: {
+      searchPlaceholder: "Enter address, district or landmark",
+      searching: "Searching address...",
+      moving: "Release the map to choose the point",
+      idle: "Move the map, the pin stays centered",
+      myLocation: "My location",
+      clearSearch: "Clear search",
+      locationDenied: "Location permission was not granted. You can choose the point on the map manually.",
+      locationUnavailable: "Could not get GPS. You can choose the point on the map manually.",
+      unsupported: "This browser does not support geolocation.",
+      pinSubtitle: "Selected point on the map",
+      detailsFailed: "Could not get coordinates for this address.",
+    },
+  };
+  return map[app.language] || map.ru;
+});
 
 const mapEl = ref(null);
 const map = ref(null);
@@ -124,8 +158,6 @@ const moving = ref(false);
 const error = ref("");
 const placeData = ref(null);
 const coordinates = ref(session.coordinates || { lat: 37.9601, lng: 58.3261 });
-const latInput = ref(String(Number(coordinates.value.lat).toFixed(6)));
-const lngInput = ref(String(Number(coordinates.value.lng).toFixed(6)));
 const searchQuery = ref("");
 const suggestions = ref([]);
 const searchLoading = ref(false);
@@ -139,13 +171,8 @@ const addressTitle = computed(
     app.copy.location.pinTitle
 );
 const addressSubtitle = computed(
-  () => placeData.value?.place_text || `${coordinates.value.lat}, ${coordinates.value.lng}`
+  () => placeData.value?.place_text || copy.value.pinSubtitle
 );
-
-const syncInputs = () => {
-  latInput.value = String(Number(coordinates.value.lat).toFixed(6));
-  lngInput.value = String(Number(coordinates.value.lng).toFixed(6));
-};
 
 const reverseGeocode = async () => {
   loading.value = true;
@@ -166,7 +193,6 @@ const syncFromMapCenter = async () => {
   if (!map.value) return;
   const center = map.value.getCenter();
   coordinates.value = { lat: center.lat, lng: center.lng };
-  syncInputs();
   await reverseGeocode();
 };
 
@@ -177,13 +203,8 @@ const moveMapToCoordinates = () => {
 
 const setCoordinates = async (lat, lng) => {
   coordinates.value = { lat: Number(lat), lng: Number(lng) };
-  syncInputs();
   moveMapToCoordinates();
   await reverseGeocode();
-};
-
-const applyManualCoordinates = () => {
-  setCoordinates(latInput.value, lngInput.value);
 };
 
 const normalizeSuggestionResults = (response) => {
@@ -192,6 +213,9 @@ const normalizeSuggestionResults = (response) => {
   if (data && typeof data === "object") return Object.values(data);
   return [];
 };
+
+const suggestionLabel = (suggestion) =>
+  [suggestion.addressLine1 || suggestion.description, suggestion.addressLine2].filter(Boolean).join(", ");
 
 const queueSearch = () => {
   window.clearTimeout(searchTimer);
@@ -230,7 +254,7 @@ const chooseSuggestion = async (suggestion) => {
     const response = await APIinterface.getLocationDetails(suggestion.id, suggestion.description || "");
     const data = response.details?.data ?? null;
     if (!data?.latitude || !data?.longitude) {
-      throw new Error("Не удалось получить координаты для этого адреса.");
+      throw new Error(copy.value.detailsFailed);
     }
 
     const parsedAddress = data.parsed_address || {};
@@ -246,7 +270,6 @@ const chooseSuggestion = async (suggestion) => {
     searchQuery.value = suggestion.description || "";
     suggestions.value = [];
     coordinates.value = { lat: Number(data.latitude), lng: Number(data.longitude) };
-    syncInputs();
     moveMapToCoordinates();
   } catch (caught) {
     error.value = caught?.message ?? String(caught);
@@ -262,7 +285,7 @@ const clearSearch = () => {
 
 const useBrowserLocation = () => {
   if (!navigator.geolocation) {
-    error.value = "Браузер не поддерживает геолокацию.";
+    error.value = copy.value.unsupported;
     return;
   }
 
@@ -273,7 +296,8 @@ const useBrowserLocation = () => {
     },
     (caught) => {
       loading.value = false;
-      error.value = caught.message || "Не удалось получить GPS.";
+      error.value = caught?.code === 1 ? copy.value.locationDenied : copy.value.locationUnavailable;
+      reverseGeocode().catch(() => {});
     },
     { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
   );

@@ -1,5 +1,5 @@
 <template>
-  <section class="tagam-card grid gap-4 p-4">
+  <section class="auth-bridge tagam-card grid gap-4 p-4">
     <div class="flex items-start justify-between gap-3">
       <div>
         <p class="brand-kicker m-0">{{ copy.kicker }}</p>

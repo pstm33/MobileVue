@@ -1,6 +1,6 @@
 <template>
   <section v-if="settings.hasSocialLogin" class="grid gap-3">
-    <div class="grid gap-2" :class="canUseApple ? 'grid-cols-3' : 'grid-cols-2'">
+    <div class="grid gap-2" :class="socialGridClass">
       <button
         v-if="settings.social.google"
         class="social-button"
@@ -26,7 +26,7 @@
       </button>
 
       <button
-        v-if="canUseApple"
+        v-if="settings.social.apple"
         class="social-button"
         type="button"
         :disabled="busy || !initialized"
@@ -95,13 +95,13 @@ const socialCopy = {
     phone: "Телефон",
     sending: "Отправляем...",
     reauthTitle: (provider) => `${provider} требует повторной авторизации.`,
-    reauthText: "Закройте окно входа и попробуйте еще раз. Если ошибка повторяется, используйте Facebook, Email или гостевой вход.",
+    reauthText: "Закройте окно входа и попробуйте еще раз. Если ошибка повторяется, используйте Email или гостевой вход.",
     cancelledTitle: "Вход отменен.",
     cancelledText: "Попробуйте еще раз или продолжите как гость.",
     notConfiguredTitle: (provider) => `${provider} еще не настроен.`,
     notConfiguredText: "Провайдер включен, но приложению не хватает OAuth-настроек. Сейчас можно использовать гостевой или Email-вход.",
     failedTitle: (provider) => `${provider} не смог выполнить вход.`,
-    failedText: "Попробуйте еще раз. Если вход не пройдет, используйте Facebook, Email или гостевой режим.",
+    failedText: "Попробуйте еще раз. Если вход не пройдет, используйте Email или гостевой режим.",
     loading: "Социальный вход еще загружается. Попробуйте еще раз через секунду.",
     webHint: " Для web-входа также проверьте OAuth redirect origins.",
   },
@@ -113,13 +113,13 @@ const socialCopy = {
     phone: "Telefon",
     sending: "Iberilýär...",
     reauthTitle: (provider) => `${provider} gaýtadan ygtyýarlandyrmagy talap edýär.`,
-    reauthText: "Giriş penjiresini ýapyň we gaýtadan synanyşyň. Gaýtalansa Facebook, Email ýa-da myhman girişini ulanyň.",
+    reauthText: "Giriş penjiresini ýapyň we gaýtadan synanyşyň. Gaýtalansa Email ýa-da myhman girişini ulanyň.",
     cancelledTitle: "Giriş ýatyryldy.",
     cancelledText: "Gaýtadan synanyşyň ýa-da myhman hökmünde dowam ediň.",
     notConfiguredTitle: (provider) => `${provider} entek sazlanmady.`,
     notConfiguredText: "Provider açyk, ýöne OAuth sazlamalary ýetmeýär. Häzir myhman ýa-da Email girişini ulanyp bolýar.",
     failedTitle: (provider) => `${provider} giriş edip bilmedi.`,
-    failedText: "Gaýtadan synanyşyň. Bolmasa Facebook, Email ýa-da myhman režimini ulanyň.",
+    failedText: "Gaýtadan synanyşyň. Bolmasa Email ýa-da myhman režimini ulanyň.",
     loading: "Sosial giriş ýüklenýär. Bir sekuntdan gaýtadan synanyşyň.",
     webHint: " Web giriş üçin OAuth redirect origins hem barlaň.",
   },
@@ -131,29 +131,103 @@ const socialCopy = {
     phone: "Phone",
     sending: "Sending...",
     reauthTitle: (provider) => `${provider} needs reauthorization.`,
-    reauthText: "Close the sign-in window and try again. If it repeats, use Facebook, Email or guest sign in.",
+    reauthText: "Close the sign-in window and try again. If it repeats, use Email or guest sign in.",
     cancelledTitle: "Sign in cancelled.",
     cancelledText: "Try again or continue as guest.",
     notConfiguredTitle: (provider) => `${provider} is not configured yet.`,
     notConfiguredText: "The provider is enabled, but OAuth settings are missing. Guest or Email sign in is available now.",
     failedTitle: (provider) => `${provider} could not sign in.`,
-    failedText: "Try again. If sign in still fails, use Facebook, Email or guest mode.",
+    failedText: "Try again. If sign in still fails, use Email or guest mode.",
     loading: "Social sign in is still loading. Try again in a second.",
     webHint: " For web sign in, also check OAuth redirect origins.",
   },
 };
 
 const copy = computed(() => socialCopy[app.language] || socialCopy.ru);
+const socialGridClass = computed(() => {
+  const count = [settings.social.google, settings.social.facebook, settings.social.apple].filter(Boolean).length;
+  if (count <= 1) return "grid-cols-1";
+  if (count === 2) return "grid-cols-2";
+  return "grid-cols-3";
+});
 const canComplete = computed(
   () => pendingCompletion.value?.uuid && completion.first_name && completion.last_name && completion.mobile_prefix && completion.mobile_number
 );
-const canUseApple = computed(() => settings.social.apple && Capacitor.getPlatform() !== "android");
-
 const providerNames = {
   google: "Google",
   facebook: "Facebook",
   apple: "Apple",
 };
+
+const decodeJwtPayload = (token = "") => {
+  try {
+    const [, payload = ""] = String(token).split(".");
+    if (!payload) return {};
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const decoded = atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "="));
+    return JSON.parse(decodeURIComponent(escape(decoded)));
+  } catch {
+    return {};
+  }
+};
+
+const normalizeAppleUser = (rawUser) => {
+  if (!rawUser) return {};
+  if (typeof rawUser === "object") return rawUser;
+  try {
+    return JSON.parse(rawUser);
+  } catch {
+    return {};
+  }
+};
+
+const applePayloadToSocialPayload = (payload = {}) => {
+  const idToken = payload.id_token || payload.identityToken || payload.social_token || "";
+  const claims = decodeJwtPayload(idToken);
+  const user = normalizeAppleUser(payload.user);
+  const name = user.name || {};
+
+  return {
+    id: String(payload.id || claims.sub || user.sub || user.id || idToken || payload.code || ""),
+    email_address: String(payload.email_address || payload.email || claims.email || user.email || ""),
+    first_name: String(payload.first_name || payload.given_name || name.firstName || name.givenName || ""),
+    last_name: String(payload.last_name || payload.family_name || name.lastName || name.familyName || ""),
+    social_strategy: "apple",
+    social_token: String(idToken || payload.code || payload.authorizationCode || ""),
+  };
+};
+
+const waitForKmrsAppleCallback = () =>
+  new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => {
+      window.removeEventListener("message", handleMessage);
+      reject(new Error("Apple callback timeout"));
+    }, 180000);
+
+    function handleMessage(event) {
+      if (event.origin && event.origin !== window.location.origin) return;
+      if (event.data?.source !== "apple-login") return;
+
+      window.clearTimeout(timeout);
+      window.removeEventListener("message", handleMessage);
+
+      const payload = event.data?.payload || {};
+      if (payload.error) {
+        reject(new Error(payload.error));
+        return;
+      }
+
+      const socialPayload = applePayloadToSocialPayload(payload);
+      if (!socialPayload.id && !socialPayload.social_token && !socialPayload.email_address) {
+        reject(new Error("Apple callback did not include user data"));
+        return;
+      }
+
+      resolve(socialPayload);
+    }
+
+    window.addEventListener("message", handleMessage);
+  });
 
 const socialErrorMessage = (caught, provider = "") => {
   const raw = caught?.message ?? String(caught ?? "");
@@ -194,10 +268,14 @@ const initializeSocialLogin = async () => {
     if (!settings.hasSocialLogin) return;
 
     const config = {};
+    const webRedirectUrl = `${window.location.origin}/user/social_callback`;
     if (settings.social.google && settings.social.googleClientId) {
       config.google = {
         webClientId: settings.social.googleClientId,
+        iOSClientId: settings.social.googleIosClientId,
+        iOSServerClientId: settings.social.googleIosServerClientId,
         mode: "online",
+        redirectUrl: Capacitor.isNativePlatform() ? undefined : webRedirectUrl,
       };
     }
     if (settings.social.facebook && settings.social.facebookAppId) {
@@ -206,10 +284,12 @@ const initializeSocialLogin = async () => {
         clientToken: settings.social.facebookClientToken,
       };
     }
-    if (canUseApple.value && settings.social.appleClientId) {
+    if (settings.social.apple && settings.social.appleClientId) {
       config.apple = {
         clientId: settings.social.appleClientId,
-        redirectUrl: settings.social.appleRedirectUrl,
+        redirectUrl: Capacitor.isNativePlatform()
+          ? settings.social.appleAppRedirectUrl || settings.social.appleRedirectUrl
+          : settings.social.appleWebRedirectUrl || `${window.location.origin}/user/apple_callback`,
       };
     }
 
@@ -254,7 +334,7 @@ const loginWithGoogle = () =>
   runProvider("google", async () => {
     const results = await SocialLogin.login({
       provider: "google",
-      options: { scopes: ["email", "profile"], forceRefreshToken: true },
+      options: { scopes: ["email", "profile"], forceRefreshToken: true, filterByAuthorizedAccounts: false },
     });
     const profile = results.result.profile;
     return {
@@ -295,10 +375,23 @@ const loginWithFacebook = () =>
 
 const loginWithApple = () =>
   runProvider("apple", async () => {
-    const results = await SocialLogin.login({
-      provider: "apple",
-      options: { scopes: ["email", "name"] },
-    });
+    const results = await (Capacitor.isNativePlatform()
+      ? SocialLogin.login({
+          provider: "apple",
+          options: { scopes: ["email", "name"] },
+        })
+      : Promise.race([
+          SocialLogin.login({
+            provider: "apple",
+            options: { scopes: ["email", "name"] },
+          }),
+          waitForKmrsAppleCallback().then((payload) => ({ provider: "apple", result: { kmrsPayload: payload } })),
+        ]));
+
+    if (results.result.kmrsPayload) {
+      return results.result.kmrsPayload;
+    }
+
     const profile = results.result.profile;
     return {
       id: profile.user,

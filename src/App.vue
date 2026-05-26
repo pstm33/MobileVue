@@ -31,7 +31,7 @@ const cart = useCartStore();
 const cartBadge = computed(() => (cart.itemsCount > 99 ? "99+" : String(cart.itemsCount)));
 
 const tabs = computed(() => [
-  { to: "/home", label: app.copy.tabs.home, icon: Home, match: ["/home", "/feed"] },
+  { to: "/home", label: app.copy.tabs.home, icon: Home, match: ["/home", "/feed", "/offers", "/booking", "/categories", "/view/categories"] },
   { to: "/search", label: app.copy.tabs.search, icon: Search, match: ["/search", "/restaurant"] },
   { to: "/cart", label: app.copy.tabs.cart, icon: ShoppingBag, match: ["/cart", "/checkout"] },
   { to: "/tracking", label: app.copy.tabs.track, icon: MapPinned, match: ["/tracking"] },

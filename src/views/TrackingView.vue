@@ -1,8 +1,8 @@
 <template>
-  <section class="page fade-up">
+  <section class="page tracking-page fade-up">
     <AppHeader :title="copy.title" :icon="MessageCircle" :action-label="orderNumber || copy.action" />
 
-    <div v-if="!canTrack" class="tagam-card tagam-glow p-5">
+    <div v-if="!canTrack" class="tagam-card tagam-glow tracking-empty-card p-5">
       <p class="brand-kicker m-0">{{ emptyCopy.kicker }}</p>
       <h1 class="m-0 mt-2 text-3xl font-black">{{ emptyCopy.title }}</h1>
       <p class="muted m-0 mt-3 text-sm">{{ emptyCopy.text }}</p>
@@ -43,7 +43,7 @@
       </div>
     </div>
 
-    <div v-else-if="canTrack" class="soft-card grid gap-4 p-5">
+    <div v-else-if="canTrack" class="soft-card tracking-status-card grid gap-4 p-5">
       <div>
         <p class="brand-kicker m-0">{{ etaLabel }}</p>
         <h1 class="headline m-0 mt-2">{{ headline }}</h1>
@@ -61,10 +61,10 @@
     </div>
 
     <div v-if="canTrack && orders.detailsError" class="rounded-[8px] border border-amber-300/20 bg-amber-300/10 p-3 text-sm font-bold text-amber-50">
-      {{ orders.detailsError }}
+      {{ detailsErrorText }}
     </div>
 
-    <section v-if="canTrack" class="soft-card p-4">
+    <section v-if="canTrack" class="soft-card tracking-progress-card p-4">
       <div class="mb-4 flex items-center justify-between gap-3">
         <div>
           <p class="brand-kicker m-0">{{ trackingText.kicker }}</p>
@@ -104,7 +104,7 @@
       </div>
     </section>
 
-    <section v-if="canTrack && driverInfo" class="soft-card p-4">
+    <section v-if="canTrack && driverInfo" class="soft-card tracking-driver-card p-4">
       <p class="brand-kicker m-0">{{ trackingText.courier }}</p>
       <div class="mt-3 flex items-center gap-3">
         <img v-if="driverInfo.photo" class="h-14 w-14 rounded-full object-cover" :src="driverInfo.photo" alt="" />
@@ -172,6 +172,7 @@ const trackingText = computed(() => {
       },
       record: "Ýazgy",
       status: "Ýagdaý",
+      missingOrder: "Bu sargyt tapylmady. Bar bolan sargydy saýlamak üçin sargyt taryhyny açyň.",
     };
   }
   if (app.language === "en") {
@@ -198,6 +199,7 @@ const trackingText = computed(() => {
       },
       record: "Record",
       status: "Status",
+      missingOrder: "We could not find this order. Choose an existing order from your order history.",
     };
   }
   return {
@@ -223,6 +225,7 @@ const trackingText = computed(() => {
     },
     record: "Запись",
     status: "Статус",
+    missingOrder: "Мы не нашли этот заказ. Выберите существующий заказ из истории заказов.",
   };
 });
 const emptyCopy = computed(() => {
@@ -236,6 +239,8 @@ const emptyCopy = computed(() => {
   };
 });
 const details = computed(() => (orderUuid.value ? orders.orderDetails(orderUuid.value) : null));
+const isMissingOrderError = (value) => /order not found|record not found|no results/i.test(String(value || ""));
+const detailsErrorText = computed(() => (isMissingOrderError(orders.detailsError) ? trackingText.value.missingOrder : orders.detailsError));
 const liveTracking = computed(() => (orderUuid.value ? orders.trackingDetails(orderUuid.value) : null));
 const progressData = computed(() => liveTracking.value || details.value?.progress || {});
 const orderInfo = computed(() => details.value?.order?.order_info ?? details.value?.order_info ?? {});

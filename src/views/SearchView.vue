@@ -1,5 +1,5 @@
 <template>
-  <section class="page fade-up">
+  <section class="page search-page fade-up">
     <AppHeader :title="app.copy.search.title" :icon="Search" />
 
     <label class="tagam-card flex min-h-14 items-center gap-3 px-4">
@@ -15,10 +15,10 @@
       </button>
     </label>
 
-    <section class="soft-card grid gap-3 p-4">
+    <section class="soft-card search-filter-panel grid gap-3 p-4">
       <div class="flex items-center justify-between gap-3">
         <div>
-          <p class="brand-kicker m-0">FILTERS</p>
+          <p class="brand-kicker m-0">{{ filterCopy.kicker }}</p>
           <h2 class="m-0 mt-1 text-lg font-black">Подобрать быстрее</h2>
         </div>
         <SlidersHorizontal class="text-[var(--app-accent)]" :size="21" />
@@ -102,7 +102,7 @@
         </div>
       </div>
 
-      <section v-if="filteredResults.restaurants.length" class="grid gap-3">
+      <section v-if="filteredResults.restaurants.length" class="search-results-panel grid gap-3">
         <div class="section-title">
           <h2>{{ app.copy.search.restaurants }}</h2>
           <span class="muted text-sm">{{ filteredResults.restaurants.length }}</span>
@@ -111,7 +111,7 @@
         <RouterLink
           v-for="(restaurant, index) in filteredResults.restaurants"
           :key="restaurant.merchant_uuid || restaurant.merchant_id"
-          class="tagam-card stagger-item tap-motion flex gap-3 p-3"
+          class="tagam-card search-restaurant-card stagger-item tap-motion flex gap-3 p-3"
           :style="{ '--stagger-delay': `${Math.min(index, 6) * 45}ms` }"
           :to="`/restaurant/${restaurant.restaurant_slug}`"
         >
@@ -133,7 +133,7 @@
         </RouterLink>
       </section>
 
-      <section v-if="filteredResults.items.length" class="grid gap-3">
+      <section v-if="filteredResults.items.length" class="search-results-panel grid gap-3">
         <div class="section-title">
           <h2>{{ app.copy.search.dishes }}</h2>
           <span class="muted text-sm">{{ filteredResults.items.length }}</span>
@@ -142,7 +142,7 @@
         <article
           v-for="(item, index) in filteredResults.items"
           :key="`${item.slug}-${item.item_uuid || item.item_id}`"
-          class="tagam-card stagger-item flex gap-3 p-3"
+          class="tagam-card search-dish-card stagger-item flex gap-3 p-3"
           :style="{ '--stagger-delay': `${Math.min(index, 6) * 45}ms` }"
         >
           <img
@@ -195,9 +195,19 @@ const feed = useMerchantFeedStore();
 const search = useSearchStore();
 const route = useRoute();
 const router = useRouter();
-const query = ref(String(route.query.q || ""));
+const routeQueryText = () => String(route.query.q || route.query.query || "");
+const query = ref(routeQueryText());
 const sortMode = ref(String(route.query.sort || "recommended"));
 const selectedCuisines = ref(String(route.query.cuisine || "").split("|").filter(Boolean));
+const filterCopy = computed(() => {
+  if (app.language === "en") {
+    return { kicker: "FILTERS", title: "Find faster", clear: "Clear filters" };
+  }
+  if (app.language === "tk") {
+    return { kicker: "SAYLA", title: "Has calt sayla", clear: "Filtrleri arassala" };
+  }
+  return { kicker: "ПОДБОР", title: "Подобрать быстрее", clear: "Очистить фильтры" };
+});
 
 const sortOptions = [
   { value: "recommended", label: "Рекомендуемые" },
@@ -267,9 +277,9 @@ onMounted(() => {
 });
 
 watch(
-  () => route.query.q,
-  (value) => {
-    const next = String(value || "");
+  () => [route.query.q, route.query.query],
+  () => {
+    const next = routeQueryText();
     if (next !== query.value) {
       query.value = next;
     }

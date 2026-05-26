@@ -1,8 +1,8 @@
 <template>
-  <section class="page fade-up">
+  <section class="page orders-page fade-up">
     <AppHeader :title="text.title" :icon="ReceiptText" action-label="Orders" />
 
-    <label class="tagam-card flex min-h-14 items-center gap-3 px-4">
+    <label class="tagam-card orders-search flex min-h-14 items-center gap-3 px-4">
       <Search :size="20" class="text-[var(--app-accent)]" />
       <input v-model="query" class="min-w-0 flex-1 bg-transparent text-base font-bold outline-none placeholder:text-[var(--app-muted)]" :placeholder="text.searchPlaceholder" />
       <button v-if="query" class="icon-button !h-9 !w-9" type="button" :aria-label="text.clear" @click="query = ''">
@@ -21,7 +21,7 @@
     </div>
 
     <template v-else>
-      <article v-for="order in filteredOrders" :key="order.order_uuid || order.order_id" class="tagam-card tap-motion p-4">
+      <article v-for="order in filteredOrders" :key="order.order_uuid || order.order_id" class="tagam-card order-history-card tap-motion p-4">
         <RouterLink :to="{ path: '/order/details', query: { order_uuid: order.order_uuid } }" class="block">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
@@ -52,14 +52,14 @@
         {{ orders.buyAgainError }}
       </p>
 
-      <div v-if="!client.authenticated" class="tagam-card p-5 text-center">
+      <div v-if="!client.authenticated" class="tagam-card orders-empty-card p-5 text-center">
         <p class="brand-kicker m-0">TAGAM CLUB</p>
         <h2 class="m-0 mt-2 text-2xl font-black">{{ text.signInTitle }}</h2>
         <p class="muted m-0 mt-2 text-sm">{{ text.signInText }}</p>
         <RouterLink class="primary-button tap-motion mt-4 w-full" to="/account">{{ text.openProfile }}</RouterLink>
       </div>
 
-      <div v-else-if="!filteredOrders.length" class="soft-card p-5 text-center">
+      <div v-else-if="!filteredOrders.length" class="soft-card orders-empty-card p-5 text-center">
         <h2 class="m-0 text-xl font-black">{{ text.emptyTitle }}</h2>
         <p class="muted m-0 mt-2 text-sm">{{ text.emptyText }}</p>
         <RouterLink class="primary-button tap-motion mt-4 w-full" to="/home">{{ text.toRestaurants }}</RouterLink>

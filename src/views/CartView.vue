@@ -1,5 +1,5 @@
 <template>
-  <section class="page fade-up">
+  <section class="page cart-page fade-up">
     <AppHeader :title="copy.title" :icon="ShoppingBag" :action-label="copy.title" />
 
     <div v-if="cart.loading && !cart.cart" class="grid gap-4">
@@ -8,7 +8,7 @@
       <div class="soft-card warm-skeleton h-32" />
     </div>
 
-    <div v-else-if="!cart.cartUuid" class="soft-card grid gap-4 p-5 text-center">
+    <div v-else-if="!cart.cartUuid" class="soft-card cart-empty-card grid gap-4 p-5 text-center">
       <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-300/10 text-emerald-300">
         <ShoppingBag :size="28" />
       </div>
@@ -28,7 +28,7 @@
     </div>
 
     <template v-else>
-      <section v-if="cart.merchant" class="glass flex items-center gap-3 rounded-[8px] p-3">
+      <section v-if="cart.merchant" class="cart-merchant glass flex items-center gap-3 rounded-[8px] p-3">
         <img
           v-if="cart.merchant.logo"
           class="h-14 w-14 rounded-[8px] object-cover"
@@ -47,8 +47,8 @@
         <RouterLink class="primary-button" :to="restaurantLink">{{ copy.openMenu }}</RouterLink>
       </section>
 
-      <section v-else class="grid gap-3">
-        <article v-for="(item, index) in cart.items" :key="item.cart_row" class="tagam-card stagger-item grid gap-3 p-3" :style="{ '--stagger-delay': `${Math.min(index, 6) * 45}ms` }">
+      <section v-else class="cart-items grid gap-3">
+        <article v-for="(item, index) in cart.items" :key="item.cart_row" class="tagam-card cart-item-card stagger-item grid gap-3 p-3" :style="{ '--stagger-delay': `${Math.min(index, 6) * 45}ms` }">
           <div class="flex gap-3">
             <img
               v-if="item.url_image"
@@ -108,18 +108,29 @@
         </article>
       </section>
 
-      <section v-if="cart.summary.length" class="soft-card grid gap-3 p-4">
+      <section v-if="cart.summary.length" class="soft-card cart-summary grid gap-3 p-4">
         <div v-for="row in cart.summary" :key="row.type || row.name" class="flex items-center justify-between gap-3">
           <span class="muted">{{ row.name }}</span>
           <strong>{{ row.value }}</strong>
         </div>
       </section>
 
-      <div v-if="cart.items.length" class="sticky bottom-4 z-20 grid gap-3">
+      <section v-if="cartBlockingErrors.length" class="soft-card cart-warning-card grid gap-2 p-4">
+        <p class="brand-kicker m-0">{{ cartAttentionTitle }}</p>
+        <p v-for="error in cartBlockingErrors" :key="error" class="m-0 text-sm font-bold text-amber-50">
+          {{ error }}
+        </p>
+      </section>
+
+      <div v-if="cart.items.length" class="cart-action-bar sticky bottom-4 z-20 grid gap-3">
         <button class="surface-button rounded-full px-4 py-3 text-sm font-black" type="button" @click="cart.clear">
           {{ copy.clear }}
         </button>
-        <RouterLink class="primary-button tap-motion w-full justify-between px-5" to="/checkout">
+        <button v-if="cartBlockingErrors.length" class="primary-button tap-motion w-full justify-between px-5 opacity-60" type="button" disabled>
+          <span>{{ cartFixLabel }}</span>
+          <strong>{{ cart.totalLabel }}</strong>
+        </button>
+        <RouterLink v-else class="primary-button tap-motion w-full justify-between px-5" to="/checkout">
           <span>{{ copy.checkout }}</span>
           <strong>{{ cart.totalLabel }}</strong>
         </RouterLink>
@@ -139,6 +150,22 @@ const app = useAppStore();
 const cart = useCartStore();
 const slug = computed(() => cart.merchant?.slug || "");
 const restaurantLink = computed(() => (slug.value ? `/restaurant/${slug.value}` : "/home"));
+const cartBlockingErrors = computed(() =>
+  [
+    ...(Array.isArray(cart.data?.error) ? cart.data.error : []),
+    ...(Array.isArray(cart.data?.errors) ? cart.data.errors : []),
+  ].filter(Boolean)
+);
+const cartAttentionTitle = computed(() => {
+  if (app.language === "en") return "Check cart";
+  if (app.language === "tk") return "Sebedi barlaň";
+  return "Проверьте корзину";
+});
+const cartFixLabel = computed(() => {
+  if (app.language === "en") return "Fix cart first";
+  if (app.language === "tk") return "Ilki düzediň";
+  return "Сначала исправьте";
+});
 
 const cartCopy = {
   ru: {

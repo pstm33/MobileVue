@@ -1,11 +1,13 @@
-import { createRouter, createWebHashHistory } from "vue-router";
+import { createRouter, createWebHashHistory, createWebHistory } from "vue-router";
+import { Capacitor } from "@capacitor/core";
+
+const isNative = Capacitor.isNativePlatform();
 
 const routes = [
   {
     path: "/",
     name: "root",
-    component: () => import("src/views/OnboardingView.vue"),
-    meta: { public: true, hideTabbar: true },
+    redirect: () => (isNative ? "/onboarding" : "/home"),
   },
   {
     path: "/onboarding",
@@ -48,6 +50,11 @@ const routes = [
     component: () => import("src/views/OffersView.vue"),
   },
   {
+    path: "/offers",
+    name: "offers",
+    component: () => import("src/views/OffersView.vue"),
+  },
+  {
     path: "/home/browse",
     name: "browse",
     component: () => import("src/views/SearchView.vue"),
@@ -75,6 +82,11 @@ const routes = [
   {
     path: "/view/categories",
     name: "categories",
+    component: () => import("src/views/CategoriesView.vue"),
+  },
+  {
+    path: "/categories",
+    name: "categories-direct",
     component: () => import("src/views/CategoriesView.vue"),
   },
   {
@@ -274,6 +286,10 @@ const routes = [
     component: () => import("src/views/AuthView.vue"),
   },
   {
+    path: "/auth",
+    redirect: (to) => ({ path: "/user/login", query: to.query }),
+  },
+  {
     path: "/account-menu",
     redirect: "/account",
   },
@@ -370,11 +386,15 @@ const routes = [
 ];
 
 export const router = createRouter({
-  history: createWebHashHistory(),
+  history: isNative ? createWebHashHistory() : createWebHistory(),
   routes,
 });
 
 router.beforeEach((to) => {
+  if (!isNative) {
+    return true;
+  }
+
   const introSeen = Boolean(localStorage.getItem("intro_seen"));
   const coordinates = localStorage.getItem("coordinates");
 
