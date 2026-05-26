@@ -1,11 +1,11 @@
 <template>
   <section class="page home-page fade-up">
-    <AppHeader :title="homeTitle" :icon="ShoppingBag" />
+    <AppHeader title="" :icon="ShoppingBag" />
 
     <div class="home-hero tagam-card tagam-glow p-5">
+      <img class="home-hero-bg-logo" src="/tagam-logo.svg" alt="" aria-hidden="true" />
       <div class="flex items-start justify-between gap-4">
         <div>
-          <img class="home-hero-logo mb-4" src="/tagam-logo.svg" alt="TAGAM" />
           <p class="brand-kicker m-0">{{ app.copy.home.pick }}</p>
           <h2 class="headline m-0 mt-2">{{ app.copy.home.hero }}</h2>
           <p class="muted mt-3 max-w-[20rem] text-sm">
@@ -13,7 +13,7 @@
           </p>
         </div>
         <div class="home-hero-icon grid h-20 w-20 shrink-0 place-items-center rounded-full bg-[var(--app-accent-soft)] ring-1 ring-[var(--app-border)]">
-          <img class="h-16 w-16 object-contain" src="/iconsplash.png" alt="" />
+          <img class="h-16 w-16 object-contain" src="/tagam-logo.svg" alt="" />
         </div>
       </div>
       <RouterLink class="primary-button tap-motion mt-5 w-full" to="/offers">
@@ -151,21 +151,12 @@ import { computed, onMounted, ref } from "vue";
 import { BadgePercent, CalendarDays, Flame, Gift, Heart, LayoutGrid, MapPin, ReceiptText, ShoppingBag, Sparkles, WalletCards, X } from "@lucide/vue";
 import { useAppStore } from "src/stores/app";
 import { useMerchantFeedStore } from "src/stores/merchantFeed";
-import { useSessionStore } from "src/stores/session";
 import AppHeader from "src/components/ui/AppHeader.vue";
 import { kmrsAsset } from "src/services/kmrsAssets";
 
 const app = useAppStore();
 const feed = useMerchantFeedStore();
-const session = useSessionStore();
 const selectedCuisines = ref([]);
-const homeTitle = computed(() => {
-  const location = String(session.locationLabel || "").trim();
-  if (!location || /выберите|choose|saýla/i.test(location)) {
-    return "TAGAM Delivery";
-  }
-  return `${app.copy.home.delivery}: ${location}`;
-});
 
 const insightLabels = {
   ru: {
