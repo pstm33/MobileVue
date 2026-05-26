@@ -29,7 +29,7 @@ C:\Users\ps\Documents\Codex\2026-05-21\kmrs-tagam-delivery-15151-root-ias141328i
   `C:\Users\ps\Documents\Claude\KMRS`
 - Git remote: `https://github.com/pstm33/MobileVue.git`
 - Текущая ветка: `tagam-vite-xcode-cloud`
-- Текущий HEAD на момент паспорта: `133c188`
+- Последний функциональный HEAD публикационного прохода: `133c188`; после него паспорт обновлялся отдельными docs-коммитами. Актуальный HEAD проверять командой `git rev-parse --short HEAD`.
 - В main не делать force push: `origin/main` расходится.
 
 ## Текущие версии и сборки
@@ -268,7 +268,7 @@ cd android
   - создан и отправлен коммит `f0a77ca Prepare Tagam delivery release 2.0.5`;
   - после коммита обнаружен отдельный локальный diff в `src/views/HomeView.vue` с обрывком script-логики; он исправлен минимально, `npm run build` прошел успешно;
   - создан и отправлен второй коммит `133c188 Fix home hero release tweak`;
-  - ветка `tagam-vite-xcode-cloud` запушена в `origin`, текущий HEAD `133c188`;
+  - ветка `tagam-vite-xcode-cloud` запушена в `origin`, функциональный HEAD `133c188`, затем паспорт обновлен docs-коммитом `808ad4d`;
   - Play Console открыт на форме создания закрытого тестового выпуска Alpha: сейчас опубликован `14 (2.0.5)`, новый локальный AAB `2.0.5 (15)` еще не загружен;
   - автоматическая загрузка AAB через браузер не завершилась, потому что Play Console использует системный file picker, а на машине нет настроенного Play Developer API/fastlane/gcloud/service-account;
   - в Play Console dashboard на 2026-05-26 видно `В тестировании участвует 4 человека`;
