@@ -36,14 +36,14 @@ C:\Users\ps\Documents\Codex\2026-05-21\kmrs-tagam-delivery-15151-root-ias141328i
 
 - Android:
   - `versionName 2.0.5`
-  - `versionCode 15`
+  - `versionCode 50`
   - Новый AAB:
     `C:\Users\ps\Documents\Codex\2026-05-21\kmrs-tagam-delivery-15151-root-ias141328ia\kmrs-customer-app\android\app\build\outputs\bundle\release\app-release.aab`
   - Размер AAB: `15435994 bytes`
   - Время файла: `2026-05-26 07:43:33`
 - iOS:
   - `MARKETING_VERSION = 2.0.5`
-  - `CURRENT_PROJECT_VERSION = 49`
+  - `CURRENT_PROJECT_VERSION = 50`
   - Xcode Cloud собирает ветку `tagam-vite-xcode-cloud`.
 
 Проверки, выполненные перед паспортом:
@@ -83,7 +83,7 @@ npx cap sync
 - App Store Connect / TestFlight:
   - Ранее build `2.0.4 (39)` был добавлен во внутреннюю группу TestFlight Inside.
   - Затем готовился build `2.0.5 (40)`.
-  - После текущих правок iOS build поднят до `2.0.5 (49)`.
+  - После текущих правок iOS build поднят до `2.0.5 (50)`.
   - Xcode Cloud позднее успешно собрал и доставил свежую сборку `2.0.5 (47)`.
 - App Store Connect / публичный App Store релиз:
   - 2026-05-26, около 10:20 Asia/Ashgabat, версия iOS `2.0.5` со сборкой `47` отправлена в Apple App Review.
@@ -152,9 +152,9 @@ npx cap sync
 - `ios/App/App/Info.plist`
   - Добавлены URL schemes и Facebook keys.
 - `android/app/build.gradle`
-  - `versionCode 15`
+  - `versionCode 50`
 - `ios/App/App.xcodeproj/project.pbxproj`
-  - `CURRENT_PROJECT_VERSION 49`
+  - `CURRENT_PROJECT_VERSION 50`
 - Документы:
   - `docs/social-login-checklist.md`
   - `docs/web-launch-plan.md`
@@ -318,12 +318,16 @@ cd android
     - для iOS больше не передается `redirectUrl` в `@capgo/capacitor-social-login`, чтобы плагин не отправлял собственный callback с перепутанными `identityToken`/`authorizationCode`;
     - Apple social payload теперь выбирает настоящий JWT identity token по форме `header.payload.signature`, включая `accessToken.token`, и только потом fallback-поля;
     - web/Android Apple callback остался поддержан через прежние redirect URL.
-  - В `ios/App/App.xcodeproj/project.pbxproj` поднят `CURRENT_PROJECT_VERSION` до `49`, потому что повторная отправка после binary rejection должна идти новой сборкой выше отклоненной `47`.
+  - В `ios/App/App.xcodeproj/project.pbxproj` поднят `CURRENT_PROJECT_VERSION` до `50`, потому что повторная отправка после binary rejection должна идти новой сборкой выше отклоненной `47`.
   - Проверено:
     - `npm run build` - успешно;
     - `npx cap sync` - успешно, web bundle скопирован в Android и iOS. На Windows ожидаемо пропущены CocoaPods/xcodebuild.
   - Коммит `bb3351c Fix iOS Apple sign in for review` запушен в `tagam-vite-xcode-cloud`.
-  - В Xcode Cloud появилась сборка `48` со статусом `В очереди`, последний коммит `Fix iOS Apple sign in for review`; после docs-коммита build number дополнительно поднят до `49`, чтобы не получить повторную архивную попытку с тем же app build number.
+  - В Xcode Cloud после пушей старые CI-сборки `48` и `49` отменены, CI-сборка `50` успешно прошла `Archive - iOS` на коммите `Bump iOS build for App Review retry`.
+- Version alignment, 2026-05-27:
+  - пользовательская версия оставлена общей: Android `versionName 2.0.5`, iOS `MARKETING_VERSION 2.0.5`;
+  - внутренний номер приведен к общему следующему значению выше уже опубликованных/отклоненных сборок: Android `versionCode 50`, iOS `CURRENT_PROJECT_VERSION 50`;
+  - Google Play уже имеет closed testing `2.0.5 (15)`, поэтому следующий Android upload с `50` валиден; Apple rejected build `47`, поэтому iOS build `50` валиден для повторной отправки.
 
 Ближайшие шаги:
 
