@@ -43,7 +43,7 @@ C:\Users\ps\Documents\Codex\2026-05-21\kmrs-tagam-delivery-15151-root-ias141328i
   - Время файла: `2026-05-26 07:43:33`
 - iOS:
   - `MARKETING_VERSION = 2.0.5`
-  - `CURRENT_PROJECT_VERSION = 41`
+  - `CURRENT_PROJECT_VERSION = 48`
   - Xcode Cloud собирает ветку `tagam-vite-xcode-cloud`.
 
 Проверки, выполненные перед паспортом:
@@ -83,8 +83,18 @@ npx cap sync
 - App Store Connect / TestFlight:
   - Ранее build `2.0.4 (39)` был добавлен во внутреннюю группу TestFlight Inside.
   - Затем готовился build `2.0.5 (40)`.
-  - После текущих правок iOS build поднят до `2.0.5 (41)`.
-  - Нужно дождаться/запустить Xcode Cloud по ветке `tagam-vite-xcode-cloud` после пуша.
+  - После текущих правок iOS build поднят до `2.0.5 (48)`.
+  - Xcode Cloud позднее успешно собрал и доставил свежую сборку `2.0.5 (47)`.
+- App Store Connect / публичный App Store релиз:
+  - 2026-05-26, около 10:20 Asia/Ashgabat, версия iOS `2.0.5` со сборкой `47` отправлена в Apple App Review.
+  - Перед отправкой закрыты блокеры App Store Connect:
+    - заполнены сведения о правах на публикуемые материалы: приложение содержит/отображает сторонний контент, права есть;
+    - опубликована App Privacy анкета с privacy policy `https://tagam.delivery/privacy-policy`;
+    - выставлена бесплатная цена `0,00 $` для 175 стран/регионов;
+    - из публичной версии удалена старая сборка `2 / 2.0.1`, выбрана сборка `47 / 2.0.5`.
+  - App Store Connect подтвердил: `Отправлено объектов: 1`; проверка может занять до 48 часов.
+  - Релиз настроен на автоматический выпуск после одобрения Apple.
+  - Срочная privacy-анкета прошла отправку. Для последующей полировки можно отдельно выровнять label `Номер телефона`: сейчас он отмечен как `Другие цели`, лучше потом привести к `Функциональные возможности приложения`.
 
 ## Meta / Facebook
 
@@ -144,7 +154,7 @@ npx cap sync
 - `android/app/build.gradle`
   - `versionCode 15`
 - `ios/App/App.xcodeproj/project.pbxproj`
-  - `CURRENT_PROJECT_VERSION 41`
+  - `CURRENT_PROJECT_VERSION 48`
 - Документы:
   - `docs/social-login-checklist.md`
   - `docs/web-launch-plan.md`
@@ -279,15 +289,48 @@ cd android
   - добавлен коммит `5cea40a Make Xcode Cloud CocoaPods setup robust`: post-clone скрипты стали устойчивее к отсутствию CocoaPods и пробуют Homebrew/RubyGems fallback;
   - добавлен коммит `8378a63 Remove BOM from Xcode project`: из `project.pbxproj` убран BOM, первая строка стала `// !$*UTF8*$!`;
   - Xcode Cloud build `46` на коммите `8378a63` завершился успешно: `Успешно Archive - iOS`, build errors `0`, warnings `47`.
+- App Store Review отправка, 2026-05-26:
+  - в App Store Connect версия `2.0.5` подготовлена для публичного App Store;
+  - copyright заполнен как `2026 BANZAI END KO TOV`;
+  - support URL восстановлен: `https://tagam.delivery/contact-us`;
+  - сборка `2.0.5 (47)` добавлена в версию и отправлена на проверку;
+  - Apple показал подтверждение отправки одного объекта и срок проверки до 48 часов;
+  - сейчас дополнительных кнопок для ускорения нет: нужно ждать ответа Apple и сразу отвечать, если придет вопрос или rejection.
+- TestFlight external testing, 2026-05-26:
+  - публичная ссылка группы `Outside`: `https://testflight.apple.com/join/HZ1ck929`;
+  - старая внешняя beta review сборка `2.0.5 (40)` блокировала добавление свежей `47`, поэтому проверка `40` отменена и сборка `40` удалена из `Outside`;
+  - сборка `2.0.5 (47)` добавлена в `Outside` и отправлена на Beta App Review со статусом `Ожидание проверки`;
+  - после одобрения Beta App Review внешние тестеры смогут ставить свежую `2.0.5 (47)` по публичной TestFlight-ссылке;
+  - в `Outside` также остаются `2.0.4 (37)` в ожидании проверки и `2.0.1 (2)` в статусе `Тестируется`.
+- App Store rejection, 2026-05-27:
+  - публичная версия iOS `2.0.5 (47)` отклонена Apple.
+  - Guideline: `2.1(a) - Performance - App Completeness`.
+  - Основная причина: Apple использовал `Sign in with Apple`, приложение не прошло дальше экрана логина и показало error alert.
+  - Review environment: iPhone 17 Pro Max и iPad Air 11-inch (M3), iOS/iPadOS 26.5, интернет активен.
+  - Дополнительная причина: `Information Needed` - Apple не смог получить доступ ко всем функциям и просит demo account в `App Review Information`.
+  - Следующие действия перед повторной отправкой:
+    1. локально воспроизвести и исправить Sign in with Apple на iOS;
+    2. добавить demo account с логином/паролем в App Review Information или включить полноценный demo mode;
+    3. проверить iPhone/iPad сценарий входа, переход дальше login screen и основные функции;
+    4. повторно отправить версию на review.
+- App Store rejection fix, 2026-05-27:
+  - в `src/components/auth/SocialAuthButtons.vue` исправлена обработка native iOS Apple login:
+    - для iOS больше не передается `redirectUrl` в `@capgo/capacitor-social-login`, чтобы плагин не отправлял собственный callback с перепутанными `identityToken`/`authorizationCode`;
+    - Apple social payload теперь выбирает настоящий JWT identity token по форме `header.payload.signature`, включая `accessToken.token`, и только потом fallback-поля;
+    - web/Android Apple callback остался поддержан через прежние redirect URL.
+  - В `ios/App/App.xcodeproj/project.pbxproj` поднят `CURRENT_PROJECT_VERSION` до `48`, потому что повторная отправка после binary rejection должна идти новой сборкой выше отклоненной `47`.
+  - Проверено:
+    - `npm run build` - успешно;
+    - `npx cap sync` - успешно, web bundle скопирован в Android и iOS. На Windows ожидаемо пропущены CocoaPods/xcodebuild.
 
 Ближайшие шаги:
 
-1. Открыть новый чат и начать с чтения этого файла.
-2. Проверить `git status`, `build status`, текущую локальную страницу.
-3. Если текущие изменения устраивают, сделать коммит в `tagam-vite-xcode-cloud`.
-4. Запушить ветку для Xcode Cloud.
-5. Загрузить Android AAB `2.0.5 (15)` в Google Play testing.
-6. Дождаться Xcode Cloud build `2.0.5 (41)` и назначить TestFlight группы.
+1. Добавить demo account в App Review Information, чтобы Apple мог проверить приложение без social login.
+2. Собрать/загрузить новую iOS-сборку с исправлением Apple login (build выше `47`) и выбрать ее в версии App Store.
+3. Проверить iOS на реальном iPhone/TestFlight: Apple login, demo login, адрес, корзина, checkout до финальной кнопки, профиль.
+4. Повторно отправить iOS `2.0.5` на App Review после выбора новой сборки и заполнения review info.
+5. Следить за Beta App Review для TestFlight `Outside`: после одобрения тестерам отправлять `https://testflight.apple.com/join/HZ1ck929`.
+6. На Google Play продолжать закрытое тестирование: для production нужен порог тестеров/срока теста, App Store уже идет отдельным путем.
 7. Продолжить функциональный аудит:
    - статусы заказа в customer app vs merchant/KDS/driver;
    - адреса: последний адрес, выбор сохраненного адреса, новый адрес по геолокации/карте/ручному вводу;

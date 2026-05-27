@@ -181,8 +181,25 @@ const normalizeAppleUser = (rawUser) => {
   }
 };
 
+const appleAccessTokenValue = (accessToken) => {
+  if (!accessToken) return "";
+  if (typeof accessToken === "string") return accessToken;
+  return accessToken.token || "";
+};
+
+const looksLikeJwt = (token = "") => String(token).split(".").length >= 3;
+
+const firstAppleIdentityToken = (...tokens) =>
+  tokens.find((token) => looksLikeJwt(token)) || tokens.find(Boolean) || "";
+
 const applePayloadToSocialPayload = (payload = {}) => {
-  const idToken = payload.id_token || payload.identityToken || payload.social_token || "";
+  const idToken = firstAppleIdentityToken(
+    payload.id_token,
+    payload.identityToken,
+    appleAccessTokenValue(payload.accessToken),
+    payload.social_token,
+    payload.idToken
+  );
   const claims = decodeJwtPayload(idToken);
   const user = normalizeAppleUser(payload.user);
   const name = user.name || {};
@@ -194,6 +211,23 @@ const applePayloadToSocialPayload = (payload = {}) => {
     last_name: String(payload.last_name || payload.family_name || name.lastName || name.familyName || ""),
     social_strategy: "apple",
     social_token: String(idToken || payload.code || payload.authorizationCode || ""),
+  };
+};
+
+const appleProviderResultToSocialPayload = (result = {}) => {
+  const profile = result.profile || {};
+  const accessToken = appleAccessTokenValue(result.accessToken);
+  const identityToken = firstAppleIdentityToken(result.identityToken, accessToken, result.idToken);
+  const claims = decodeJwtPayload(identityToken);
+  const fallbackToken = identityToken || result.idToken || result.authorizationCode || profile.user || "";
+
+  return {
+    id: String(profile.user || result.user || claims.sub || fallbackToken || ""),
+    email_address: String(profile.email || result.email || claims.email || ""),
+    first_name: String(profile.givenName || result.givenName || claims.given_name || ""),
+    last_name: String(profile.familyName || result.familyName || claims.family_name || ""),
+    social_strategy: "apple",
+    social_token: String(fallbackToken),
   };
 };
 
@@ -285,12 +319,14 @@ const initializeSocialLogin = async () => {
       };
     }
     if (settings.social.apple && settings.social.appleClientId) {
-      config.apple = {
-        clientId: settings.social.appleClientId,
-        redirectUrl: Capacitor.isNativePlatform()
-          ? settings.social.appleAppRedirectUrl || settings.social.appleRedirectUrl
-          : settings.social.appleWebRedirectUrl || `${window.location.origin}/user/apple_callback`,
-      };
+      const platform = Capacitor.getPlatform();
+      config.apple = { clientId: settings.social.appleClientId };
+
+      if (platform === "android") {
+        config.apple.redirectUrl = settings.social.appleAppRedirectUrl || settings.social.appleRedirectUrl;
+      } else if (platform !== "ios") {
+        config.apple.redirectUrl = settings.social.appleWebRedirectUrl || `${window.location.origin}/user/apple_callback`;
+      }
     }
 
     if (!Object.keys(config).length) return;
@@ -392,15 +428,7 @@ const loginWithApple = () =>
       return results.result.kmrsPayload;
     }
 
-    const profile = results.result.profile;
-    return {
-      id: profile.user,
-      email_address: profile.email,
-      first_name: profile.givenName,
-      last_name: profile.familyName,
-      social_strategy: "apple",
-      social_token: results.result.idToken || results.result.accessToken?.token || "",
-    };
+    return appleProviderResultToSocialPayload(results.result);
   });
 
 const completeSignup = async () => {
