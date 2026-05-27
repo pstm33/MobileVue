@@ -43,7 +43,7 @@ C:\Users\ps\Documents\Codex\2026-05-21\kmrs-tagam-delivery-15151-root-ias141328i
   - Время файла: `2026-05-26 07:43:33`
 - iOS:
   - `MARKETING_VERSION = 2.0.5`
-  - `CURRENT_PROJECT_VERSION = 48`
+  - `CURRENT_PROJECT_VERSION = 49`
   - Xcode Cloud собирает ветку `tagam-vite-xcode-cloud`.
 
 Проверки, выполненные перед паспортом:
@@ -83,7 +83,7 @@ npx cap sync
 - App Store Connect / TestFlight:
   - Ранее build `2.0.4 (39)` был добавлен во внутреннюю группу TestFlight Inside.
   - Затем готовился build `2.0.5 (40)`.
-  - После текущих правок iOS build поднят до `2.0.5 (48)`.
+  - После текущих правок iOS build поднят до `2.0.5 (49)`.
   - Xcode Cloud позднее успешно собрал и доставил свежую сборку `2.0.5 (47)`.
 - App Store Connect / публичный App Store релиз:
   - 2026-05-26, около 10:20 Asia/Ashgabat, версия iOS `2.0.5` со сборкой `47` отправлена в Apple App Review.
@@ -154,7 +154,7 @@ npx cap sync
 - `android/app/build.gradle`
   - `versionCode 15`
 - `ios/App/App.xcodeproj/project.pbxproj`
-  - `CURRENT_PROJECT_VERSION 48`
+  - `CURRENT_PROJECT_VERSION 49`
 - Документы:
   - `docs/social-login-checklist.md`
   - `docs/web-launch-plan.md`
@@ -318,17 +318,17 @@ cd android
     - для iOS больше не передается `redirectUrl` в `@capgo/capacitor-social-login`, чтобы плагин не отправлял собственный callback с перепутанными `identityToken`/`authorizationCode`;
     - Apple social payload теперь выбирает настоящий JWT identity token по форме `header.payload.signature`, включая `accessToken.token`, и только потом fallback-поля;
     - web/Android Apple callback остался поддержан через прежние redirect URL.
-  - В `ios/App/App.xcodeproj/project.pbxproj` поднят `CURRENT_PROJECT_VERSION` до `48`, потому что повторная отправка после binary rejection должна идти новой сборкой выше отклоненной `47`.
+  - В `ios/App/App.xcodeproj/project.pbxproj` поднят `CURRENT_PROJECT_VERSION` до `49`, потому что повторная отправка после binary rejection должна идти новой сборкой выше отклоненной `47`.
   - Проверено:
     - `npm run build` - успешно;
     - `npx cap sync` - успешно, web bundle скопирован в Android и iOS. На Windows ожидаемо пропущены CocoaPods/xcodebuild.
   - Коммит `bb3351c Fix iOS Apple sign in for review` запушен в `tagam-vite-xcode-cloud`.
-  - В Xcode Cloud появилась сборка `48` со статусом `В очереди`, последний коммит `Fix iOS Apple sign in for review`.
+  - В Xcode Cloud появилась сборка `48` со статусом `В очереди`, последний коммит `Fix iOS Apple sign in for review`; после docs-коммита build number дополнительно поднят до `49`, чтобы не получить повторную архивную попытку с тем же app build number.
 
 Ближайшие шаги:
 
 1. Добавить demo account в App Review Information, чтобы Apple мог проверить приложение без social login.
-2. Дождаться успешного Xcode Cloud build `48`, затем выбрать эту сборку в версии App Store вместо отклоненной `47`.
+2. Дождаться успешного Xcode Cloud build с app build `49`, затем выбрать эту сборку в версии App Store вместо отклоненной `47`.
 3. Проверить iOS на реальном iPhone/TestFlight: Apple login, demo login, адрес, корзина, checkout до финальной кнопки, профиль.
 4. Повторно отправить iOS `2.0.5` на App Review после выбора новой сборки и заполнения review info.
 5. Следить за Beta App Review для TestFlight `Outside`: после одобрения тестерам отправлять `https://testflight.apple.com/join/HZ1ck929`.
