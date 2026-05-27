@@ -322,11 +322,13 @@ cd android
   - Проверено:
     - `npm run build` - успешно;
     - `npx cap sync` - успешно, web bundle скопирован в Android и iOS. На Windows ожидаемо пропущены CocoaPods/xcodebuild.
+  - Коммит `bb3351c Fix iOS Apple sign in for review` запушен в `tagam-vite-xcode-cloud`.
+  - В Xcode Cloud появилась сборка `48` со статусом `В очереди`, последний коммит `Fix iOS Apple sign in for review`.
 
 Ближайшие шаги:
 
 1. Добавить demo account в App Review Information, чтобы Apple мог проверить приложение без social login.
-2. Собрать/загрузить новую iOS-сборку с исправлением Apple login (build выше `47`) и выбрать ее в версии App Store.
+2. Дождаться успешного Xcode Cloud build `48`, затем выбрать эту сборку в версии App Store вместо отклоненной `47`.
 3. Проверить iOS на реальном iPhone/TestFlight: Apple login, demo login, адрес, корзина, checkout до финальной кнопки, профиль.
 4. Повторно отправить iOS `2.0.5` на App Review после выбора новой сборки и заполнения review info.
 5. Следить за Beta App Review для TestFlight `Outside`: после одобрения тестерам отправлять `https://testflight.apple.com/join/HZ1ck929`.
