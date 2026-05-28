@@ -78,7 +78,7 @@ const copy = {
       mapHint: "Выберите точку на карте",
       pinTitle: "Поставьте пин на карту",
       checking: "Проверяем адрес...",
-      confirm: "Подтвердить локацию",
+      confirm: "Подтвердить адрес доставки",
     },
     restaurant: {
       save: "Сохранить ресторан",
@@ -181,7 +181,7 @@ const copy = {
       mapHint: "Kartadan nokat saýlaň",
       pinTitle: "Kartada bellik goýuň",
       checking: "Salgy barlanýar...",
-      confirm: "Ýerleşişi tassykla",
+      confirm: "Eltip bermek salgysyny tassykla",
     },
     restaurant: {
       save: "Restorany sakla",
@@ -284,7 +284,7 @@ const copy = {
       mapHint: "Choose a point on the map",
       pinTitle: "Drop a pin on the map",
       checking: "Checking address...",
-      confirm: "Confirm location",
+      confirm: "Confirm delivery address",
     },
     restaurant: {
       save: "Save restaurant",

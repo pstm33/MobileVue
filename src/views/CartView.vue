@@ -32,7 +32,7 @@
         <img
           v-if="cart.merchant.logo"
           class="h-14 w-14 rounded-[8px] object-cover"
-          :src="cart.merchant.logo"
+          :src="tagamAsset(cart.merchant.logo)"
           :alt="cart.merchant.restaurant_name"
         />
         <div class="min-w-0 flex-1">
@@ -53,7 +53,7 @@
             <img
               v-if="item.url_image"
               class="h-20 w-20 rounded-[8px] object-cover"
-              :src="item.url_image"
+              :src="tagamAsset(item.url_image)"
               :alt="item.item_name"
             />
             <div v-else class="grid h-20 w-20 shrink-0 place-items-center rounded-[8px] bg-[var(--app-accent-soft)] text-xs font-black text-[var(--app-muted)]">
@@ -145,6 +145,7 @@ import { Minus, Plus, ShoppingBag, Trash2 } from "@lucide/vue";
 import AppHeader from "src/components/ui/AppHeader.vue";
 import { useAppStore } from "src/stores/app";
 import { useCartStore } from "src/stores/cart";
+import { tagamAsset } from "src/services/tagamAssets";
 
 const app = useAppStore();
 const cart = useCartStore();

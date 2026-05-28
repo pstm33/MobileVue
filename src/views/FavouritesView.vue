@@ -61,6 +61,7 @@ import AuthBridge from "src/components/checkout/AuthBridge.vue";
 import { useClientAuthStore } from "src/stores/clientAuth";
 import { useCustomerStore } from "src/stores/customer";
 import { useAppStore } from "src/stores/app";
+import { tagamAsset } from "src/services/tagamAssets";
 
 const labels = {
   ru: {
@@ -108,7 +109,7 @@ const favourites = computed(() => customer.favouriteList);
 const itemKey = (item) => item.item_uuid || item.restaurant_slug || item.merchant_uuid || item.merchant_id || JSON.stringify(item);
 const titleOf = (item) => item.item_name || item.restaurant_name || item.merchant_name || item.name || text.value.title;
 const subtitleOf = (item) => item.item_description || item.cuisine_name || item.restaurant_cuisine || item.address || item.distance_local_new || "";
-const imageOf = (item) => item.url_image || item.logo || item.restaurant_logo || item.merchant_logo || item.photo || "";
+const imageOf = (item) => tagamAsset(item.url_image || item.logo || item.restaurant_logo || item.merchant_logo || item.photo || "");
 const merchantIdOf = (item) => item.merchant_id || item.restaurant_id || item.merchant_uuid || "";
 const itemLink = (item) => (item.restaurant_slug ? `/restaurant/${item.restaurant_slug}` : "/search");
 

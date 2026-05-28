@@ -1,6 +1,6 @@
 <template>
   <section v-if="settings.hasSocialLogin" class="grid gap-3">
-    <div class="grid gap-2" :class="socialGridClass">
+    <div class="social-buttons-row" :style="{ '--social-count': socialCount }">
       <button
         v-if="settings.social.google"
         class="social-button"
@@ -144,12 +144,7 @@ const socialCopy = {
 };
 
 const copy = computed(() => socialCopy[app.language] || socialCopy.ru);
-const socialGridClass = computed(() => {
-  const count = [settings.social.google, settings.social.facebook, settings.social.apple].filter(Boolean).length;
-  if (count <= 1) return "grid-cols-1";
-  if (count === 2) return "grid-cols-2";
-  return "grid-cols-3";
-});
+const socialCount = computed(() => Math.max(1, [settings.social.google, settings.social.facebook, settings.social.apple].filter(Boolean).length));
 const canComplete = computed(
   () => pendingCompletion.value?.uuid && completion.first_name && completion.last_name && completion.mobile_prefix && completion.mobile_number
 );
@@ -231,7 +226,7 @@ const appleProviderResultToSocialPayload = (result = {}) => {
   };
 };
 
-const waitForKmrsAppleCallback = () =>
+const waitForTagamAppleCallback = () =>
   new Promise((resolve, reject) => {
     const timeout = window.setTimeout(() => {
       window.removeEventListener("message", handleMessage);
@@ -421,11 +416,11 @@ const loginWithApple = () =>
             provider: "apple",
             options: { scopes: ["email", "name"] },
           }),
-          waitForKmrsAppleCallback().then((payload) => ({ provider: "apple", result: { kmrsPayload: payload } })),
+          waitForTagamAppleCallback().then((payload) => ({ provider: "apple", result: { tagamPayload: payload } })),
         ]));
 
-    if (results.result.kmrsPayload) {
-      return results.result.kmrsPayload;
+    if (results.result.tagamPayload) {
+      return results.result.tagamPayload;
     }
 
     return appleProviderResultToSocialPayload(results.result);
@@ -458,18 +453,28 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.social-buttons-row {
+  display: grid;
+  grid-template-columns: repeat(var(--social-count, 3), minmax(0, 1fr));
+  gap: 8px;
+}
+
 .social-button {
   display: grid;
   min-width: 0;
-  min-height: 58px;
+  min-height: 62px;
   place-items: center;
-  gap: 4px;
+  align-content: center;
+  gap: 5px;
   border: 1px solid var(--app-border);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--app-accent) 10%, transparent), transparent 58%),
+    rgba(255, 255, 255, 0.06);
   color: var(--app-fg);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 850;
+  line-height: 1.1;
 }
 
 .social-button:disabled {
@@ -478,8 +483,20 @@ onMounted(() => {
 }
 
 .social-button img {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
+}
+
+@media (max-width: 360px) {
+  .social-button {
+    min-height: 56px;
+    font-size: 9px;
+  }
+
+  .social-button img {
+    width: 21px;
+    height: 21px;
+  }
 }
 </style>

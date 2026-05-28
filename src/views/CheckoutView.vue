@@ -8,7 +8,7 @@
       <div class="soft-card warm-skeleton h-44" />
     </div>
 
-    <div v-else-if="checkout.placedOrder" class="tagam-card grid gap-4 p-5 text-center">
+    <div v-else-if="showPlacedOrder" class="tagam-card grid gap-4 p-5 text-center">
       <h1 class="m-0 text-2xl font-black">{{ copy.orderCreated }}</h1>
       <p class="muted m-0 text-sm">{{ checkout.placedOrder.order_id || checkout.placedOrder.order_uuid }}</p>
       <RouterLink class="primary-button tap-motion" :to="{ path: '/order/success', query: { order_uuid: checkout.placedOrder.order_uuid } }">{{ copy.openOrder }}</RouterLink>
@@ -51,8 +51,6 @@
           </button>
         </div>
       </section>
-
-      <AuthBridge @authenticated="afterCheckoutAuth" />
 
       <section v-if="transactionType === 'delivery'" class="soft-card checkout-main-card grid gap-3 p-4">
         <div class="flex items-start gap-3">
@@ -436,7 +434,6 @@ import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { BadgePercent, CalendarDays, CheckCircle2, Clock3, CreditCard, MapPin, Sparkles, WalletCards, X } from "@lucide/vue";
 import AppHeader from "src/components/ui/AppHeader.vue";
-import AuthBridge from "src/components/checkout/AuthBridge.vue";
 import { useCartStore } from "src/stores/cart";
 import { useCheckoutStore } from "src/stores/checkout";
 import { useClientAuthStore } from "src/stores/clientAuth";
@@ -744,6 +741,7 @@ const paymentList = computed(() => {
     return true;
   });
 });
+const showPlacedOrder = computed(() => checkout.placedOrder && !cart.cartUuid);
 const savedAddresses = computed(() => customer.addressList ?? []);
 const canPlaceOrder = computed(() =>
   placeOrderEnabled &&

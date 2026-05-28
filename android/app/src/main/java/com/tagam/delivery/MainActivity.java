@@ -45,5 +45,36 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
     }
   }
 
+  @Override
+  protected void onNewIntent(Intent intent) {
+    super.onNewIntent(intent);
+    routeSocialLoginIntent(intent);
+  }
+
+  private void routeSocialLoginIntent(Intent intent) {
+    if (intent == null || intent.getData() == null) return;
+
+    String url = intent.getData().toString();
+    boolean isAppleLoginCallback =
+      url.startsWith("com.tagam.delivery://apple-login") ||
+      url.startsWith("https://tagam.delivery/interface/app_apple_callback") ||
+      url.startsWith("https://tagam.delivery/interface/apple_callback");
+    if (!isAppleLoginCallback) return;
+
+    PluginHandle pluginHandle = getBridge().getPlugin("SocialLogin");
+    if (pluginHandle == null) {
+      Log.i("Apple Login Intent", "SocialLogin plugin handle is null");
+      return;
+    }
+
+    Plugin plugin = pluginHandle.getInstance();
+    if (!(plugin instanceof SocialLoginPlugin)) {
+      Log.i("Apple Login Intent", "SocialLogin plugin instance is not SocialLoginPlugin");
+      return;
+    }
+
+    ((SocialLoginPlugin) plugin).handleAppleLoginIntent(intent);
+  }
+
   public void IHaveModifiedTheMainActivityForTheUseWithSocialLoginPlugin() {}
 }

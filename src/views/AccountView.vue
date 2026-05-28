@@ -43,14 +43,6 @@
     </section>
 
     <template v-else>
-      <div class="account-metrics grid grid-cols-2 gap-3">
-        <div v-for="metric in metrics" :key="metric.label" class="tagam-card account-metric-card p-4">
-          <component :is="metric.icon" class="text-[var(--app-accent)]" :size="22" />
-          <strong class="mt-3 block text-xl">{{ metric.value }}</strong>
-          <span class="muted text-sm">{{ metric.label }}</span>
-        </div>
-      </div>
-
       <div v-if="profile.loading" class="soft-card grid gap-3 p-4">
         <div class="warm-skeleton h-5 w-2/3 rounded" />
         <div class="warm-skeleton h-16 rounded" />
@@ -211,7 +203,6 @@ import { useRouter } from "vue-router";
 import { useAppStore } from "src/stores/app";
 import { useAccountProfileStore } from "src/stores/accountProfile";
 import { useClientAuthStore } from "src/stores/clientAuth";
-import { useSessionStore } from "src/stores/session";
 import AppHeader from "src/components/ui/AppHeader.vue";
 import AuthBridge from "src/components/checkout/AuthBridge.vue";
 
@@ -219,7 +210,6 @@ const app = useAppStore();
 const router = useRouter();
 const client = useClientAuthStore();
 const profile = useAccountProfileStore();
-const session = useSessionStore();
 const preferencesOpen = ref(false);
 const accountCopy = computed(() => ({
   ...app.copy.account,
@@ -290,25 +280,6 @@ const identityChips = computed(() =>
     [client.user?.mobile_prefix, client.user?.mobile_number].filter(Boolean).join(" "),
   ].filter(Boolean)
 );
-const metrics = computed(() => [
-  { label: accountCopy.value.orders, value: profile.loading ? "..." : String(profile.orderList.length), icon: ShoppingBag },
-  { label: accountCopy.value.addresses, value: profile.loading ? "..." : String(profile.addressList.length), icon: MapPin },
-  {
-    label: app.language === "tk" ? "Status" : app.language === "en" ? "Status" : "Статус",
-    value: client.authenticated
-      ? app.language === "tk" ? "Işjeň" : app.language === "en" ? "Active" : "Активен"
-      : profileName.value,
-    icon: UserRound,
-  },
-  {
-    label: app.language === "tk" ? "Ýerleşiş" : app.language === "en" ? "Location" : "Локация",
-    value: session.hasCoordinates
-      ? app.language === "tk" ? "Saýlanan" : app.language === "en" ? "Selected" : "Выбрана"
-      : app.language === "tk" ? "Saýla" : app.language === "en" ? "Choose" : "Выбрать",
-    icon: MapPin,
-  },
-]);
-
 const loadProfile = () => profile.load();
 const logout = () => {
   client.logout();

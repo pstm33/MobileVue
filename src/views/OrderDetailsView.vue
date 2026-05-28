@@ -69,7 +69,7 @@
         </button>
         <div v-if="itemsOpen" class="grid gap-3 border-t border-white/10 p-4">
           <article v-for="item in orderItems" :key="item.cart_row || item.item_id || item.item_uuid" class="flex gap-3">
-            <img v-if="item.url_image" class="h-16 w-16 rounded-[8px] object-cover" :src="kmrsAsset(item.url_image)" :alt="decodeHtml(item.item_name)" />
+            <img v-if="item.url_image" class="h-16 w-16 rounded-[8px] object-cover" :src="tagamAsset(item.url_image)" :alt="decodeHtml(item.item_name)" />
             <div v-else class="grid h-16 w-16 place-items-center rounded-[8px] bg-[var(--app-accent-soft)] text-xs font-black text-[var(--app-muted)]">TAGAM</div>
             <div class="min-w-0 flex-1">
               <h3 class="m-0 text-sm font-black">{{ item.qty }} x {{ decodeHtml(item.item_name) }}</h3>
@@ -145,7 +145,7 @@ import AppHeader from "src/components/ui/AppHeader.vue";
 import { useOrdersStore } from "src/stores/orders";
 import { useCartStore } from "src/stores/cart";
 import { useAppStore } from "src/stores/app";
-import { kmrsAsset } from "src/services/kmrsAssets";
+import { tagamAsset } from "src/services/tagamAssets";
 
 const labels = {
   ru: {

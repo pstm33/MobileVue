@@ -1,13 +1,31 @@
 import { createRouter, createWebHashHistory, createWebHistory } from "vue-router";
 import { Capacitor } from "@capacitor/core";
+import auth from "src/api/auth";
 
 const isNative = Capacitor.isNativePlatform();
+const isLocalWeb =
+  !isNative &&
+  typeof window !== "undefined" &&
+  ["127.0.0.1", "localhost", "::1"].includes(window.location.hostname);
+const hasIntroSeen = () => Boolean(localStorage.getItem("intro_seen"));
+const hasCoordinates = () => Boolean(localStorage.getItem("coordinates"));
+const getStartRoute = () => {
+  if (!hasIntroSeen()) return "/onboarding";
+  return hasCoordinates() ? "/home" : "/location";
+};
+const resetLocalStartState = () => {
+  ["intro_seen", "coordinates", "place_data", "place_id"].forEach((key) => localStorage.removeItem(key));
+};
+const rememberAuthRedirect = (target) => {
+  if (typeof window === "undefined" || !target) return;
+  window.sessionStorage.setItem("auth_redirect", target);
+};
 
 const routes = [
   {
     path: "/",
     name: "root",
-    redirect: () => (isNative ? "/onboarding" : "/home"),
+    redirect: getStartRoute,
   },
   {
     path: "/onboarding",
@@ -163,6 +181,7 @@ const routes = [
     path: "/checkout",
     name: "checkout",
     component: () => import("src/views/CheckoutView.vue"),
+    meta: { requiresAuth: true },
   },
   {
     path: "/address/select",
@@ -388,15 +407,21 @@ const routes = [
 export const router = createRouter({
   history: isNative ? createWebHashHistory() : createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition;
+    if (to.fullPath !== from.fullPath) return { top: 0, left: 0 };
+    return false;
+  },
 });
 
 router.beforeEach((to) => {
-  if (!isNative) {
-    return true;
+  if (isLocalWeb && to.query.reset === "1") {
+    resetLocalStartState();
+    return "/onboarding";
   }
 
-  const introSeen = Boolean(localStorage.getItem("intro_seen"));
-  const coordinates = localStorage.getItem("coordinates");
+  const introSeen = hasIntroSeen();
+  const coordinates = hasCoordinates();
 
   if (to.name === "root" && introSeen) {
     return coordinates ? "/home" : "/location";
@@ -412,6 +437,11 @@ router.beforeEach((to) => {
 
   if (!to.meta.public && !coordinates) {
     return "/location";
+  }
+
+  if (to.meta.requiresAuth && !auth.authenticated()) {
+    rememberAuthRedirect(to.fullPath);
+    return { path: "/user/login", query: { redirect: to.fullPath } };
   }
 
   return true;

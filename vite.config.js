@@ -9,6 +9,26 @@ export default defineConfig({
   build: {
     assetsDir: "pwa-assets",
   },
+  server: {
+    proxy: {
+      "/tagam-api": {
+        target: "https://tagam.delivery",
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/tagam-api/, ""),
+      },
+    },
+  },
+  preview: {
+    proxy: {
+      "/tagam-api": {
+        target: "https://tagam.delivery",
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/tagam-api/, ""),
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),

@@ -224,6 +224,21 @@ a {
   z-index: 1;
 }
 
+.home-hero-bg-logo {
+  position: absolute;
+  z-index: 0;
+  top: 12px;
+  left: 100%;
+  width: auto;
+  height: 108%;
+  max-width: none;
+  opacity: 0.095;
+  filter: saturate(0.72) brightness(0.72) blur(0.35px) drop-shadow(0 24px 54px rgba(255, 153, 18, 0.08));
+  pointer-events: none;
+  transform: translate3d(0, 0, 0) scale(1.04);
+  animation: hero-logo-drift 14s linear infinite;
+}
+
 .tagam-card:hover,
 .tagam-card:focus-within {
   border-color: color-mix(in srgb, var(--app-accent) 46%, var(--app-border));
@@ -342,6 +357,64 @@ a {
     linear-gradient(0deg, rgba(0, 0, 0, 0.34), transparent 48%);
 }
 
+.dish-image-treatment,
+.dish-detail-image-treatment {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 28%, rgba(255, 157, 22, 0.16), transparent 56%),
+    linear-gradient(145deg, #332719 0%, #181611 58%, #0c0b08 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 -28px 46px rgba(0, 0, 0, 0.34);
+}
+
+.dish-image-treatment::before,
+.dish-detail-image-treatment::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 157, 22, 0.08), transparent 48%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 44%);
+}
+
+.dish-image-treatment::after,
+.dish-detail-image-treatment::after {
+  z-index: 2;
+  background:
+    radial-gradient(circle at 50% 46%, transparent 42%, rgba(0, 0, 0, 0.46) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 34%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.2), transparent 58%);
+}
+
+.dish-image,
+.dish-detail-image {
+  position: relative;
+  z-index: 1;
+  filter: saturate(1.05) contrast(1.03) brightness(1.03);
+  transform: scale(1.13);
+}
+
+.restaurant-item-card:hover .dish-image {
+  transform: scale(1.17);
+}
+
+:root[data-theme="light"] .dish-image-treatment,
+:root[data-theme="light"] .dish-detail-image-treatment {
+  background:
+    radial-gradient(circle at 50% 34%, rgba(242, 138, 0, 0.12), transparent 58%),
+    linear-gradient(145deg, #fff7ea 0%, #f2e3cb 100%);
+}
+
+:root[data-theme="light"] .dish-image,
+:root[data-theme="light"] .dish-detail-image {
+  filter: saturate(1.03) contrast(1.02);
+  transform: none;
+}
+
 .warm-skeleton {
   position: relative;
   overflow: hidden;
@@ -371,6 +444,12 @@ a {
   border: 1px solid rgba(255, 255, 255, 0.11);
   background: rgba(255, 255, 255, 0.08);
   color: #f8fafc;
+}
+
+.icon-button.is-active {
+  border-color: color-mix(in srgb, var(--app-accent) 82%, white 8%);
+  background: color-mix(in srgb, var(--app-accent) 18%, rgba(255, 255, 255, 0.08));
+  color: var(--app-accent);
 }
 
 :root[data-theme="light"] .icon-button {
@@ -408,15 +487,15 @@ a {
 
 .tabbar {
   position: fixed;
-  right: 16px;
   bottom: var(--app-tabbar-bottom);
-  left: 16px;
+  left: 50%;
   z-index: 20;
   display: grid;
+  width: calc(100% - 32px);
   max-width: 488px;
   height: var(--app-tabbar-height);
-  grid-template-columns: repeat(5, 1fr);
-  margin: 0 auto;
+  grid-template-columns: repeat(var(--tab-count, 5), 1fr);
+  transform: translateX(-50%);
   border: 1px solid var(--app-border);
   border-radius: 8px;
   background: var(--app-tabbar);
@@ -682,14 +761,25 @@ button:disabled {
     overflow: hidden;
   }
 
+  .home-hero-bg-logo {
+    top: 8px;
+    left: 100%;
+    height: 96%;
+    opacity: 0.11;
+  }
+
   .home-hero-icon {
-    width: 56px !important;
-    height: 56px !important;
+    width: 72px !important;
+    height: 72px !important;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 999px;
   }
 
   .home-hero-icon img {
-    width: 44px !important;
-    height: 44px !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover;
   }
 
   .home-hero .headline {
@@ -759,9 +849,11 @@ button:disabled {
   }
 
   .tabbar {
-    right: 12px;
-    left: 12px;
+    right: auto;
+    left: 50%;
+    width: calc(100% - 24px);
     height: var(--app-tabbar-height);
+    transform: translateX(-50%);
   }
 
   .tabbar-item {
@@ -895,6 +987,7 @@ button:disabled {
     max-width: none;
     height: var(--app-tabbar-height);
     padding: 4px;
+    transform: none;
   }
 
   .tabbar-item {
@@ -932,12 +1025,6 @@ button:disabled {
     display: none;
   }
 
-  .home-hero-logo {
-    display: block !important;
-    width: 178px;
-    height: auto;
-  }
-
   .home-hero {
     grid-column: span 7;
     min-height: 350px;
@@ -956,11 +1043,14 @@ button:disabled {
   .home-hero-icon {
     width: 112px !important;
     height: 112px !important;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 999px;
   }
 
   .home-hero-icon img {
-    width: 88px !important;
-    height: 88px !important;
+    width: 100% !important;
+    height: auto !important;
   }
 
   .home-insights {
@@ -1014,7 +1104,7 @@ button:disabled {
     place-items: center;
     border: 1px solid var(--app-border);
     border-radius: 8px;
-    background: color-mix(in srgb, var(--app-accent) 14%, var(--app-control));
+    background: color-mix(in srgb, var(--app-accent) 12%, transparent);
     color: var(--app-accent);
   }
 
@@ -1482,6 +1572,29 @@ button:disabled {
   }
   to {
     transform: translate3d(2%, 1%, 0) rotate(1deg) scale(1.04);
+  }
+}
+
+@keyframes hero-logo-drift {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -1%, 0) scale(1.1);
+  }
+  8% {
+    opacity: 0.11;
+    transform: translate3d(-10%, -1%, 0) scale(1.1);
+  }
+  72% {
+    opacity: 0.11;
+    transform: translate3d(-118%, 4%, 0) scale(1.1);
+  }
+  82% {
+    opacity: 0;
+    transform: translate3d(-136%, 4%, 0) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-136%, 4%, 0) scale(1.1);
   }
 }
 

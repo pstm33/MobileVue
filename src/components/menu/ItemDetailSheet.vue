@@ -22,12 +22,13 @@
 
         <template v-else-if="itemDetail.item">
           <div class="overflow-y-auto pb-28" style="max-height: calc(92vh - 6px)">
-            <img
-              v-if="imageUrl"
-              class="aspect-square w-full object-cover"
-              :src="imageUrl"
-              :alt="itemName"
-            />
+            <div v-if="imageUrl" class="dish-detail-image-treatment">
+              <img
+                class="dish-detail-image aspect-square w-full object-cover"
+                :src="imageUrl"
+                :alt="itemName"
+              />
+            </div>
             <div v-else class="grid h-52 place-items-center bg-white/5 text-sm font-black text-white/50">
               TAGAM
             </div>
@@ -157,7 +158,7 @@ import { Check, Minus, Plus, X } from "@lucide/vue";
 import { useAppStore } from "src/stores/app";
 import { useCartStore } from "src/stores/cart";
 import { useItemDetailStore } from "src/stores/itemDetail";
-import { kmrsAsset } from "src/services/kmrsAssets";
+import { tagamAsset } from "src/services/tagamAssets";
 
 const emit = defineEmits(["added"]);
 const app = useAppStore();
@@ -235,7 +236,7 @@ const decodeHtml = (value) => {
 
 const itemName = computed(() => decodeHtml(itemDetail.item?.item_name || ""));
 const description = computed(() => decodeHtml(itemDetail.item?.item_description || ""));
-const imageUrl = computed(() => kmrsAsset(itemDetail.item?.url_image || ""));
+const imageUrl = computed(() => tagamAsset(itemDetail.item?.url_image || ""));
 const unitPrice = computed(() => {
   const price = itemDetail.selectedPrice;
   if (!price) return 0;

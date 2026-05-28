@@ -15,10 +15,10 @@ const defaultGuest = {
 };
 
 const guestPassword = () => `TagamGuest${Date.now()}!`;
-const kmrsPhonePrefix = (value = "") => String(value || "").trim().replace(/^\+/, "");
-const kmrsPhoneNumber = (value = "", prefix = "") => {
+const tagamPhonePrefix = (value = "") => String(value || "").trim().replace(/^\+/, "");
+const tagamPhoneNumber = (value = "", prefix = "") => {
   const digits = String(value || "").replace(/\D/g, "");
-  const normalizedPrefix = kmrsPhonePrefix(prefix);
+  const normalizedPrefix = tagamPhonePrefix(prefix);
   if (normalizedPrefix && digits.startsWith(normalizedPrefix)) {
     return digits.slice(normalizedPrefix.length);
   }
@@ -90,8 +90,8 @@ export const useClientAuthStore = defineStore("clientAuth", {
         const data = {
           ...defaultGuest,
           ...payload,
-          mobile_prefix: kmrsPhonePrefix(payload.mobile_prefix || defaultGuest.mobile_prefix),
-          mobile_number: kmrsPhoneNumber(payload.mobile_number, payload.mobile_prefix || defaultGuest.mobile_prefix),
+          mobile_prefix: tagamPhonePrefix(payload.mobile_prefix || defaultGuest.mobile_prefix),
+          mobile_number: tagamPhoneNumber(payload.mobile_number, payload.mobile_prefix || defaultGuest.mobile_prefix),
           email_address: guestEmail(payload),
           password,
           cpassword: payload.cpassword || password,
@@ -134,8 +134,8 @@ export const useClientAuthStore = defineStore("clientAuth", {
       try {
         const response = await APIinterface.registerUser({
           ...payload,
-          mobile_prefix: kmrsPhonePrefix(payload.mobile_prefix),
-          mobile_number: kmrsPhoneNumber(payload.mobile_number, payload.mobile_prefix),
+          mobile_prefix: tagamPhonePrefix(payload.mobile_prefix),
+          mobile_number: tagamPhoneNumber(payload.mobile_number, payload.mobile_prefix),
           local_id: LocalStorage.getItem("place_id") || "",
           custom_fields: payload.custom_fields || [],
         });
@@ -167,8 +167,8 @@ export const useClientAuthStore = defineStore("clientAuth", {
         const params = new URLSearchParams({
           validation_type,
           email_address,
-          mobile_prefix: kmrsPhonePrefix(mobile_prefix),
-          mobile_number: kmrsPhoneNumber(mobile_number, mobile_prefix),
+          mobile_prefix: tagamPhonePrefix(mobile_prefix),
+          mobile_number: tagamPhoneNumber(mobile_number, mobile_prefix),
         }).toString();
         const response = await APIinterface.fetchDataPost("requestOTP", params);
         return {

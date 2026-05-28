@@ -1,7 +1,14 @@
+import { Capacitor } from "@capacitor/core";
+
+const isLocalWeb =
+  typeof window !== "undefined" &&
+  !Capacitor.isNativePlatform() &&
+  ["127.0.0.1", "localhost", "::1"].includes(window.location.hostname);
+
 const config = {
 
-  api_base_url: import.meta.env.VITE_KMRS_API_BASE_URL || "https://tagam.delivery",
-  api_token: import.meta.env.VITE_KMRS_API_TOKEN || "",
+  api_base_url: import.meta.env.VITE_TAGAM_API_BASE_URL || (isLocalWeb ? "/tagam-api" : "https://tagam.delivery"),
+  api_token: import.meta.env.VITE_TAGAM_API_TOKEN || "",
 
   // Android
   app_android_scheme: "com.tagam.delivery",
@@ -9,7 +16,7 @@ const config = {
   // Notifications
   topic: "customer",
   promotional_topic: "promotional",
-  channel: "krms-channel",
+  channel: "tagam-channel",
   sound: "notify.mp3",
 
   // Other

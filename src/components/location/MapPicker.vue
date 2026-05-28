@@ -1,35 +1,36 @@
 <template>
-  <section class="overflow-hidden rounded-[8px] border border-white/10 bg-[#0d1218]">
+  <section class="location-picker overflow-hidden rounded-[8px] border border-white/10 bg-[#0d1218]">
     <div class="relative">
-      <div ref="mapEl" class="h-[420px] min-h-[58vh] w-full bg-[#121820]" />
+      <div ref="mapEl" class="location-map w-full bg-[#121820]" />
 
       <div class="center-pin pointer-events-none absolute left-1/2 top-1/2 z-[410] -translate-x-1/2 -translate-y-full" :class="{ 'is-moving': moving }">
         <div class="center-pin__marker">
-          <MapPin :size="30" fill="currentColor" stroke-width="2.5" />
+          <MapPin :size="24" fill="currentColor" stroke-width="2.4" />
         </div>
-        <div class="center-pin__shadow" />
       </div>
 
-      <div class="pointer-events-none absolute inset-x-0 top-1/2 z-[409] -translate-y-1/2">
-        <div class="mx-auto h-px w-16 bg-white/35" />
-      </div>
-      <div class="pointer-events-none absolute inset-y-0 left-1/2 z-[409] -translate-x-1/2">
-        <div class="mx-auto h-full w-px bg-white/20" />
-      </div>
-
-      <div class="absolute inset-x-0 top-0 z-[411] bg-gradient-to-b from-black/62 to-transparent p-4">
-        <div class="glass rounded-[8px] p-2">
-          <label class="flex min-h-11 items-center gap-3 rounded-full bg-black/35 px-3">
-            <Search :size="18" class="shrink-0 text-emerald-300" />
+      <div class="absolute inset-x-0 top-0 z-[411] bg-gradient-to-b from-black/46 to-transparent p-3">
+        <div class="location-search rounded-[8px] border border-white/10 bg-black/48 p-2 shadow-xl backdrop-blur-xl">
+          <label class="flex min-h-10 items-center gap-2 rounded-full bg-white/8 px-3">
+            <Search :size="17" class="shrink-0 text-[var(--app-accent)]" />
             <input
               v-model="searchQuery"
               class="min-w-0 flex-1 bg-transparent text-sm font-black text-white outline-none placeholder:text-white/55"
               :placeholder="copy.searchPlaceholder"
               @input="queueSearch"
             />
+            <button
+              v-if="searchQuery"
+              class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/10 text-white/80"
+              type="button"
+              :aria-label="copy.clearSearch"
+              @click="clearSearch"
+            >
+              <X :size="15" />
+            </button>
           </label>
 
-          <div v-if="searchLoading || suggestions.length" class="mt-2 grid max-h-56 gap-1 overflow-y-auto rounded-[8px] bg-black/68 p-1 backdrop-blur-xl">
+          <div v-if="searchLoading || suggestions.length" class="mt-2 grid max-h-40 gap-1 overflow-y-auto rounded-[8px] bg-black/74 p-1 backdrop-blur-xl">
             <div v-if="searchLoading" class="px-3 py-2 text-xs font-black text-white/70">{{ copy.searching }}</div>
             <button
               v-for="suggestion in suggestions"
@@ -49,35 +50,32 @@
         </div>
       </div>
 
-      <div class="pointer-events-none absolute inset-x-4 bottom-4 z-[410]">
-        <div class="mx-auto w-fit rounded-full border border-white/10 bg-black/70 px-4 py-2 text-center text-xs font-black text-white shadow-2xl backdrop-blur-xl">
+      <div class="pointer-events-none absolute inset-x-3 bottom-3 z-[410]">
+        <div class="mx-auto w-fit rounded-full border border-white/10 bg-black/62 px-3 py-1.5 text-center text-[11px] font-black text-white/88 shadow-xl backdrop-blur-xl">
           {{ moving ? copy.moving : copy.idle }}
         </div>
       </div>
     </div>
 
-    <div class="grid gap-4 p-4">
-      <div class="flex items-start gap-3">
-        <div class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-emerald-300/10 text-emerald-300">
-          <MapPin :size="21" />
+    <div class="location-picker-panel grid gap-3 p-3">
+      <div class="flex items-start gap-2.5">
+        <div class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--app-accent-soft)] text-[var(--app-accent)]">
+          <MapPin :size="18" />
         </div>
         <div class="min-w-0 flex-1">
-          <h2 class="m-0 text-lg font-black">{{ addressTitle }}</h2>
-          <p class="muted m-0 mt-1 text-sm">{{ addressSubtitle }}</p>
+          <h2 class="location-address-title m-0 text-sm font-black">{{ addressTitle }}</h2>
+          <p class="muted m-0 mt-0.5 truncate text-xs">{{ addressSubtitle }}</p>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
-        <button class="rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm font-black" type="button" :disabled="loading" @click="useBrowserLocation">
+      <div class="grid gap-3">
+        <button class="location-secondary-button" type="button" :disabled="loading" @click="useBrowserLocation">
           <LocateFixed :size="17" class="inline align-[-3px]" />
           {{ copy.myLocation }}
         </button>
-        <button class="rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm font-black" type="button" :disabled="loading || !suggestions.length" @click="clearSearch">
-          {{ copy.clearSearch }}
-        </button>
       </div>
 
-      <button class="primary-button w-full" type="button" :disabled="loading || !placeData" @click="confirm">
+      <button class="primary-button location-confirm-button w-full" type="button" :disabled="loading || !placeData" @click="confirm">
         {{ loading ? app.copy.location.checking : app.copy.location.confirm }}
       </button>
 
@@ -92,7 +90,7 @@
 import "leaflet/dist/leaflet.css";
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import L from "leaflet";
-import { LocateFixed, MapPin, Search } from "@lucide/vue";
+import { LocateFixed, MapPin, Search, X } from "@lucide/vue";
 import APIinterface from "src/api/APIinterface";
 import { useAppStore } from "src/stores/app";
 import { useSessionStore } from "src/stores/session";
@@ -355,8 +353,20 @@ onBeforeUnmount(() => {
 
 <style>
 .leaflet-container {
-  background: #121820;
+  background: #171b19;
   font-family: inherit;
+}
+
+.location-map {
+  height: clamp(410px, 62dvh, 560px);
+}
+
+.location-picker .leaflet-tile {
+  filter: saturate(0.45) contrast(0.86) brightness(0.86);
+}
+
+.location-picker .leaflet-control-attribution {
+  display: none;
 }
 
 .leaflet-control-zoom a {
@@ -367,48 +377,94 @@ onBeforeUnmount(() => {
 
 .center-pin {
   color: var(--app-accent);
-  filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.38));
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.34));
   transition:
-    transform 180ms ease,
     filter 180ms ease;
 }
 
 .center-pin.is-moving {
-  transform: translate(-50%, calc(-100% - 10px));
-  filter: drop-shadow(0 22px 28px rgba(0, 0, 0, 0.48));
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.34));
 }
 
 .center-pin__marker {
   display: grid;
-  width: 56px;
-  height: 56px;
+  position: relative;
+  width: 46px;
+  height: 46px;
   place-items: center;
   border-radius: 999px;
-  border: 4px solid rgba(255, 255, 255, 0.95);
+  border: 3px solid rgba(255, 255, 255, 0.95);
   background: color-mix(in srgb, var(--app-accent) 88%, #ffffff 12%);
   color: #11110d;
   box-shadow:
-    0 18px 34px color-mix(in srgb, var(--app-accent) 26%, transparent),
+    0 14px 24px color-mix(in srgb, var(--app-accent) 18%, transparent),
     inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
-.center-pin__shadow {
+.center-pin__marker::after {
+  content: "";
   position: absolute;
-  bottom: -11px;
+  bottom: -8px;
   left: 50%;
-  width: 34px;
-  height: 10px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.36);
-  filter: blur(3px);
-  transform: translateX(-50%);
-  transition:
-    width 180ms ease,
-    opacity 180ms ease;
+  width: 14px;
+  height: 14px;
+  border-right: 3px solid rgba(255, 255, 255, 0.95);
+  border-bottom: 3px solid rgba(255, 255, 255, 0.95);
+  background: color-mix(in srgb, var(--app-accent) 88%, #ffffff 12%);
+  transform: translateX(-50%) rotate(45deg);
+  transform-origin: center;
+  box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.18);
 }
 
-.center-pin.is-moving .center-pin__shadow {
-  width: 22px;
-  opacity: 0.5;
+.location-address-title {
+  display: -webkit-box;
+  overflow: hidden;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.location-secondary-button {
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--app-control) 72%, transparent);
+  padding: 0.55rem 0.75rem;
+  color: var(--app-text);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.location-confirm-button {
+  min-height: 40px;
+}
+
+@media (max-height: 740px) {
+  .location-map {
+    height: clamp(360px, 56dvh, 430px);
+  }
+
+  .location-picker-panel {
+    gap: 0.45rem;
+    padding: 0.6rem;
+  }
+
+  .location-search {
+    padding: 0.35rem;
+  }
+
+  .location-address-title {
+    -webkit-line-clamp: 1;
+  }
+
+  .location-secondary-button {
+    min-height: 34px;
+    padding: 0.42rem 0.62rem;
+  }
+
+  .location-confirm-button {
+    min-height: 36px;
+  }
 }
 </style>

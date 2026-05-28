@@ -117,7 +117,7 @@
         >
           <img
             class="h-20 w-20 rounded-[8px] object-cover"
-            :src="kmrsAsset(restaurant.url_logo || restaurant.url_banner)"
+            :src="tagamAsset(restaurant.url_logo || restaurant.url_banner)"
             :alt="decodeHtml(restaurant.restaurant_name)"
           />
           <div class="min-w-0 flex-1">
@@ -148,7 +148,7 @@
           <img
             v-if="item.url_image"
             class="h-20 w-20 rounded-[8px] object-cover"
-            :src="kmrsAsset(item.url_image)"
+            :src="tagamAsset(item.url_image)"
             :alt="decodeHtml(item.item_name)"
           />
           <div v-else class="grid h-20 w-20 place-items-center rounded-[8px] bg-[var(--app-accent-soft)] text-xs font-black text-[var(--app-muted)]">
@@ -188,7 +188,7 @@ import AppHeader from "src/components/ui/AppHeader.vue";
 import { useAppStore } from "src/stores/app";
 import { useMerchantFeedStore } from "src/stores/merchantFeed";
 import { useSearchStore } from "src/stores/search";
-import { kmrsAsset } from "src/services/kmrsAssets";
+import { tagamAsset } from "src/services/tagamAssets";
 
 const app = useAppStore();
 const feed = useMerchantFeedStore();

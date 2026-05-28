@@ -22,17 +22,17 @@ export const useAppSettingsStore = defineStore("appSettings", {
   }),
   getters: {
     social: (state) => {
-      const kmrsGoogleClientId = state.data?.app_google_client_id || "";
+      const tagamGoogleClientId = state.data?.app_google_client_id || "";
       const useAndroidGoogleClient = Capacitor.getPlatform() === "android";
 
       return {
         google: Boolean(state.data?.app_enabled_google_login),
         facebook: !facebookLoginDisabled && Boolean(state.data?.app_enabled_fb_login),
         apple: Boolean(state.data?.app_enabled_apple_login),
-        googleClientId: useAndroidGoogleClient ? androidGoogleWebClientId : kmrsGoogleClientId,
+        googleClientId: useAndroidGoogleClient ? androidGoogleWebClientId : tagamGoogleClientId,
         googleIosClientId: iosGoogleClientId,
         googleIosServerClientId: androidGoogleWebClientId,
-        googleKmrsClientId: kmrsGoogleClientId,
+        googleTagamClientId: tagamGoogleClientId,
         googleAndroidClientId: androidGoogleWebClientId,
         googleUsesAndroidClient: useAndroidGoogleClient,
         facebookAppId: state.data?.app_facebook_id || "",

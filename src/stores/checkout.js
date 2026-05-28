@@ -111,6 +111,7 @@ export const useCheckoutStore = defineStore("checkout", {
     async load() {
       const cart = useCartStore();
       if (!cart.cartUuid) return;
+      this.placedOrder = null;
 
       this.loading = true;
       this.error = "";

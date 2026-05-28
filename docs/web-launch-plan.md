@@ -4,14 +4,14 @@
 
 - Staging URL: `https://demo-pwa.tagam.delivery`
 - Static root: `/var/www/fastuser/data/www/pwa.tagam.delivery`
-- Current production KMRS root: `/var/www/fastuser/data/www/tagam.delivery`
-- KMRS admin must stay on PHP: `/backoffice`
+- Current production Tagam root: `/var/www/fastuser/data/www/tagam.delivery`
+- Tagam admin must stay on PHP: `/backoffice`
 
 ## Safe Production Routing
 
-When the web build is ready for `tagam.delivery`, keep KMRS as the backend and route only customer-facing web paths to the new PWA.
+When the web build is ready for `tagam.delivery`, keep Tagam as the backend and route only customer-facing web paths to the new PWA.
 
-Keep these paths on the existing KMRS PHP app:
+Keep these paths on the existing Tagam PHP app:
 
 - `/backoffice`
 - `/upload`
@@ -73,9 +73,9 @@ To rollback staging, replace `/var/www/fastuser/data/www/pwa.tagam.delivery` wit
 - `npm run build`
 - Open `/`, `/home`, `/search`, `/restaurant/{real-slug}`, `/cart`
 - Confirm direct URL refresh works without `#/`
-- Confirm KMRS API calls still hit `https://tagam.delivery`
+- Confirm Tagam API calls still hit `https://tagam.delivery`
 - Confirm `/backoffice` stays served by the PHP app
 - Confirm `/manifest.webmanifest`, `/robots.txt`, and `/sitemap.xml` are available
-- Confirm PWA JS/CSS load from `/pwa-assets`, not `/assets`, so KMRS admin assets remain untouched
+- Confirm PWA JS/CSS load from `/pwa-assets`, not `/assets`, so Tagam admin assets remain untouched
 - Confirm `/offers` does not redirect to `/home`
 - Confirm `/wallet`, `/points`, and `/favourites` show auth state cleanly when logged out

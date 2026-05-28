@@ -1,25 +1,8 @@
 <template>
-  <section class="page fade-up">
+  <section class="page location-page fade-up">
     <AppHeader :title="app.copy.location.title" :icon="MapPin" :action-label="app.copy.location.action" />
 
     <MapPicker :auto-locate="isNewCheckoutAddress" @confirm="confirmLocation" />
-
-    <div class="glass grid gap-3 rounded-[8px] p-4">
-      <div>
-        <h2 class="m-0 text-lg font-black">{{ app.copy.location.guestTitle }}</h2>
-        <p class="muted m-0 mt-1 text-sm">
-          {{ app.copy.location.guestText }}
-        </p>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <RouterLink class="surface-button tap-motion rounded-full px-4 py-3 text-center text-sm font-black" to="/account">
-          {{ app.copy.location.login }}
-        </RouterLink>
-        <button class="primary-button tap-motion" type="button" :disabled="!session.hasCoordinates" @click="goNext">
-          {{ app.copy.location.guest }}
-        </button>
-      </div>
-    </div>
   </section>
 </template>
 
@@ -46,3 +29,15 @@ const confirmLocation = async ({ coordinates, placeData }) => {
   goNext();
 };
 </script>
+
+<style scoped>
+.location-page {
+  gap: 0.8rem;
+}
+
+@media (max-height: 740px) {
+  .location-page {
+    gap: 0.3rem;
+  }
+}
+</style>

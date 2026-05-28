@@ -1,11 +1,11 @@
-# KMRS Customer App Migration and Visual Direction
+# Tagam Customer App Migration and Visual Direction
 
 ## Non-negotiables
 
-- Use real KMRS server data only.
+- Use real Tagam server data only.
 - Do not add mock restaurants, mock orders, mock users, or silent fallback payloads.
 - If an endpoint is not connected yet, the screen must show a loading, empty, or actionable error state.
-- Preserve all customer-facing logic from the original `MobileVue` app before adding new behavior.
+- Preserve all customer-facing logic from the original `legacy app` app before adding new behavior.
 - Keep admin/server credentials outside the repository and outside client bundles.
 
 ## Legacy Scope
@@ -52,12 +52,12 @@ Rebuild the app as a new Vue 3 + Vite + TailwindCSS + Capacitor 7 client while u
 
 - Confirmed the real mobile API base as `https://tagam.delivery/interface`.
 - Confirmed public mobile endpoints require a bearer API token; the token is stored only in local `.env.local`.
-- Connected the new Vue/Vite/Tailwind client to the live KMRS API.
+- Connected the new Vue/Vite/Tailwind client to the live Tagam API.
 - Cold-start onboarding now mirrors the original app flow: three intro screens, then location selection before home.
 - Location selection now uses a real map picker with draggable/clickable pin, GPS, manual coordinates, and live `reverseGeocoding`.
 - Checkout "change location" opens the map picker and returns to checkout after confirmation.
 - Home/feed now renders the real merchant list for the current demo coordinates.
-- Restaurant detail now renders live merchant data and menu categories/items from KMRS.
+- Restaurant detail now renders live merchant data and menu categories/items from Tagam.
 - Verified `#/restaurant/fireitup` against real data: 5 categories and 22 menu items.
 - Product detail bottom sheet now loads live `getMenuItem` data.
 - Add-to-cart now calls live `addCartItems`, stores the returned cart UUID locally, and refreshes real cart state.
@@ -120,7 +120,7 @@ The app should feel premium, fast, local, and memorable. The direction is not a 
 - Checkout should be one focused flow with editable line items.
 - Delivery address, delivery time, promo, tips, payment, wallet/points, and total breakdown must be visible without hunting.
 - Errors should be inline and precise: closed merchant, invalid address, missing modifier, payment issue, delivery unavailable.
-- Keep payment callbacks and provider-specific flows compatible with KMRS.
+- Keep payment callbacks and provider-specific flows compatible with Tagam.
 
 ### Order Tracking
 

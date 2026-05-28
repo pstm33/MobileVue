@@ -4,7 +4,7 @@
       <img class="brand-logo" src="/tagam-logo.svg" alt="TAGAM" />
       <h1 v-if="title" class="m-0 mt-1 truncate text-xl font-extrabold">{{ title }}</h1>
     </div>
-    <button class="icon-button tap-motion" type="button" :aria-label="actionLabel" @click="$emit('action')">
+    <button class="icon-button tap-motion" :class="{ 'is-active': actionActive }" type="button" :aria-label="actionLabel" @click="$emit('action')">
       <component :is="icon" :size="20" />
     </button>
   </header>
@@ -27,6 +27,10 @@ defineProps({
   actionLabel: {
     type: String,
     default: "Open notifications",
+  },
+  actionActive: {
+    type: Boolean,
+    default: false,
   },
 });
 </script>

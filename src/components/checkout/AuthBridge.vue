@@ -16,8 +16,15 @@
     </div>
 
     <div v-if="!client.authenticated" class="grid gap-4">
-      <div class="hide-scrollbar flex gap-2 overflow-x-auto">
-        <button v-for="tab in tabs" :key="tab.value" class="tagam-pill tap-motion shrink-0 px-4 py-2" :class="{ 'is-active': mode === tab.value }" type="button" @click="mode = tab.value">
+      <div class="auth-mode-tabs hide-scrollbar flex gap-2 overflow-x-auto">
+        <button
+          v-for="tab in tabs"
+          :key="tab.value"
+          class="auth-mode-tab tagam-pill tap-motion shrink-0 px-4 py-2"
+          :class="{ 'is-active': mode === tab.value, 'is-guest-tab': tab.value === 'guest' }"
+          type="button"
+          @click="mode = tab.value"
+        >
           {{ tab.label }}
         </button>
       </div>
@@ -116,7 +123,7 @@
 
 <script setup>
 import { computed, defineComponent, h, onMounted, reactive, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import SocialAuthButtons from "src/components/auth/SocialAuthButtons.vue";
 import { checkoutPayload, useCartStore } from "src/stores/cart";
 import { useAppStore } from "src/stores/app";
@@ -130,7 +137,8 @@ const client = useClientAuthStore();
 const checkout = useCheckoutStore();
 const cart = useCartStore();
 const route = useRoute();
-const mode = ref("guest");
+const router = useRouter();
+const mode = ref("signup");
 const notice = ref("");
 
 const authCopy = {
@@ -139,7 +147,7 @@ const authCopy = {
     signedIn: "Вы вошли. Теперь доступны заказы, адреса и способы оплаты.",
     logout: "Выйти",
     or: "или",
-    tabs: { guest: "Гость", login: "Email", signup: "Регистрация" },
+    tabs: { guest: "Гость", login: "Email", phone: "Телефон", signup: "Регистрация" },
     titles: {
       guest: "Войдите или продолжите как гость",
       login: "Вход по email или телефону",
@@ -191,7 +199,7 @@ const authCopy = {
     signedIn: "Siz hasaba girdiňiz. Sargytlar, salgylar we tölegler elýeterli.",
     logout: "Çykmak",
     or: "ýa-da",
-    tabs: { guest: "Myhman", login: "Email", signup: "Hasap" },
+    tabs: { guest: "Myhman", login: "Email", phone: "Telefon", signup: "Hasap" },
     titles: {
       guest: "Giriň ýa-da myhman hökmünde dowam ediň",
       login: "Email ýa-da telefon bilen giriş",
@@ -243,7 +251,7 @@ const authCopy = {
     signedIn: "You are signed in. Orders, addresses and payments are now available.",
     logout: "Log out",
     or: "or",
-    tabs: { guest: "Guest", login: "Email", signup: "Sign up" },
+    tabs: { guest: "Guest", login: "Email", phone: "Phone", signup: "Sign up" },
     titles: {
       guest: "Sign in or continue as guest",
       login: "Sign in with email or phone",
@@ -294,9 +302,10 @@ const authCopy = {
 
 const copy = computed(() => authCopy[app.language] || authCopy.ru);
 const tabs = computed(() => [
-  { value: "guest", label: copy.value.tabs.guest },
-  { value: "login", label: copy.value.tabs.login },
   { value: "signup", label: copy.value.tabs.signup },
+  { value: "phone", label: copy.value.tabs.phone },
+  { value: "login", label: copy.value.tabs.login },
+  { value: "guest", label: copy.value.tabs.guest },
 ]);
 
 const routeModeMap = {
@@ -366,11 +375,32 @@ const enterOtp = (state) => {
   mode.value = "otp";
 };
 
+const redirectTarget = computed(() => {
+  const savedTarget = typeof window === "undefined" ? "" : window.sessionStorage.getItem("auth_redirect") || "";
+  const target = String(route.query.redirect || savedTarget || "");
+  if (!target || !target.startsWith("/") || target.startsWith("//")) return "";
+  return target;
+});
+
+const continueAfterAuth = async () => {
+  if (redirectTarget.value && route.fullPath !== redirectTarget.value) {
+    if (typeof window !== "undefined") window.sessionStorage.removeItem("auth_redirect");
+    await router.replace(redirectTarget.value);
+    return;
+  }
+  if (route.path.startsWith("/user") && cart.cartUuid) {
+    if (typeof window !== "undefined") window.sessionStorage.removeItem("auth_redirect");
+    await router.replace("/checkout");
+    return;
+  }
+  emit("authenticated");
+};
+
 const afterAuth = async () => {
   notice.value = "";
   await cart.refresh("", checkoutPayload).catch(() => {});
   await checkout.loadPayments().catch(() => {});
-  emit("authenticated");
+  await continueAfterAuth();
 };
 
 const submitGuest = async () => {
@@ -473,5 +503,33 @@ onMounted(() => {
     reset.uuid = String(route.query.uuid);
   }
   applyAppleCallback();
+  if (client.authenticated && redirectTarget.value) {
+    continueAfterAuth();
+  }
 });
 </script>
+
+<style scoped>
+.auth-mode-tabs {
+  padding-bottom: 2px;
+}
+
+.auth-mode-tab {
+  flex: 1 0 auto;
+  justify-content: center;
+}
+
+.auth-mode-tab.is-guest-tab:not(.is-active) {
+  border-color: color-mix(in srgb, var(--app-border) 82%, transparent);
+  background: transparent;
+  color: var(--app-muted);
+}
+
+@media (max-width: 420px) {
+  .auth-mode-tab {
+    min-width: max-content;
+    padding-inline: 12px;
+    font-size: 12px;
+  }
+}
+</style>

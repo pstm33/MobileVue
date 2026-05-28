@@ -20,6 +20,8 @@ android/build
 android/app/src/main/assets/public
 release
 tmp
+tmp-*
+__pycache__/
 scripts/play_upload_internal.mjs
 
 # iOS local build artifacts

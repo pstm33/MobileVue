@@ -3,9 +3,9 @@
 ## Текущее состояние
 
 - Backend включает Google, Facebook и Apple.
-- В customer app показываются Google, Facebook и Apple, если backend KMRS возвращает провайдер включенным.
+- В customer app показываются Google, Facebook и Apple, если backend Tagam возвращает провайдер включенным.
 - Apple показывается и на Android, и на iOS, потому что плагин поддерживает Apple OAuth на Android.
-- iOS получил URL schemes и callback-обработчики для Google/Facebook как в коробочной MobileVue.
+- iOS получил URL schemes и callback-обработчики для Google/Facebook как в коробочной legacy app.
 
 ## Facebook
 
@@ -107,4 +107,4 @@ https://tagam.delivery/interface/apple_callback
 
 5. В App Store Connect внешний TestFlight должен проходить с Apple-кнопкой, если Google/Facebook доступны на iOS.
 
-Web PWA использует `apple_web_redirect_uri` из KMRS. Для текущего `https://tagam.delivery/interface/apple_callback` добавлен обработчик `postMessage` `apple-login`, поэтому новый сайт может принять Apple payload от существующего backend callback без немедленного изменения Apple Developer Return URL.
+Web PWA использует `apple_web_redirect_uri` из Tagam. Для текущего `https://tagam.delivery/interface/apple_callback` добавлен обработчик `postMessage` `apple-login`, поэтому новый сайт может принять Apple payload от существующего backend callback без немедленного изменения Apple Developer Return URL.

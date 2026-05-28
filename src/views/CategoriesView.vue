@@ -52,7 +52,7 @@ import { LayoutGrid, Utensils } from "@lucide/vue";
 import { computed, onMounted } from "vue";
 import AppHeader from "src/components/ui/AppHeader.vue";
 import { useMerchantFeedStore } from "src/stores/merchantFeed";
-import { kmrsAsset } from "src/services/kmrsAssets";
+import { tagamAsset } from "src/services/tagamAssets";
 import { useAppStore } from "src/stores/app";
 
 const feed = useMerchantFeedStore();
@@ -110,7 +110,7 @@ const cuisineNames = (restaurant) => {
 };
 
 const restaurantImage = (restaurant) =>
-  kmrsAsset(restaurant?.url_logo || restaurant?.url_image || restaurant?.logo || restaurant?.image || restaurant?.background_url);
+  tagamAsset(restaurant?.url_logo || restaurant?.url_image || restaurant?.logo || restaurant?.image || restaurant?.background_url);
 const restaurantCountLabel = (count) => {
   const value = Number(count) || 0;
   const mod10 = value % 10;

@@ -13,7 +13,7 @@
           </p>
         </div>
         <div class="home-hero-icon grid h-20 w-20 shrink-0 place-items-center rounded-full bg-[var(--app-accent-soft)] ring-1 ring-[var(--app-border)]">
-          <img class="h-16 w-16 object-contain" src="/tagam-logo.svg" alt="" />
+          <img class="h-16 w-16 object-contain" src="/icons/icon-512x512.png" alt="" />
         </div>
       </div>
       <RouterLink class="primary-button tap-motion mt-5 w-full" to="/offers">
@@ -22,54 +22,56 @@
       </RouterLink>
     </div>
 
-    <section v-if="homeInsights.length" class="home-insights grid grid-cols-3 gap-2">
-      <div v-for="item in homeInsights" :key="item.label" class="soft-card p-3">
-        <component :is="item.icon" class="text-[var(--app-accent)]" :size="18" />
-        <strong class="mt-2 block text-lg leading-none">{{ item.value }}</strong>
-        <span class="muted mt-1 block text-xs">{{ item.label }}</span>
-      </div>
-    </section>
-
-    <section class="home-actions grid grid-cols-2 gap-3">
-      <RouterLink
-        v-for="action in quickActions"
-        :key="action.to"
-        class="home-action-card tagam-card tap-motion p-4"
-        :to="action.to"
-      >
-        <span class="home-action-icon">
-          <component :is="action.icon" :size="20" />
-        </span>
-        <span>
-          <strong>{{ action.title }}</strong>
-          <small>{{ action.text }}</small>
-        </span>
-      </RouterLink>
-    </section>
-
     <div v-if="cuisines.length" class="sticky-rail home-cuisine-rail sticky top-0 z-10 py-3">
-      <div class="hide-scrollbar flex gap-2 overflow-x-auto px-4">
+      <div class="home-cuisine-shell grid grid-cols-[70px_minmax(0,1fr)] gap-2 px-4">
         <button
-          class="tagam-pill tap-motion shrink-0 px-4 py-2"
+          class="home-cuisine-card home-cuisine-card--pinned tap-motion"
           :class="{ 'is-active': !selectedCuisines.length }"
           type="button"
-          @click.stop="clearCuisines"
+          @click.stop="handleClearCuisines"
         >
-          {{ app.copy.home.all || "Все" }}
-          <span class="ml-2 text-xs opacity-60">{{ feed.rows.length }}</span>
+          <img class="home-cuisine-card__image home-cuisine-card__image--contain" src="/icons/icon-512x512.png" alt="" />
+          <span class="home-cuisine-card__overlay" />
+          <span class="home-cuisine-card__label">{{ app.copy.home.all || "Все" }}</span>
+        </button>
+      <div
+        ref="cuisineRail"
+        class="home-cuisine-scroll hide-scrollbar flex min-w-0 gap-2 overflow-x-auto"
+        @dragstart.prevent
+        @pointercancel="endRailDrag"
+        @pointerdown="startRailDrag"
+        @pointerleave="endRailDrag"
+        @pointermove="moveRailDrag"
+        @pointerup="endRailDrag"
+      >
+        <button
+          v-if="false"
+          class="home-cuisine-card tap-motion shrink-0"
+          :class="{ 'is-active': !selectedCuisines.length }"
+          type="button"
+          @click.stop="handleClearCuisines"
+        >
+          <img class="home-cuisine-card__image home-cuisine-card__image--contain" src="/icons/icon-512x512.png" alt="" />
+          <span class="home-cuisine-card__overlay" />
+          <span class="home-cuisine-card__label">{{ app.copy.home.all || "Все" }}</span>
         </button>
         <button
           v-for="item in cuisines"
           :key="item.label"
-          class="tagam-pill tap-motion shrink-0 px-4 py-2"
+          class="home-cuisine-card tap-motion shrink-0"
           :class="{ 'is-active': isCuisineSelected(item.label) }"
           type="button"
-          @click.stop="toggleCuisine(item.label, $event)"
+          @click.stop="handleToggleCuisine(item.label)"
         >
-          {{ item.label }}
-          <span class="ml-2 text-xs opacity-60">{{ item.count }}</span>
+          <img v-if="item.image" class="home-cuisine-card__image home-cuisine-card__image--contain" :src="item.image" alt="" />
+          <span v-else class="home-cuisine-card__fallback">
+            <Utensils :size="24" />
+          </span>
+          <span class="home-cuisine-card__overlay" />
+          <span class="home-cuisine-card__label">{{ item.label }}</span>
         </button>
       </div>
+    </div>
     </div>
 
     <div class="section-title">
@@ -105,13 +107,13 @@
         <div class="image-treatment aspect-[2/1]">
           <img
             class="h-full w-full object-cover transition duration-500 hover:scale-[1.03]"
-            :src="kmrsAsset(restaurant.url_banner || restaurant.url_logo)"
+            :src="tagamAsset(restaurant.url_banner || restaurant.url_logo)"
             :alt="decodeHtml(restaurant.restaurant_name)"
           />
           <img
             v-if="restaurant.url_logo"
             class="absolute bottom-3 left-3 h-14 w-14 rounded-[8px] border border-white/20 bg-black/45 object-cover shadow-xl"
-            :src="kmrsAsset(restaurant.url_logo)"
+            :src="tagamAsset(restaurant.url_logo)"
             :alt="decodeHtml(restaurant.restaurant_name)"
           />
         </div>
@@ -128,88 +130,39 @@
                 {{ restaurant.cuisine.join(" / ") }}
               </p>
             </div>
-            <span class="tagam-pill is-active h-fit min-h-0 px-3 py-1 text-xs">
-              {{ restaurant.reviews?.ratings || app.copy.home.newRating }}
+            <span v-if="restaurant.reviews?.ratings" class="tagam-pill is-active h-fit min-h-0 px-3 py-1 text-xs">
+              {{ restaurant.reviews.ratings }}
             </span>
           </div>
         </div>
       </RouterLink>
     </article>
 
-    <div v-if="selectedCuisines.length" class="filter-clear-fab">
-      <button class="primary-button tap-motion px-5 shadow-2xl" type="button" @click.stop="clearCuisines">
-        <X :size="18" />
-        {{ app.copy.home.clear }}
-        <span class="rounded-full bg-black/10 px-2 py-0.5 text-xs">{{ selectedCuisines.length }}</span>
-      </button>
-    </div>
   </section>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { BadgePercent, CalendarDays, Flame, Gift, Heart, LayoutGrid, MapPin, ReceiptText, ShoppingBag, Sparkles, WalletCards, X } from "@lucide/vue";
+import { ShoppingBag, Sparkles, Utensils } from "@lucide/vue";
+import APIinterface from "src/api/APIinterface";
 import { useAppStore } from "src/stores/app";
 import { useMerchantFeedStore } from "src/stores/merchantFeed";
 import AppHeader from "src/components/ui/AppHeader.vue";
-import { kmrsAsset } from "src/services/kmrsAssets";
+import { tagamAsset } from "src/services/tagamAssets";
 
 const app = useAppStore();
 const feed = useMerchantFeedStore();
+const cuisineRail = ref(null);
+const cuisineCatalog = ref(new Map());
 const selectedCuisines = ref([]);
-
-const insightLabels = {
-  ru: {
-    places: "мест рядом",
-    categories: "категорий",
-    freeDelivery: "без доставки",
-    fast: "быстро",
-  },
-  tk: {
-    places: "ýer golaýda",
-    categories: "kategoriýa",
-    freeDelivery: "mugt eltip",
-    fast: "çalt",
-  },
-  en: {
-    places: "nearby",
-    categories: "categories",
-    freeDelivery: "free delivery",
-    fast: "fast",
-  },
-};
-const insightCopy = computed(() => insightLabels[app.language] || insightLabels.ru);
-const quickActionLabels = {
-  ru: [
-    { to: "/offers", title: "Акции", text: "Выгодные рестораны", icon: BadgePercent },
-    { to: "/categories", title: "Категории", text: "Кухни и вкусы", icon: LayoutGrid },
-    { to: "/booking", title: "Бронь", text: "Столики и гости", icon: CalendarDays },
-    { to: "/orders", title: "Заказы", text: "Повтор и статус", icon: ReceiptText },
-    { to: "/wallet", title: "Кошелек", text: "Баланс и оплата", icon: WalletCards },
-    { to: "/favourites", title: "Избранное", text: "Любимые места", icon: Heart },
-  ],
-  tk: [
-    { to: "/offers", title: "Aksiyalar", text: "Amatly restoranlar", icon: BadgePercent },
-    { to: "/categories", title: "Kategoriya", text: "As we tagamlar", icon: LayoutGrid },
-    { to: "/booking", title: "Bron", text: "Stollar we myhmanlar", icon: CalendarDays },
-    { to: "/orders", title: "Sargytlar", text: "Gaytala we status", icon: ReceiptText },
-    { to: "/wallet", title: "Gapjyk", text: "Balans we toleg", icon: WalletCards },
-    { to: "/favourites", title: "Halanlarym", text: "Halan yerler", icon: Heart },
-  ],
-  en: [
-    { to: "/offers", title: "Offers", text: "Best restaurant deals", icon: BadgePercent },
-    { to: "/categories", title: "Categories", text: "Cuisines and cravings", icon: LayoutGrid },
-    { to: "/booking", title: "Book", text: "Tables and guests", icon: CalendarDays },
-    { to: "/orders", title: "Orders", text: "Repeat and status", icon: ReceiptText },
-    { to: "/wallet", title: "Wallet", text: "Balance and payments", icon: WalletCards },
-    { to: "/favourites", title: "Favourites", text: "Saved places", icon: Heart },
-  ],
-};
-const quickActions = computed(() => {
-  const actions = quickActionLabels[app.language] || quickActionLabels.ru;
-  if (app.language === "ru") return actions;
-  return actions.map((action) => (action.to === "/wallet" ? { ...action, icon: Gift } : action));
+const railDrag = ref({
+  active: false,
+  moved: false,
+  pointerId: null,
+  startScrollLeft: 0,
+  startX: 0,
 });
+const suppressRailClick = ref(false);
 
 const decodeHtml = (value) => {
   const element = document.createElement("div");
@@ -217,18 +170,47 @@ const decodeHtml = (value) => {
   return element.textContent || "";
 };
 
+const normalizeCuisineKey = (value) => decodeHtml(value).trim().toLocaleLowerCase();
+
+const cuisineImage = (label) => cuisineCatalog.value.get(normalizeCuisineKey(label)) || "";
+
+const loadCuisineCatalog = async () => {
+  try {
+    const response = await APIinterface.CuisineList(100, "");
+    const rows = response?.details?.data ?? response?.details ?? response?.data ?? [];
+    const next = new Map();
+    (Array.isArray(rows) ? rows : Object.values(rows || {})).forEach((item) => {
+      const image = tagamAsset(item.url_icon || item.featured_image || item.url_image || item.image || "");
+      const names = [item.cuisine_name, item.original_cuisine_name, item.slug].filter(Boolean);
+      names.forEach((name) => {
+        const key = normalizeCuisineKey(name);
+        if (key && image && !image.includes("default-icons.png") && !image.includes("placeholder.png")) {
+          next.set(key, image);
+        }
+      });
+    });
+    cuisineCatalog.value = next;
+  } catch {
+    cuisineCatalog.value = new Map();
+  }
+};
+
 const cuisines = computed(() => {
   const counts = new Map();
 
   feed.rows.forEach((restaurant) => {
     (restaurant.cuisine || []).forEach((label) => {
-      counts.set(label, (counts.get(label) || 0) + 1);
+      const key = String(label || "").trim();
+      if (!key) return;
+      const current = counts.get(key) || { label: key, count: 0, image: "" };
+      current.count += 1;
+      current.image ||= cuisineImage(key);
+      counts.set(key, current);
     });
   });
 
-  return Array.from(counts.entries())
-    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], app.language))
-    .map(([label, count]) => ({ label, count }));
+  return Array.from(counts.values())
+    .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label, app.language));
 });
 
 const filteredRestaurants = computed(() => {
@@ -239,62 +221,159 @@ const filteredRestaurants = computed(() => {
 });
 
 const isCuisineSelected = (label) => selectedCuisines.value.includes(label);
-const freeDeliveryCount = computed(() => feed.rows.filter((restaurant) => restaurant.free_delivery).length);
-const fastRestaurantCount = computed(() =>
-  feed.rows.filter((restaurant) => {
-    const minutes = Number.parseInt(String(restaurant.estimation || ""), 10);
-    return Number.isFinite(minutes) && minutes > 0 && minutes <= 35;
-  }).length
-);
-const homeInsights = computed(() => {
-  if (!feed.rows.length) return [];
-
-  return [
-    { label: insightCopy.value.places, value: feed.rows.length, icon: MapPin },
-    cuisines.value.length ? { label: insightCopy.value.categories, value: cuisines.value.length, icon: Sparkles } : null,
-    freeDeliveryCount.value
-      ? { label: insightCopy.value.freeDelivery, value: freeDeliveryCount.value, icon: ShoppingBag }
-      : fastRestaurantCount.value
-        ? { label: insightCopy.value.fast, value: fastRestaurantCount.value, icon: Flame }
-        : null,
-  ].filter(Boolean);
-});
-
-const toggleCuisine = (label, event) => {
+const toggleCuisine = (label) => {
   selectedCuisines.value = isCuisineSelected(label)
     ? selectedCuisines.value.filter((item) => item !== label)
     : [...selectedCuisines.value, label];
-  event?.currentTarget?.scrollIntoView?.({
-    behavior: "smooth",
-    inline: "center",
-    block: "nearest",
-  });
 };
 
 const clearCuisines = () => {
   selectedCuisines.value = [];
 };
 
+const handleClearCuisines = () => {
+  if (suppressRailClick.value) return;
+  clearCuisines();
+};
+
+const handleToggleCuisine = (label) => {
+  if (suppressRailClick.value) return;
+  toggleCuisine(label);
+};
+
+const startRailDrag = (event) => {
+  if (event.pointerType !== "mouse" || event.button !== 0) return;
+  if (event.target?.closest?.(".home-cuisine-card")) return;
+  railDrag.value = {
+    active: true,
+    moved: false,
+    pointerId: event.pointerId,
+    startScrollLeft: event.currentTarget.scrollLeft,
+    startX: event.clientX,
+  };
+  suppressRailClick.value = false;
+  event.currentTarget.setPointerCapture?.(event.pointerId);
+};
+
+const moveRailDrag = (event) => {
+  if (!railDrag.value.active) return;
+  const deltaX = event.clientX - railDrag.value.startX;
+  if (Math.abs(deltaX) > 10) {
+    railDrag.value.moved = true;
+    event.preventDefault();
+  }
+  event.currentTarget.scrollLeft = railDrag.value.startScrollLeft - deltaX;
+};
+
+const endRailDrag = (event) => {
+  if (!railDrag.value.active) return;
+  const moved = railDrag.value.moved;
+  event.currentTarget?.releasePointerCapture?.(railDrag.value.pointerId);
+  railDrag.value = { ...railDrag.value, active: false };
+  suppressRailClick.value = moved;
+  window.setTimeout(() => {
+    suppressRailClick.value = false;
+  }, 80);
+};
+
 onMounted(() => {
   if (!feed.loadedAt && !feed.loading) {
     feed.load();
   }
+  loadCuisineCatalog();
 });
 </script>
 
 <style scoped>
-.home-insights :deep(.soft-card) {
-  min-width: 0;
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--app-card) 92%, transparent), color-mix(in srgb, var(--app-accent) 8%, var(--app-card))),
-    var(--app-card);
+.home-cuisine-card {
+  position: relative;
+  display: grid;
+  width: 70px;
+  height: 94px;
+  overflow: hidden;
+  place-items: end center;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  background: var(--app-card);
+  padding: 7px;
+  color: var(--app-text);
+  text-align: left;
 }
 
-.home-insights strong,
-.home-insights span {
-  min-width: 0;
+.home-cuisine-scroll {
+  cursor: grab;
+  touch-action: pan-x;
+  user-select: none;
+}
+
+.home-cuisine-scroll:active {
+  cursor: grabbing;
+}
+
+.home-cuisine-card.is-active {
+  border-color: color-mix(in srgb, var(--app-accent) 80%, white 8%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--app-accent) 54%, transparent), 0 16px 30px rgba(0, 0, 0, 0.24);
+}
+
+.home-cuisine-card__image,
+.home-cuisine-card__overlay,
+.home-cuisine-card__fallback {
+  position: absolute;
+  inset: 0;
+}
+
+.home-cuisine-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1;
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+.home-cuisine-card__image--contain {
+  object-fit: contain;
+  padding: 6px 5px 25px;
+  object-position: center 22%;
+  background:
+    radial-gradient(circle at 50% 34%, rgba(255, 154, 0, 0.12), transparent 58%),
+    color-mix(in srgb, var(--app-card) 86%, black);
+}
+
+.home-cuisine-card__fallback {
+  display: grid;
+  place-items: start center;
+  background:
+    radial-gradient(circle at 50% 34%, color-mix(in srgb, var(--app-accent) 22%, transparent), transparent 58%),
+    color-mix(in srgb, var(--app-card) 86%, black);
+  color: var(--app-accent);
+  padding-top: 15px;
+}
+
+.home-cuisine-card:active .home-cuisine-card__image {
+  transform: scale(1.04);
+  opacity: 1;
+}
+
+.home-cuisine-card__overlay {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.18) 48%, rgba(0, 0, 0, 0.76));
+}
+
+.home-cuisine-card__label {
+  position: relative;
+  z-index: 1;
+  display: -webkit-box;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 100%;
+  text-align: center;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 1000;
+  line-height: 1.05;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 </style>
+
+

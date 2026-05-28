@@ -1,11 +1,11 @@
 {
-  "name": "kmrs-customer-app",
+  "name": "tagam-delivery-customer-app",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "assets:kmrs": "python scripts/prepare_kmrs_assets.py",
+    "assets:tagam": "python scripts/prepare_tagam_assets.py",
     "build": "vite build",
     "preview": "vite preview"
   },

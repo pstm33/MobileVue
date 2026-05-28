@@ -1,9 +1,9 @@
-﻿# Tagam Delivery Release Checklist
+# Tagam Delivery Release Checklist
 
 ## Build Status
 
 - Web production build: passed with `npm run build`.
-- KMRS image preparation: passed with `npm run assets:kmrs`.
+- Tagam image preparation: passed with `npm run assets:tagam`.
 - Dependency audit: passed with `npm audit --audit-level=high`, 0 vulnerabilities.
 - Capacitor Android sync: passed with `npx cap sync android`.
 - Android debug APK: built successfully.
@@ -22,12 +22,12 @@
 
 ## Verified Flows
 
-- Home feed loads real KMRS restaurants and cuisine filters.
-- Restaurant menu loads real KMRS menu and item images.
+- Home feed loads real Tagam restaurants and cuisine filters.
+- Restaurant menu loads real Tagam menu and item images.
 - Cart accepts real menu item additions.
 - Checkout loads cart, address, tips, summary and auth bridge.
 - Guest/auth-gated payment loading no longer shows a premature `Network Error`.
-- Real KMRS `PlaceOrder` test succeeded and was visible in backoffice as order #89.
+- Real Tagam `PlaceOrder` test succeeded and was visible in backoffice as order #89.
 - Russian/Turkmen/English global copy no longer contains mojibake.
 - Public PWA smoke test passed for onboarding, location, home, restaurant, cart, checkout, account and tracking.
 - Leaflet marker assets are present on the public PWA and no 404 resources were found in the final smoke test.
@@ -38,7 +38,7 @@
 
 1. Run:
    ```powershell
-   npm run assets:kmrs
+   npm run assets:tagam
    npm run build
    ```
 2. Upload the contents of `dist` or unpack `release/tagam-delivery-web-dist.zip` into the target web root.
@@ -48,7 +48,7 @@
    - `/#/onboarding`
    - `/#/location`
    - `/#/home`
-   - `/#/search?q=Р±СѓСЂРіРµСЂ`
+   - `/#/search?q=бургер`
    - `/#/restaurant/fireitup`
    - `/#/cart`
    - `/#/checkout`
@@ -66,4 +66,4 @@ The current build can be uploaded to the server as a staged release. Before acti
 
 ## Server-Side Caution
 
-The app uses real KMRS data. Real order creation works. Use test customers/orders only when QA intentionally needs server mutation.
+The app uses real Tagam data. Real order creation works. Use test customers/orders only when QA intentionally needs server mutation.

@@ -3,7 +3,7 @@
 ## Current State
 
 - Public PWA is live: `https://pwa.tagam.delivery/`.
-- Real KMRS restaurant feed, menu, cart, checkout and guest order creation are wired.
+- Real Tagam restaurant feed, menu, cart, checkout and guest order creation are wired.
 - Android debug APK, unsigned release APK and release AAB build successfully.
 - Store listing draft and screenshots are prepared in `release/`.
 
@@ -38,8 +38,8 @@ Estimated: 1-3 days after internal test is accepted.
 
 ## Remaining Product Block
 
-- Real order history screen from KMRS customer order endpoints.
+- Real order history screen from Tagam customer order endpoints.
 - Real tracking status mapping instead of the current prepared tracking UI.
 - Favorites/reorder retention loop.
-- Coupon/reward surfaces if the KMRS backend has active campaign endpoints.
+- Coupon/reward surfaces if the Tagam backend has active campaign endpoints.
 - Push notification registration once Firebase production config is available.

@@ -29,7 +29,7 @@
           <div class="image-treatment aspect-[2/1]">
             <img
               class="h-full w-full object-cover transition duration-500 hover:scale-[1.03]"
-              :src="kmrsAsset(restaurant.url_banner || restaurant.url_logo)"
+              :src="tagamAsset(restaurant.url_banner || restaurant.url_logo)"
               :alt="decodeHtml(restaurant.restaurant_name)"
             />
             <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent p-4">
@@ -77,7 +77,7 @@ import { computed, onMounted, ref } from "vue";
 import APIinterface from "src/api/APIinterface";
 import AppHeader from "src/components/ui/AppHeader.vue";
 import auth from "src/api/auth";
-import { kmrsAsset } from "src/services/kmrsAssets";
+import { tagamAsset } from "src/services/tagamAssets";
 import { LocalStorage } from "src/services/storage";
 import { useAppStore } from "src/stores/app";
 

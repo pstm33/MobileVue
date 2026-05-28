@@ -1,6 +1,12 @@
 <template>
   <section class="page restaurant-page fade-up">
-    <AppHeader :title="pageTitle" :icon="Heart" :action-label="app.copy.restaurant.save" />
+    <AppHeader
+      title=""
+      :icon="Heart"
+      :action-label="favouriteLabel"
+      :action-active="isFavourite"
+      @action="toggleRestaurantFavourite"
+    />
 
     <div v-if="restaurant.loading" class="grid gap-4">
       <div class="soft-card warm-skeleton h-72" />
@@ -23,12 +29,18 @@
         <img
           v-if="restaurant.heroImage"
           class="aspect-[2/1] w-full object-cover"
-          :src="kmrsAsset(restaurant.heroImage)"
+          :src="tagamAsset(restaurant.heroImage)"
           :alt="restaurant.restaurant.restaurant_name"
         />
         <div v-else class="aspect-[2/1] w-full bg-[var(--app-accent-soft)]" />
 
         <div class="restaurant-hero-overlay absolute inset-0" />
+        <img
+          v-if="restaurant.restaurant.url_logo"
+          class="restaurant-logo-badge"
+          :src="tagamAsset(restaurant.restaurant.url_logo)"
+          :alt="restaurant.restaurant.restaurant_name"
+        />
         <div class="absolute inset-x-0 bottom-0 p-5">
           <div class="restaurant-hero-copy flex items-end justify-between gap-4">
             <div class="min-w-0">
@@ -36,45 +48,44 @@
                 {{ app.copy.restaurant.popular }}
                 <span v-if="estimationLabel"> · {{ estimationLabel }}</span>
               </p>
-              <h1 class="m-0 mt-2 text-4xl font-black leading-tight text-white">{{ restaurantName }}</h1>
+              <h1 class="m-0 mt-2 text-3xl font-black leading-tight text-white">{{ restaurantName }}</h1>
               <p class="m-0 mt-2 line-clamp-2 text-sm leading-5 text-white/80">
                 {{ cuisineText || app.copy.restaurant.deliveryAvailable }}
               </p>
+              <div class="restaurant-hero-metrics mt-3 flex flex-wrap gap-2">
+                <span v-if="distanceLabel" class="restaurant-hero-chip">
+                  <MapPin :size="14" />
+                  {{ distanceLabel }} {{ distanceCaption }}
+                </span>
+                <span class="restaurant-hero-chip">
+                  <ShoppingBag :size="14" />
+                  {{ menuItemCount }} {{ app.copy.restaurant.items }}
+                </span>
+                <span v-if="promoCount" class="restaurant-hero-chip">
+                  <Star :size="14" />
+                  {{ promoCount }} {{ app.copy.restaurant.deals }}
+                </span>
+              </div>
             </div>
 
             <div class="grid h-16 w-16 shrink-0 place-items-center rounded-full border border-white/20 bg-black/45 text-center backdrop-blur">
               <strong class="text-lg text-emerald-300">{{ ratingLabel }}</strong>
-              <span class="text-[10px] font-black uppercase text-white/55">rate</span>
+              <span class="text-[10px] font-black uppercase text-white/55">{{ ratingCaption }}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="restaurant-stats tagam-card restaurant-side-card grid p-3 text-center" :class="promoCount ? 'grid-cols-3' : 'grid-cols-2'">
-        <div class="restaurant-stat">
-          <strong>{{ distanceLabel || "-" }}</strong>
-          <span class="muted block text-xs">{{ distanceCaption }}</span>
-        </div>
-        <div v-if="promoCount" class="restaurant-stat">
-          <strong>{{ promoCount }}</strong>
-          <span class="muted block text-xs">{{ app.copy.restaurant.deals }}</span>
-        </div>
-        <div class="restaurant-stat">
-          <strong>{{ menuItemCount }}</strong>
-          <span class="muted block text-xs">{{ app.copy.restaurant.items }}</span>
-        </div>
-      </div>
-
       <div class="restaurant-tabs grid grid-cols-3 gap-2">
-        <button class="tagam-pill tap-motion px-3 py-2" :class="{ 'is-active': activePanel === 'menu' }" type="button" @click="activePanel = 'menu'">
+        <button class="restaurant-mode-card tap-motion" :class="{ 'is-active': activePanel === 'menu' }" type="button" @click="activePanel = 'menu'">
           <ShoppingBag :size="16" />
           {{ app.copy.restaurant.menu }}
         </button>
-        <button class="tagam-pill tap-motion px-3 py-2" :class="{ 'is-active': activePanel === 'search' }" type="button" @click="activePanel = 'search'">
+        <button class="restaurant-mode-card tap-motion" :class="{ 'is-active': activePanel === 'search' }" type="button" @click="activePanel = 'search'">
           <Search :size="16" />
           {{ searchCopy.title }}
         </button>
-        <button class="tagam-pill tap-motion px-3 py-2" :class="{ 'is-active': activePanel === 'info' }" type="button" @click="activePanel = 'info'">
+        <button class="restaurant-mode-card tap-motion" :class="{ 'is-active': activePanel === 'info' }" type="button" @click="activePanel = 'info'">
           <Info :size="16" />
           {{ infoCopy.info }}
         </button>
@@ -130,7 +141,7 @@
           <button
             v-for="category in displayCategories"
             :key="category.category_uiid || category.cat_id"
-            class="tagam-pill tap-motion shrink-0 px-4 py-2"
+            class="restaurant-category-card tap-motion shrink-0"
             :class="{ 'is-active': String(activeCategoryId) === String(category.cat_id) }"
             type="button"
             :data-category-button-id="category.cat_id"
@@ -164,11 +175,11 @@
           class="tagam-card restaurant-item-card group stagger-item flex gap-4 p-3"
           :style="{ '--stagger-delay': `${Math.min(itemIndex, 6) * 42}ms` }"
         >
-          <div class="image-treatment h-28 w-28 shrink-0 rounded-[8px]">
+          <div class="image-treatment dish-image-treatment h-28 w-28 shrink-0 rounded-[8px]">
             <img
               v-if="item.url_image"
-              class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-              :src="kmrsAsset(item.url_image)"
+              class="dish-image h-full w-full object-cover transition duration-300"
+              :src="tagamAsset(item.url_image)"
               :alt="item.item_name"
             />
             <div v-else class="grid h-full w-full place-items-center text-xs font-black text-[var(--app-muted)]">
@@ -218,20 +229,24 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { Heart, Info, MapPin, Plus, Search, ShoppingBag, Star, X } from "@lucide/vue";
 import APIinterface from "src/api/APIinterface";
 import AppHeader from "src/components/ui/AppHeader.vue";
 import ItemDetailSheet from "src/components/menu/ItemDetailSheet.vue";
 import { useAppStore } from "src/stores/app";
 import { useCartStore } from "src/stores/cart";
+import { useCustomerStore } from "src/stores/customer";
 import { useItemDetailStore } from "src/stores/itemDetail";
 import { useRestaurantStore } from "src/stores/restaurant";
-import { kmrsAsset } from "src/services/kmrsAssets";
+import { tagamAsset } from "src/services/tagamAssets";
+import auth from "src/api/auth";
 
 const route = useRoute();
+const router = useRouter();
 const app = useAppStore();
 const restaurant = useRestaurantStore();
+const customer = useCustomerStore();
 const itemDetail = useItemDetailStore();
 const cart = useCartStore();
 const activeCategoryId = ref("");
@@ -241,6 +256,7 @@ const reviewsOpen = ref(false);
 const reviewsLoading = ref(false);
 const reviews = ref([]);
 let categoryObserver;
+let categoryScrollFrame = null;
 
 const localCopy = {
   ru: {
@@ -260,6 +276,11 @@ const localCopy = {
 const slug = computed(() => String(route.params.slug || ""));
 const searchCopy = computed(() => (localCopy[app.language] || localCopy.ru).search);
 const infoCopy = computed(() => (localCopy[app.language] || localCopy.ru).info);
+const restaurantUiCopy = computed(() => {
+  if (app.language === "tk") return { rating: "Reyting", favourite: "Halanlarym", save: "Restorany sakla" };
+  if (app.language === "en") return { rating: "Rating", favourite: "Favourite", save: "Save restaurant" };
+  return { rating: "Рейтинг", favourite: "В избранном", save: "Сохранить ресторан" };
+});
 const itemActionLabel = computed(() => {
   if (app.language === "en") return "Add";
   if (app.language === "tk") return "Gos";
@@ -270,6 +291,15 @@ const deepLinkItem = computed(() => ({
   itemUuid: route.query.item ? String(route.query.item) : "",
 }));
 const pageTitle = computed(() => decodeHtml(restaurant.restaurant?.restaurant_name || app.copy.restaurant.menu));
+const merchantId = computed(() => restaurant.restaurant?.merchant_id || restaurant.restaurant?.merchant_uuid || restaurant.details?.merchant_id || "");
+const isFavourite = computed(() => {
+  const id = String(merchantId.value || "");
+  if (!id) return false;
+  return customer.favouriteList.some((item) =>
+    [item.merchant_id, item.restaurant_id, item.merchant_uuid, item.restaurant_uuid].some((value) => String(value || "") === id)
+  );
+});
+const favouriteLabel = computed(() => (isFavourite.value ? restaurantUiCopy.value.favourite : restaurantUiCopy.value.save));
 const visibleCategories = computed(() =>
   restaurant.menu.filter((category) => (category.item_list ?? []).length > 0)
 );
@@ -303,6 +333,7 @@ const cuisineText = computed(() =>
   decodeHtml(restaurant.restaurant?.cuisine2 || restaurant.restaurant?.merchant_address || "")
 );
 const ratingLabel = computed(() => restaurant.restaurant?.ratings || app.copy.restaurant.newRating);
+const ratingCaption = computed(() => restaurantUiCopy.value.rating);
 const estimationLabel = computed(() => {
   const estimation = restaurant.details?.estimation;
   if (!estimation || Array.isArray(estimation)) return "";
@@ -346,6 +377,39 @@ const priceLabel = (item) => {
 const stopCategoryObserver = () => {
   categoryObserver?.disconnect();
   categoryObserver = null;
+  cancelAnimationFrame(categoryScrollFrame);
+  categoryScrollFrame = null;
+  window.removeEventListener("scroll", scheduleActiveCategoryUpdate);
+  document.querySelector(".screen")?.removeEventListener("scroll", scheduleActiveCategoryUpdate);
+};
+
+const updateActiveCategoryFromScroll = () => {
+  const sections = Array.from(document.querySelectorAll(".category-section"));
+  if (!sections.length) return;
+
+  const railBottom = document.querySelector(".restaurant-category-rail")?.getBoundingClientRect().bottom;
+  const markerY = (Number.isFinite(railBottom) ? railBottom : 116) + 24;
+  const current =
+    sections.find((section) => {
+      const rect = section.getBoundingClientRect();
+      return rect.top <= markerY && rect.bottom > markerY;
+    }) ||
+    sections
+      .filter((section) => section.getBoundingClientRect().top <= markerY)
+      .at(-1) ||
+    sections[0];
+
+  if (current?.dataset?.categoryId) {
+    activeCategoryId.value = current.dataset.categoryId;
+  }
+};
+
+function scheduleActiveCategoryUpdate() {
+  if (categoryScrollFrame) return;
+  categoryScrollFrame = requestAnimationFrame(() => {
+    categoryScrollFrame = null;
+    updateActiveCategoryFromScroll();
+  });
 };
 
 const startCategoryObserver = async () => {
@@ -355,24 +419,18 @@ const startCategoryObserver = async () => {
   const sections = document.querySelectorAll(".category-section");
   if (!sections.length) return;
 
-  activeCategoryId.value = sections[0].dataset.categoryId || "";
+  updateActiveCategoryFromScroll();
   categoryObserver = new IntersectionObserver(
-    (entries) => {
-      const visible = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top);
-
-      if (visible[0]?.target?.dataset?.categoryId) {
-        activeCategoryId.value = visible[0].target.dataset.categoryId;
-      }
-    },
+    () => scheduleActiveCategoryUpdate(),
     {
-      rootMargin: "-92px 0px -62% 0px",
-      threshold: 0.01,
+      rootMargin: "-38% 0px -55% 0px",
+      threshold: 0,
     }
   );
 
   sections.forEach((section) => categoryObserver.observe(section));
+  window.addEventListener("scroll", scheduleActiveCategoryUpdate, { passive: true });
+  document.querySelector(".screen")?.addEventListener("scroll", scheduleActiveCategoryUpdate, { passive: true });
 };
 
 const centerCategoryButton = (catId) => {
@@ -418,6 +476,7 @@ onMounted(() => {
   if (route.query.panel === "info") activePanel.value = "info";
   restaurant.load(slug.value);
   cart.refresh(slug.value).catch(() => {});
+  if (auth.authenticated()) customer.loadFavourites().catch(() => {});
   if (route.query.reviews) loadReviews();
 });
 
@@ -468,6 +527,15 @@ const openItem = (category, item) => {
   });
 };
 
+const toggleRestaurantFavourite = async () => {
+  if (!auth.authenticated()) {
+    router.push("/account");
+    return;
+  }
+  if (!merchantId.value) return;
+  await customer.toggleFavourite(merchantId.value).catch(() => {});
+};
+
 const asArray = (value) => {
   if (Array.isArray(value)) return value;
   if (value && typeof value === "object") return Object.values(value).filter((item) => item && typeof item === "object");
@@ -501,6 +569,20 @@ const loadReviews = async () => {
     radial-gradient(circle at 86% 76%, rgba(242, 138, 0, 0.2), transparent 9rem);
 }
 
+.restaurant-logo-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 58px;
+  height: 58px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.42);
+  object-fit: cover;
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(16px);
+}
+
 .restaurant-hero-copy {
   border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 8px;
@@ -508,6 +590,55 @@ const loadReviews = async () => {
   padding: 16px;
   box-shadow: 0 18px 46px rgba(0, 0, 0, 0.34);
   backdrop-filter: blur(18px);
+}
+
+.restaurant-hero-chip,
+.restaurant-mode-card,
+.restaurant-category-card {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 50% 12%, color-mix(in srgb, var(--app-accent) 14%, transparent), transparent 58%),
+    color-mix(in srgb, var(--app-card) 88%, black);
+  color: var(--app-text);
+}
+
+.restaurant-hero-chip {
+  gap: 5px;
+  min-height: 30px;
+  padding: 6px 9px;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.restaurant-mode-card {
+  gap: 7px;
+  min-height: 54px;
+  padding: 10px 8px;
+  font-size: 13px;
+  font-weight: 1000;
+}
+
+.restaurant-category-card {
+  min-height: 50px;
+  min-width: 104px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 1000;
+  white-space: nowrap;
+}
+
+.restaurant-mode-card.is-active,
+.restaurant-category-card.is-active {
+  border-color: color-mix(in srgb, var(--app-accent) 80%, white 8%);
+  background: var(--app-accent);
+  color: #101010;
+  box-shadow: 0 12px 28px rgba(255, 154, 0, 0.2);
 }
 
 .restaurant-stats {
@@ -544,6 +675,11 @@ const loadReviews = async () => {
 @media (max-width: 380px) {
   .restaurant-hero-copy {
     padding: 14px;
+  }
+
+  .restaurant-mode-card,
+  .restaurant-category-card {
+    font-size: 12px;
   }
 
   .restaurant-stat strong {

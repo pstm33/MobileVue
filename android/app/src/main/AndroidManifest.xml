@@ -29,6 +29,21 @@
                 <data android:scheme="com.tagam.delivery" android:host="payment-callback" />
             </intent-filter>
 
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.tagam.delivery" android:host="apple-login" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="tagam.delivery" android:pathPrefix="/interface/app_apple_callback" />
+                <data android:scheme="https" android:host="tagam.delivery" android:pathPrefix="/interface/apple_callback" />
+            </intent-filter>
+
         </activity>
 
         <activity
