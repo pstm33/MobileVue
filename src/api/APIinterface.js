@@ -1,5 +1,5 @@
-import { api } from "boot/axios";
-import { LocalStorage, SessionStorage } from "src/services/storage";
+﻿import { api } from "boot/axios";
+import { LocalStorage, SessionStorage } from "quasar";
 import auth from "src/api/auth";
 import config from "src/api/config";
 import { Toast } from "@capacitor/toast";
@@ -67,6 +67,7 @@ const APIinterface = {
       html: true,
       timeout: 3000,
       multiLine: false,
+      classes: "tagam-notification",
     });
   },
 
@@ -2405,12 +2406,10 @@ const APIinterface = {
   },
 
   async fetchDataByTokenPost(method, data) {
-    const isFormBody = typeof data === "string" || data instanceof URLSearchParams;
     return api
       .post("/" + method, data, {
         headers: {
           Authorization: `token ${auth.getToken()}`,
-          ...(isFormBody ? {} : { "Content-Type": "application/json" }),
         },
       })
       .then((result) => {
@@ -2630,3 +2629,6 @@ const APIinterface = {
   },
 };
 export default APIinterface;
+
+
+

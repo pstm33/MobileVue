@@ -1,448 +1,120 @@
-import { createRouter, createWebHashHistory, createWebHistory } from "vue-router";
-import { Capacitor } from "@capacitor/core";
+﻿import { route } from "quasar/wrappers";
+import {
+  createRouter,
+  createMemoryHistory,
+  createWebHistory,
+  createWebHashHistory,
+} from "vue-router";
+import routes from "./routes";
 import auth from "src/api/auth";
+import APIinterface from "src/api/APIinterface";
+import { useDataStorePersisted } from "stores/DataStorePersisted";
+import { useDataStore } from "stores/DataStore";
 
-const isNative = Capacitor.isNativePlatform();
-const isLocalWeb =
-  !isNative &&
-  typeof window !== "undefined" &&
-  ["127.0.0.1", "localhost", "::1"].includes(window.location.hostname);
-const hasIntroSeen = () => Boolean(localStorage.getItem("intro_seen"));
-const hasCoordinates = () => Boolean(localStorage.getItem("coordinates"));
-const getStartRoute = () => {
-  if (!hasIntroSeen()) return "/onboarding";
-  return hasCoordinates() ? "/home" : "/location";
-};
-const resetLocalStartState = () => {
-  ["intro_seen", "coordinates", "place_data", "place_id"].forEach((key) => localStorage.removeItem(key));
-};
-const rememberAuthRedirect = (target) => {
-  if (typeof window === "undefined" || !target) return;
-  window.sessionStorage.setItem("auth_redirect", target);
-};
+/*
+ * If not building with SSR mode, you can
+ * directly export the Router instantiation;
+ *
+ * The function below can be async too; either use
+ * async/await or return a Promise which resolves
+ * with the Router instance.
+ */
 
-const routes = [
-  {
-    path: "/",
-    name: "root",
-    redirect: getStartRoute,
-  },
-  {
-    path: "/onboarding",
-    name: "onboarding",
-    component: () => import("src/views/OnboardingView.vue"),
-    meta: { public: true, hideTabbar: true },
-  },
-  {
-    path: "/select-language",
-    redirect: "/onboarding",
-  },
-  {
-    path: "/location",
-    name: "location",
-    component: () => import("src/views/LocationView.vue"),
-    meta: { public: true, hideTabbar: true, requiresIntro: true },
-  },
-  {
-    path: "/location/map",
-    redirect: (to) => ({ path: "/location", query: { mode: "map", ...to.query } }),
-  },
-  {
-    path: "/location/add-location",
-    redirect: (to) => ({ path: "/location", query: { mode: "add", ...to.query } }),
-  },
-  {
-    path: "/errornetwork",
-    name: "errornetwork",
-    component: () => import("src/views/NetworkErrorView.vue"),
-    meta: { public: true, hideTabbar: true },
-  },
-  {
-    path: "/home",
-    name: "home",
-    component: () => import("src/views/HomeView.vue"),
-  },
-  {
-    path: "/home/offers",
-    name: "home-offers",
-    component: () => import("src/views/OffersView.vue"),
-  },
-  {
-    path: "/offers",
-    name: "offers",
-    component: () => import("src/views/OffersView.vue"),
-  },
-  {
-    path: "/home/browse",
-    name: "browse",
-    component: () => import("src/views/SearchView.vue"),
-  },
-  {
-    path: "/feed",
-    redirect: "/home",
-  },
-  {
-    path: "/feed/location",
-    redirect: "/location",
-  },
-  {
-    path: "/home/orders",
-    redirect: "/orders",
-  },
-  {
-    path: "/home/offers-location",
-    redirect: "/location",
-  },
-  {
-    path: "/view",
-    redirect: "/home",
-  },
-  {
-    path: "/view/categories",
-    name: "categories",
-    component: () => import("src/views/CategoriesView.vue"),
-  },
-  {
-    path: "/categories",
-    name: "categories-direct",
-    component: () => import("src/views/CategoriesView.vue"),
-  },
-  {
-    path: "/view/quick-results",
-    redirect: (to) => ({ path: "/search", query: to.query }),
-  },
-  {
-    path: "/search",
-    name: "search",
-    component: () => import("src/views/SearchView.vue"),
-  },
-  {
-    path: "/search/items",
-    redirect: (to) => ({ path: "/search", query: to.query }),
-  },
-  {
-    path: "/search/location",
-    redirect: "/location",
-  },
-  {
-    path: "/theme-preview",
-    name: "theme-preview",
-    component: () => import("src/views/AppPreferencesView.vue"),
-  },
-  {
-    path: "/restaurant/:slug",
-    name: "restaurant",
-    component: () => import("src/views/RestaurantView.vue"),
-  },
-  {
-    path: "/menu/:slug/:item_uuid?/:cat_id?",
-    redirect: (to) => ({
-      path: `/restaurant/${to.params.slug}`,
-      query: {
-        item: to.params.item_uuid || undefined,
-        cat: to.params.cat_id || undefined,
-      },
-    }),
-  },
-  {
-    path: "/search-menu/:slug",
-    redirect: (to) => ({ path: `/restaurant/${to.params.slug}`, query: { panel: "search", ...to.query } }),
-  },
-  {
-    path: "/menu/category",
-    redirect: (to) => ({ path: to.query.slug ? `/restaurant/${to.query.slug}` : "/search", query: { cat: to.query.cat_id || to.query.id, ...to.query } }),
-  },
-  {
-    path: "/menu/review",
-    redirect: (to) => ({ path: to.query.slug ? `/restaurant/${to.query.slug}` : "/home", query: { panel: "info", reviews: "1", ...to.query } }),
-  },
-  {
-    path: "/store/info",
-    redirect: (to) => ({ path: to.query.slug ? `/restaurant/${to.query.slug}` : "/home", query: { panel: "info" } }),
-  },
-  {
-    path: "/store/review",
-    redirect: (to) => ({ path: to.query.slug ? `/restaurant/${to.query.slug}` : "/home", query: { panel: "info", reviews: "1" } }),
-  },
-  {
-    path: "/store/booking",
-    redirect: (to) => ({ path: "/booking", query: to.query }),
-  },
-  {
-    path: "/store/booking-succesful",
-    redirect: (to) => ({ path: "/booking/track", query: { success: "1", ...to.query } }),
-  },
-  {
-    path: "/cart",
-    name: "cart",
-    component: () => import("src/views/CartView.vue"),
-  },
-  {
-    path: "/checkout",
-    name: "checkout",
-    component: () => import("src/views/CheckoutView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/address/select",
-    redirect: (to) => ({ path: "/addresses", query: { select: "1", ...to.query } }),
-  },
-  {
-    path: "/order/success",
-    name: "order-success",
-    component: () => import("src/views/OrderDetailsView.vue"),
-  },
-  {
-    path: "/order/successful",
-    redirect: (to) => ({ path: "/order/success", query: to.query }),
-  },
-  {
-    path: "/order/details",
-    name: "order-details",
-    component: () => import("src/views/OrderDetailsView.vue"),
-  },
-  {
-    path: "/order/write-review",
-    name: "write-review",
-    component: () => import("src/views/WriteReviewView.vue"),
-  },
-  {
-    path: "/order/rate-driver",
-    name: "rate-driver",
-    component: () => import("src/views/RateDriverView.vue"),
-  },
-  {
-    path: "/orders",
-    name: "orders",
-    component: () => import("src/views/OrderHistoryView.vue"),
-  },
-  {
-    path: "/profile",
-    name: "profile-edit",
-    component: () => import("src/views/ProfileEditView.vue"),
-  },
-  {
-    path: "/addresses",
-    name: "addresses",
-    component: () => import("src/views/AddressBookView.vue"),
-  },
-  {
-    path: "/payments",
-    name: "payments",
-    component: () => import("src/views/PaymentMethodsView.vue"),
-  },
-  {
-    path: "/favourites",
-    name: "favourites",
-    component: () => import("src/views/FavouritesView.vue"),
-  },
-  {
-    path: "/notifications",
-    name: "notifications",
-    component: () => import("src/views/NotificationsView.vue"),
-  },
-  {
-    path: "/wallet",
-    name: "wallet",
-    component: () => import("src/views/WalletView.vue"),
-  },
-  {
-    path: "/wallet/receipt",
-    name: "wallet-receipt",
-    component: () => import("src/views/WalletReceiptView.vue"),
-  },
-  {
-    path: "/points",
-    name: "points",
-    component: () => import("src/views/PointsView.vue"),
-  },
-  {
-    path: "/booking",
-    name: "booking",
-    component: () => import("src/views/BookingView.vue"),
-  },
-  {
-    path: "/booking/track",
-    name: "booking-track",
-    component: () => import("src/views/BookingView.vue"),
-  },
-  {
-    path: "/booking/cancel",
-    redirect: (to) => ({ path: "/booking/track", query: { action: "cancel", ...to.query } }),
-  },
-  {
-    path: "/booking/update",
-    redirect: (to) => ({ path: "/booking/track", query: { action: "update", ...to.query } }),
-  },
-  {
-    path: "/booking/search",
-    name: "booking-search",
-    component: () => import("src/views/BookingView.vue"),
-  },
-  {
-    path: "/update-app",
-    name: "update-app",
-    component: () => import("src/views/UpdateAppView.vue"),
-  },
-  {
-    path: "/account/security",
-    name: "account-security",
-    component: () => import("src/views/AccountSecurityView.vue"),
-  },
-  {
-    path: "/tracking",
-    name: "tracking",
-    component: () => import("src/views/TrackingView.vue"),
-  },
-  {
-    path: "/account",
-    name: "account",
-    component: () => import("src/views/AccountView.vue"),
-  },
-  {
-    path: "/user/:authPage?",
-    name: "auth",
-    component: () => import("src/views/AuthView.vue"),
-  },
-  {
-    path: "/auth",
-    redirect: (to) => ({ path: "/user/login", query: to.query }),
-  },
-  {
-    path: "/account-menu",
-    redirect: "/account",
-  },
-  {
-    path: "/account/payments/new",
-    redirect: (to) => ({ path: "/payments", query: { add: "1", ...to.query } }),
-  },
-  {
-    path: "/account/address",
-    redirect: (to) => ({ path: "/addresses", query: to.query }),
-  },
-  {
-    path: "/account/delete",
-    redirect: (to) => ({ path: "/account/security", query: { section: "delete", ...to.query } }),
-  },
-  {
-    path: "/account/settings",
-    name: "account-settings",
-    component: () => import("src/views/AppPreferencesView.vue"),
-  },
-  {
-    path: "/account/language",
-    name: "account-language",
-    component: () => import("src/views/AppPreferencesView.vue"),
-  },
-  {
-    path: "/account/currency",
-    name: "account-currency",
-    component: () => import("src/views/AppPreferencesView.vue"),
-  },
-  {
-    path: "/account/upload-deposit",
-    redirect: (to) => ({ path: "/wallet", query: { action: "deposit", ...to.query } }),
-  },
-  {
-    path: "/account/chat",
-    name: "account-chat",
-    component: () => import("src/views/ChatView.vue"),
-  },
-  {
-    path: "/account/chat/conversation",
-    name: "account-chat-conversation",
-    component: () => import("src/views/ChatView.vue"),
-  },
-  {
-    path: "/account/:section",
-    redirect: (to) => {
-      if (to.params.section === "allorder") return { path: "/orders", query: to.query };
-      if (to.params.section === "orders") return { path: "/orders", query: to.query };
-      if (to.params.section === "verify") return { path: "/account/security", query: { section: "verify", ...to.query } };
-      if (to.params.section === "complete-registration") return { path: "/profile", query: { complete: "1", ...to.query } };
-      if (to.params.section === "profile") return { path: "/profile", query: to.query };
-      if (to.params.section === "edit-profile") return { path: "/profile", query: to.query };
-      if (to.params.section === "my-address") return { path: "/addresses", query: to.query };
-      if (to.params.section === "payment") return { path: "/payments", query: to.query };
-      if (to.params.section === "payments") return { path: "/payments", query: to.query };
-      if (to.params.section === "favourites") return { path: "/favourites", query: to.query };
-      if (to.params.section === "favorite") return { path: "/favourites", query: to.query };
-      if (to.params.section === "notifications") return { path: "/notifications", query: to.query };
-      if (to.params.section === "wallet") return { path: "/wallet", query: to.query };
-      if (to.params.section === "points") return { path: "/points", query: to.query };
-      if (to.params.section === "change-password") return { path: "/account/security", query: to.query };
-      if (to.params.section === "manage-account") return { path: "/account/security", query: to.query };
-      if (to.params.section === "delete-account") return { path: "/account/security", query: to.query };
-      if (to.params.section === "trackorder") return { path: "/tracking", query: to.query };
-      if (to.params.section === "order-details") return { path: "/order/details", query: to.query };
-      return { path: "/account", query: to.query };
+export default route(function (/* { store, ssrContext } */) {
+  const createHistory = process.env.SERVER
+    ? createMemoryHistory
+    : process.env.VUE_ROUTER_MODE === "history"
+    ? createWebHistory
+    : createWebHashHistory;
+
+  const Router = createRouter({
+    //scrollBehavior: () => ({ left: 0, top: 0 }),
+    scrollBehavior(to, from, savedPosition) {
+      if (savedPosition) {
+        // Return to the saved scroll position
+        return savedPosition;
+      } else {
+        // Scroll to the top for new pages
+        return { left: 0, top: 0 };
+      }
     },
-  },
-  {
-    path: "/legal",
-    component: () => import("src/views/LegalView.vue"),
-  },
-  {
-    path: "/legal/page/:page_id",
-    component: () => import("src/views/LegalView.vue"),
-  },
-  {
-    path: "/privacy-policy",
-    component: () => import("src/views/LegalView.vue"),
-  },
-  {
-    path: "/terms-of-service",
-    component: () => import("src/views/LegalView.vue"),
-  },
-  {
-    path: "/data-deletion",
-    component: () => import("src/views/LegalView.vue"),
-  },
-  {
-    path: "/:pathMatch(.*)*",
-    redirect: "/home",
-  },
-];
+    routes,
 
-export const router = createRouter({
-  history: isNative ? createWebHashHistory() : createWebHistory(),
-  routes,
-  scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) return savedPosition;
-    if (to.fullPath !== from.fullPath) return { top: 0, left: 0 };
-    return false;
-  },
+    // Leave this as is and make changes in quasar.conf.js instead!
+    // quasar.conf.js -> build -> vueRouterMode
+    // quasar.conf.js -> build -> publicPath
+    //history: createHistory(process.env.MODE === 'ssr' ? void 0 : process.env.VUE_ROUTER_BASE)
+    history: createHistory(process.env.VUE_ROUTER_BASE),
+  });
+
+  Router.beforeEach((to, from, next) => {
+    //const intro = APIinterface.getStorage("intro");
+    const DataStorePersisted = useDataStorePersisted();
+    const DataStore = useDataStore();
+    const intro = DataStorePersisted.intro;
+
+    const searchMode = DataStore.attributes_data?.search_mode || null;
+    const locationData = DataStorePersisted.location_data;
+
+    if (to.meta.checkAuth) {
+      console.log("intro", intro);
+      if (APIinterface.empty(intro)) {
+        next();
+      } else {
+        if (auth.authenticated()) {
+          const hasAddress =
+            searchMode == "location"
+              ? locationData
+              : DataStorePersisted.hasCoordinates;
+          if (!hasAddress) {
+            const nextUrl =
+              searchMode == "location"
+                ? "/location/add-location"
+                : "/location/map";
+            next({ path: nextUrl });
+          } else {
+            next({ path: "/home" });
+          }
+        } else next({ path: "/home" });
+      }
+    } else if (to.meta.checkPlaceID) {
+      const hasAddress =
+        searchMode == "location"
+          ? locationData
+          : DataStorePersisted.hasCoordinates;
+      if (!hasAddress) {
+        const nextUrl =
+          searchMode == "location" ? "/location/add-location" : "/location/map";
+        next({ path: nextUrl });
+      } else {
+        next();
+      }
+    } else if (to.meta.checkAuthLogin) {
+      if (auth.authenticated()) {
+        next({ path: "/home" });
+      } else {
+        next();
+      }
+    } else if (to.meta.SignupPage) {
+      const signup_type = DataStore.attributes_data?.signup_type || "standard";
+      if (signup_type == "mobile_phone") {
+        next({ path: "/user/signup-mobile", query: { redirect: to.fullPath } });
+      } else {
+        next();
+      }
+    } else if (!to.meta.requiresAuth || auth.authenticated()) {
+      next();
+    } else {
+      if (DataStore.login_method == "otp") {
+        next({ path: "/user/login-otp", query: { redirect: to.fullPath } });
+      } else {
+        next({ path: "/user/login", query: { redirect: to.fullPath } });
+      }
+    }
+  });
+
+  return Router;
 });
 
-router.beforeEach((to) => {
-  if (isLocalWeb && to.query.reset === "1") {
-    resetLocalStartState();
-    return "/onboarding";
-  }
 
-  const introSeen = hasIntroSeen();
-  const coordinates = hasCoordinates();
 
-  if (to.name === "root" && introSeen) {
-    return coordinates ? "/home" : "/location";
-  }
-
-  if (!to.meta.public && !introSeen) {
-    return "/onboarding";
-  }
-
-  if (to.meta.requiresIntro && !introSeen) {
-    return "/onboarding";
-  }
-
-  if (!to.meta.public && !coordinates) {
-    return "/location";
-  }
-
-  if (to.meta.requiresAuth && !auth.authenticated()) {
-    rememberAuthRedirect(to.fullPath);
-    return { path: "/user/login", query: { redirect: to.fullPath } };
-  }
-
-  return true;
-});

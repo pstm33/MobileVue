@@ -1,4 +1,4 @@
-import { Geolocation } from "@capacitor/geolocation";
+﻿import { Geolocation } from "@capacitor/geolocation";
 import { LocationAccuracy } from "@awesome-cordova-plugins/location-accuracy";
 
 const AppLocation = {
@@ -97,3 +97,6 @@ const AppLocation = {
   },
 };
 export default AppLocation;
+
+
+

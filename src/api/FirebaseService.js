@@ -1,4 +1,4 @@
-import { firebaseDb, firebaseCollectionEnum } from "src/boot/FirebaseChat";
+﻿import { firebaseDb, firebaseCollectionEnum } from "src/boot/FirebaseChat";
 import APIinterface from "src/api/APIinterface";
 import {
   collection,
@@ -118,3 +118,6 @@ const FirebaseService = {
   //
 };
 export default FirebaseService;
+
+
+

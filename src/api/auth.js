@@ -1,5 +1,5 @@
-import { api } from "boot/axios";
-import { LocalStorage } from "src/services/storage";
+﻿import { api } from "boot/axios";
+import { LocalStorage, SessionStorage } from "quasar";
 import jwtDecode from "jwt-decode";
 
 const auth = {
@@ -93,3 +93,6 @@ const auth = {
   },
 };
 export default auth;
+
+
+

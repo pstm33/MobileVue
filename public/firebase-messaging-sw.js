@@ -1,4 +1,4 @@
-importScripts(
+﻿importScripts(
   "https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"
 );
 importScripts(
@@ -6,14 +6,14 @@ importScripts(
 );
 
 const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
+  apiKey: "AIzaSyChunG8tXYQ84gLb6MY52ou4V7w2iBBBpA",
+  authDomain: "tmrs-dbac7.firebaseapp.com",
   databaseURL: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
-  measurementId: "",
+  projectId: "tmrs-dbac7",
+  storageBucket: "tmrs-dbac7.firebasestorage.app",
+  messagingSenderId: "388308207843",
+  appId: "1:388308207843:web:a60620e90ce65f8ac75dd6",
+  measurementId: "G-PN3J43PVFE",
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -32,3 +32,6 @@ messaging.onBackgroundMessage((payload) => {
   };
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
+
+
+

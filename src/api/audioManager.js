@@ -1,4 +1,4 @@
-// src/audioManager.js
+﻿// src/audioManager.js
 import { NativeAudio } from "@capacitor-community/native-audio";
 
 const audioManager = {
@@ -64,3 +64,6 @@ const audioManager = {
 };
 
 export default audioManager;
+
+
+

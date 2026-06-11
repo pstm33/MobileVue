@@ -1,4 +1,4 @@
-// src/services/settingsLoader.js
+﻿// src/services/settingsLoader.js
 import { api } from "boot/axios";
 import { useDataStore } from "stores/DataStore";
 import { useDataStorePersisted } from "stores/DataStorePersisted";
@@ -84,3 +84,6 @@ export async function loadAppSettings() {
     });
   }
 }
+
+
+

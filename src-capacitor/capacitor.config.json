@@ -1,0 +1,15 @@
+{
+  "appId": "com.tagam.delivery",
+  "appName": "Tagam Delivery",
+  "webDir": "www",
+  "android": {
+    "adjustMarginsForEdgeToEdge": "force"
+  },
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": false,
+      "style": "LIGHT",
+      "backgroundColor": "#ff5a2f"
+    }
+  }
+}

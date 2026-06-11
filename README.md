@@ -1,36 +1,26 @@
-# Tagam Delivery Customer App
+# Tagam Customer (com.tagam.tmrs.customer)
 
-Customer app для Tagam backend.
+Customer-facing Tagam food delivery app.
 
-Стек: Vue 3 + Vite + TailwindCSS + Capacitor 7.
+## Release build notes
 
-## Команды
+- `npm run build` and `npm run build:pwa` produce the production PWA bundle in `dist/pwa`.
+- `npm run build:spa` produces a standard SPA bundle in `dist/spa` (used only for local non-PWA checks).
+- `npm run release:app` builds PWA, deploys `dist/pwa` to `app.tagam.app`, and immediately runs parity verification (`verify:app`).
+- `npm run release:app:quick` builds and deploys only (no verification step).
+- `scripts/deploy-tagam-app.ps1` supports key-based and password-based SSH:
+  - `.\scripts\deploy-tagam-app.ps1 -NoBuild -Password "..."` (password mode, Posh-SSH).
+  - `.\scripts\deploy-tagam-app.ps1 -NoBuild -KeyFile "path\to\key"` (key mode).
+- If you see mismatches between `app.tagam.app` and local build previews, first check that deployment used `dist/pwa` and that `/manifest.json` is present.
 
-```powershell
-npm install
-npm run assets:tagam
-npm run build
-npx cap sync android
-.\android\gradlew.bat -p android assembleDebug assembleRelease bundleRelease
-```
+## Deployment checks
 
-## Environment
+- `npm run verify:app` - checks that `app.tagam.app` serves `/manifest.json`, service workers, and the same main entry references as local `dist/pwa`.
+- `npm run release:app` - one-command release flow (runs PWA build, then `scripts/deploy-tagam-app.ps1`).
 
-Скопировать `.env.example` в `.env.local` и указать публичный Tagam API token.
+If you still see:
 
-`VITE_ENABLE_PLACE_ORDER=true` включает реальное создание заказов через Tagam `PlaceOrder`.
-Для визуальных демо, где нельзя менять данные на сервере, держать `false`.
+- `manifest.json` 404
+- old rescue `sw.js` content
 
-## Заметки Tagam
-
-- Схема статусов заказа: [docs/order-status-flow.md](docs/order-status-flow.md)
-- Аудит расхождений с коробкой: [docs/functionality-gap-audit.md](docs/functionality-gap-audit.md)
-
-## Release outputs
-
-Готовые артефакты копируются в `release/`:
-
-- `tagam-delivery-web-dist.zip`
-- `tagam-delivery-debug.apk`
-- `tagam-delivery-release-unsigned.apk`
-- `tagam-delivery-release.aab`
+that means production still serves legacy SPA artifacts and needs redeploy.

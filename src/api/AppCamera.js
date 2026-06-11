@@ -1,4 +1,4 @@
-import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+﻿import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 import { useI18n } from "vue-i18n";
 
@@ -120,3 +120,6 @@ const AppCamera = {
   //
 };
 export default AppCamera;
+
+
+
