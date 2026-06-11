@@ -26,6 +26,21 @@ retry() {
   done
 }
 
+strip_bom() {
+  python3 - "$@" <<'PY'
+import pathlib
+import sys
+
+for item in sys.argv[1:]:
+    path = pathlib.Path(item)
+    if path.exists():
+        data = path.read_bytes()
+        if data.startswith(b"\xef\xbb\xbf"):
+            path.write_bytes(data[3:])
+            print(f"Removed UTF-8 BOM from {path}")
+PY
+}
+
 if command -v brew >/dev/null 2>&1; then
   NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)"
   if [ "$NODE_MAJOR" -lt 20 ] || [ "$NODE_MAJOR" -gt 22 ]; then
@@ -46,15 +61,18 @@ echo "NPM: $(npm -v)"
 echo "CocoaPods: $(pod --version)"
 
 retry 3 20 npm ci
+strip_bom "$REPO_ROOT/src-capacitor/ios/App/App.xcodeproj/project.pbxproj" "$REPO_ROOT/ios/App/App.xcodeproj/project.pbxproj"
 retry 3 30 npx quasar build -m capacitor -T ios --skip-pkg
 
 cd "$REPO_ROOT/src-capacitor"
+strip_bom "$REPO_ROOT/src-capacitor/ios/App/App.xcodeproj/project.pbxproj"
 retry 3 30 npx cap sync ios
 cd "$REPO_ROOT"
 
 rm -rf "$REPO_ROOT/ios"
 mkdir -p "$REPO_ROOT/ios"
 cp -R "$REPO_ROOT/src-capacitor/ios/." "$REPO_ROOT/ios/"
+strip_bom "$REPO_ROOT/ios/App/App.xcodeproj/project.pbxproj"
 
 cd "$REPO_ROOT/ios/App"
 retry 3 30 pod install
