@@ -3346,7 +3346,7 @@ body.body--dark .tagam-category-tabs .q-tab--active {
 
 .tagam-menu-page .tagam-menu-actions {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(112px, 0.65fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   width: 100%;
   max-width: none;
@@ -3358,7 +3358,7 @@ body.body--dark .tagam-category-tabs .q-tab--active {
 }
 
 .tagam-menu-page .tagam-action-chip {
-  min-height: 64px;
+  min-height: 66px;
   border-radius: var(--tagam-menu-radius) !important;
 }
 
@@ -3390,6 +3390,20 @@ body.body--dark .tagam-category-tabs .q-tab--active {
   margin-top: 0;
   padding: 10px;
   border-radius: var(--tagam-menu-radius);
+}
+
+.tagam-menu-page .tagam-category-tabs,
+.tagam-menu-page .tagam-promo-strip,
+.tagam-menu-page .tagam-action-chip,
+.tagam-menu-page .tagam-restaurant-summary {
+  border-color: rgba(255, 107, 53, 0.16);
+}
+
+body.body--dark .tagam-menu-page .tagam-category-tabs,
+body.body--dark .tagam-menu-page .tagam-promo-strip,
+body.body--dark .tagam-menu-page .tagam-action-chip,
+body.body--dark .tagam-menu-page .tagam-restaurant-summary {
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .tagam-menu-page .tagam-category-heading {
@@ -5926,37 +5940,40 @@ body.body--dark .tagam-checkout-footer {
 }
 
 .tagam-track-progress {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: center;
-  justify-content: center;
   width: min(520px, calc(100% - 32px));
-  margin: 14px auto 10px;
+  margin: 14px auto 14px;
   padding: 0;
   list-style: none;
   color: var(--tagam-text-muted);
 }
 
+.tagam-track-progress--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .tagam-track-progress li {
-  flex: 1 1 0;
   min-width: 0;
-  height: 48px;
+  height: 62px;
   position: relative;
   display: grid;
   place-items: center;
 }
 
 .tagam-track-progress li::before {
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   display: grid;
   place-items: center;
   border-radius: 999px;
   background: var(--tagam-primary);
   color: #fff;
   font-family: "Material Icons";
-  font-size: 23px;
+  font-size: 27px;
   line-height: 1;
-  box-shadow: 0 12px 26px rgba(255, 90, 47, 0.24);
+  box-shadow: 0 16px 34px rgba(255, 90, 47, 0.26);
   z-index: 1;
 }
 
@@ -5983,9 +6000,9 @@ body.body--dark .tagam-checkout-footer {
 .tagam-track-progress li::after {
   content: "";
   position: absolute;
-  left: calc(-50% + 22px);
-  right: calc(50% + 22px);
-  top: 23px;
+  left: calc(-50% + 28px);
+  right: calc(50% + 28px);
+  top: 30px;
   height: 3px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--tagam-primary) 32%, transparent);
@@ -6157,16 +6174,16 @@ body.body--dark .tagam-checkout-footer {
 .tagam-route-steps {
   display: grid;
   gap: 0;
-  padding: 6px 2px;
+  padding: 10px 6px;
 }
 
 .tagam-route-step {
   position: relative;
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  column-gap: 14px;
+  grid-template-columns: 56px minmax(0, 1fr);
+  column-gap: 16px;
   align-items: center;
-  min-height: 72px;
+  min-height: 84px;
 }
 
 .tagam-route-step + .tagam-route-step {
@@ -6176,17 +6193,17 @@ body.body--dark .tagam-checkout-footer {
 .tagam-route-step + .tagam-route-step::before {
   content: "";
   position: absolute;
-  left: 21px;
-  bottom: calc(50% + 22px);
+  left: 27px;
+  bottom: calc(50% + 28px);
   width: 2px;
-  height: 30px;
+  height: 34px;
   border-radius: 999px;
   background: var(--tagam-border);
 }
 
 .tagam-route-icon {
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   border-radius: 999px;
   display: grid;
   place-items: center;
@@ -6196,7 +6213,7 @@ body.body--dark .tagam-checkout-footer {
 }
 
 .tagam-route-icon .q-icon {
-  font-size: 23px;
+  font-size: 27px;
 }
 
 .tagam-route-step--from .tagam-route-icon {

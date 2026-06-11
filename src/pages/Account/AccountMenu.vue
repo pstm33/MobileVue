@@ -595,7 +595,11 @@ export default {
       const device_token = this.ClientStore.device_token;
 
       // PUSH PWA
-      if (web_token && this.DataStore.is_messaging_supported) {
+      if (
+        web_token &&
+        this.DataStore.is_messaging_supported &&
+        firebaseMessaging
+      ) {
         try {
           APIinterface.showLoadingBox("", this.$q);
           await APIinterface.fetchDataByTokenPost(

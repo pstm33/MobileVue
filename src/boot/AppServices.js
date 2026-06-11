@@ -72,7 +72,7 @@ export default boot(async ({ app, router, store }) => {
   }
 
   // PWA PUSH
-  if (DataStore.is_messaging_supported) {
+  if (DataStore.is_messaging_supported && firebaseMessaging) {
     const NotificationPermission = Notification.permission;
     if (NotificationPermission == "granted" && DataStorePersisted.web_token) {
       console.log("verify token");

@@ -93,6 +93,10 @@ export default {
         this.loading = false;
         this.modal = false;
         if (permission === "granted") {
+          if (!firebaseMessaging) {
+            return;
+          }
+
           const token = await getToken(firebaseMessaging, {
             vapidKey: config.webpush_certificates,
           });
@@ -136,6 +140,10 @@ export default {
       }
 
       //
+      if (!firebaseMessaging) {
+        return;
+      }
+
       onMessage(firebaseMessaging, (payload) => {
         console.log("Foreground message received:", payload);
         const title = payload?.notification?.title || "";
