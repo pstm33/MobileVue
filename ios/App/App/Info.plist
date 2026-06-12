@@ -22,6 +22,16 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>TAGAM uses the camera only when you choose to take a profile photo or attach an image.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>TAGAM uses your location to show nearby restaurants, delivery availability, and delivery distance.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>TAGAM uses the microphone only when you choose voice search or voice input.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>TAGAM may save images only when you choose to download or share content from the app.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>TAGAM uses your photo library only when you choose an image for your profile or an attachment.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
