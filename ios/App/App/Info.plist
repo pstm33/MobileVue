@@ -26,6 +26,8 @@
 	<string>TAGAM uses the camera only when you choose to take a profile photo or attach an image.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>TAGAM uses your location to show nearby restaurants, delivery availability, and delivery distance.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>TAGAM uses your location to support delivery tracking and accurate delivery service when you choose location-based features.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>TAGAM uses the microphone only when you choose voice search or voice input.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
