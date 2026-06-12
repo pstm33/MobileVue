@@ -283,7 +283,7 @@ export default {
 
 <style lang="sass" scoped>
 .tagam-menu-list
-  padding: 0 0 112px
+  padding: 0
 
 .tagam-menu-item
   border: 1px solid var(--tagam-border)
