@@ -190,7 +190,18 @@ export default {
   "Load Wallet": "Gapjygy doldur",
   "Cash On delivery": "Eltip berlende nagt töleg",
   "Cash on delivery": "Eltip berlende nagt töleg",
+  Canceled: "Ýatyryldy",
+  Cancelled: "Ýatyryldy",
   "Order is delayed": "Sargyt gijikýär",
+  "Preparing order delayed": "Sargyt gijikýär",
+  "Your order is ready": "Sargyt taýýar",
+  "Restaurant is running behind schedule": "Restoran gijikýär:",
+  "Your order will be ready soon.": "Sargyt tiz wagtda taýýar bolar.",
+  "We apologize for the delay! Your order is running a little late, but it's on its way and should arrive shortly.":
+    "Gijä galany üçin ötünç soraýarys. Sargydyňyz ýolda we tiz wagtda barar.",
+  "Customer cancelled this order": "Müşderi sargydy ýatyrdy",
+  "Unfortunately, the restaurant is not able to complete this order due to the following reason: Customer cancelled this order":
+    "Müşderi sargydy ýatyrdy.",
   "The restaurant is taking longer than expected to accept your order.":
     "Restoran sargydy kabul etmek üçin garaşylanyndan köp wagt alýar.",
   ...{

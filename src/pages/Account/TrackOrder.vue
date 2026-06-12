@@ -230,8 +230,12 @@
 
         <template v-if="!showTracking">
           <q-list dense class="tagam-track-status-card">
-            <q-item>
+            <q-item class="tagam-track-status-item">
               <q-item-section>
+                <div class="tagam-track-order-id-row">
+                  <span>{{ $t("Order ID") }}</span>
+                  <strong>#{{ data.order_info.order_id }}</strong>
+                </div>
                 <div class="tagam-track-eta">
                   {{ cleanText(progress_data.estimated_time) }}
                 </div>
@@ -239,10 +243,10 @@
                   class="tagam-track-status-name"
                   :class="{ 'text-warning': progress_data.is_order_late || progress_data.is_preparation_late || progress_data.is_driver_delivering_late || !progress_data.is_order_ongoing, }"
                 >
-                  {{ cleanText(progress_data.order_status) }}
+                  {{ displayStatus(progress_data.order_status) }}
                 </div>
               </q-item-section>
-              <q-item-section side>
+              <q-item-section side class="tagam-track-status-art">
                 <OrderStatusAnimation :status="getImageProgress" />
               </q-item-section>
             </q-item>
@@ -255,20 +259,8 @@
 
           <div class="q-pl-md q-pr-md q-mt-md">
             <div class="tagam-track-status-details line-normal">
-              {{ cleanText(progress_data.order_status_details) }}
+              {{ displayStatus(progress_data.order_status_details) }}
             </div>
-
-            <q-space class="q-pa-sm"></q-space>
-            <q-card class="tagam-track-mini-card">
-              <q-list>
-                <q-item>
-                  <q-item-section>{{ $t("Order ID") }}</q-item-section>
-                  <q-item-section side
-                    >#{{ data.order_info.order_id }}</q-item-section
-                  >
-                </q-item>
-              </q-list>
-            </q-card>
 
             <q-space class="q-pa-sm"></q-space>
 
@@ -469,6 +461,7 @@ import auth from "src/api/auth";
 import { App } from "@capacitor/app";
 import {
   formatReadableDateTime,
+  normalizeOrderStatusText,
   repairMojibake,
 } from "src/utils/textEncoding";
 
@@ -663,43 +656,15 @@ export default {
   methods: {
     cleanText(value) {
       const repaired = formatReadableDateTime(repairMojibake(value));
-      const normalized = String(repaired || "")
-        .replace(/\s+/g, " ")
-        .trim();
+      const normalized = String(repaired || "").replace(/\s+/g, " ").trim();
       if (!normalized) {
         return "";
       }
-      const lower = normalized.toLowerCase();
-      if (lower === "customer cancelled this order") {
-        return this.$t("Customer cancelled this order");
-      }
-      if (
-        lower ===
-        "unfortunately, the restaurant is not able to complete this order due to the following reason: customer cancelled this order"
-      ) {
-        return this.$t(
-          "Unfortunately, the restaurant is not able to complete this order due to the following reason: Customer cancelled this order"
-        );
-      }
-      if (String(repaired).toLowerCase() === "scheduled") {
-        return this.$t("Scheduled");
-      }
-      const scheduledMatch = String(repaired).match(
-        /^Your order is scheduled on\s+(.+)$/i
-      );
-      if (scheduledMatch) {
-        return `${this.$t("Your order is scheduled on")} ${scheduledMatch[1]}`;
-      }
-      const arrivingMatch = String(repaired).match(/^Arriving by\s+(.+)$/i);
-      if (arrivingMatch) {
-        return `${this.$t("Arriving by")} ${arrivingMatch[1]}`;
-      }
-      const preparingMatch = String(repaired).match(/^(.+)\s+is preparing your order\.?$/i);
-      if (preparingMatch) {
-        return `${preparingMatch[1]} ${this.$t("is preparing your order")}`;
-      }
-      const translated = this.$t(repaired);
-      return translated === repaired ? repaired : translated;
+      const translated = this.$t(normalized);
+      return translated === normalized ? normalized : translated;
+    },
+    displayStatus(value) {
+      return normalizeOrderStatusText(value, this.$t.bind(this));
     },
     handleBackButton() {
       setTimeout(() => {

@@ -185,7 +185,15 @@ export default {
   "Load Wallet": "Пополнить кошелёк",
   "Cash On delivery": "Наличными при доставке",
   "Cash on delivery": "Наличными при доставке",
+  Canceled: "Отменён",
+  Cancelled: "Отменён",
   "Order is delayed": "Заказ задерживается",
+  "Preparing order delayed": "Заказ задерживается",
+  "Your order is ready": "Заказ готов",
+  "Restaurant is running behind schedule": "Ресторан задерживается:",
+  "Your order will be ready soon.": "Заказ скоро будет готов.",
+  "We apologize for the delay! Your order is running a little late, but it's on its way and should arrive shortly.":
+    "Извините за задержку. Курьер немного задерживается, заказ уже в пути и скоро будет у вас.",
   "The restaurant is taking longer than expected to accept your order.":
     "Ресторан принимает заказ дольше, чем ожидалось.",
   "Customer cancelled this order": "Заказ отменён клиентом",

@@ -193,3 +193,69 @@ export function formatReadableDateTime(value) {
 
   return result.replace(noonMarkerPattern, "").replace(/\s+/g, " ").trim();
 }
+
+export function normalizeOrderStatusText(value, translate = (key) => key) {
+  const repaired = formatReadableDateTime(normalizeBackendLabel(value));
+  const normalized = String(repaired || "").replace(/\s+/g, " ").trim();
+  if (!normalized) {
+    return "";
+  }
+
+  const lower = normalized.toLowerCase();
+  const directMap = {
+    canceled: "Canceled",
+    cancelled: "Canceled",
+    scheduled: "Scheduled",
+    "customer cancelled this order": "Customer cancelled this order",
+    "order is delayed": "Order is delayed",
+    "preparing order delayed": "Preparing order delayed",
+    "your order is ready": "Your order is ready",
+  };
+
+  if (directMap[lower]) {
+    return translate(directMap[lower]);
+  }
+
+  if (
+    lower ===
+    "unfortunately, the restaurant is not able to complete this order due to the following reason: customer cancelled this order"
+  ) {
+    return translate(
+      "Unfortunately, the restaurant is not able to complete this order due to the following reason: Customer cancelled this order"
+    );
+  }
+
+  const scheduledMatch = normalized.match(/^Your order is scheduled on\s+(.+)$/i);
+  if (scheduledMatch) {
+    return `${translate("Your order is scheduled on")} ${scheduledMatch[1]}`;
+  }
+
+  const arrivingMatch = normalized.match(/^Arriving by\s+(.+)$/i);
+  if (arrivingMatch) {
+    return `${translate("Arriving by")} ${arrivingMatch[1]}`;
+  }
+
+  const preparingMatch = normalized.match(/^(.+)\s+is preparing your order\.?$/i);
+  if (preparingMatch) {
+    return `${preparingMatch[1]} ${translate("is preparing your order")}`;
+  }
+
+  const readyDelayMatch = normalized.match(
+    /^(.+?)\s+is running behind schedule\. Your order will be ready soon\.?$/i
+  );
+  if (readyDelayMatch) {
+    return `${translate("Restaurant is running behind schedule")} ${readyDelayMatch[1]}. ${translate("Your order will be ready soon.")}`;
+  }
+
+  const deliveryDelayMatch = normalized.match(
+    /^We apologize for the delay! Your order is running a little late, but it's on its way and should arrive shortly\.?$/i
+  );
+  if (deliveryDelayMatch) {
+    return translate(
+      "We apologize for the delay! Your order is running a little late, but it's on its way and should arrive shortly."
+    );
+  }
+
+  const translated = translate(normalized);
+  return translated === normalized ? normalized : translated;
+}

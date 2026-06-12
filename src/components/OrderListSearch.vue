@@ -77,7 +77,7 @@
                 <div
                   class="text-overline text-orange text-weight-bold line-normal text-capitalize"
                 >
-                  {{ items.status }}
+                  {{ translateStatus(items.status) }}
                 </div>
               </q-item-label>
               <q-item-label class="subtitle-2 text-weight-bold">{{
@@ -154,6 +154,7 @@
 
 <script>
 import APIinterface from "src/api/APIinterface";
+import { normalizeOrderStatusText } from "src/utils/textEncoding";
 
 export default {
   name: "SearchMenu",
@@ -224,6 +225,9 @@ export default {
     },
     onShow() {
       this.$refs.ref_search.focus();
+    },
+    translateStatus(value) {
+      return normalizeOrderStatusText(value, this.$t.bind(this));
     },
     searchItems(searchTerm) {
       console.log("searchItems", this.q);

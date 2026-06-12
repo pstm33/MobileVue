@@ -128,7 +128,7 @@
                     <div
                       class="text-overline text-orange text-weight-bold line-normal text-capitalize"
                     >
-                      {{ items.status }}
+                      {{ translateStatus(items.status) }}
                     </div>
                   </q-item-label>
                   <q-item-label class="subtitle-2 text-weight-bold">{{
@@ -329,6 +329,7 @@ import { useDataStorePersisted } from "stores/DataStorePersisted";
 import auth from "src/api/auth";
 import {
   formatReadableDateTime,
+  normalizeOrderStatusText,
   repairMojibake,
 } from "src/utils/textEncoding";
 
@@ -412,12 +413,7 @@ export default {
       return formatReadableDateTime(repairMojibake(value));
     },
     translateStatus(value) {
-      const cleaned = this.cleanText(value);
-      if (!cleaned) {
-        return "";
-      }
-      const translated = this.$t(cleaned);
-      return translated === cleaned ? cleaned : translated;
+      return normalizeOrderStatusText(value, this.$t.bind(this));
     },
     normalizeOrderProgress(value) {
       const progress = Number(value);
@@ -628,8 +624,8 @@ export default {
 }
 
 .tagam-order-progress-row {
-  min-height: 80px;
-  padding: 12px 26px 14px;
+  min-height: 94px;
+  padding: 12px 30px 16px;
   border-top: 1px solid var(--tagam-border-soft);
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--tagam-surface-muted) 76%, transparent), var(--tagam-surface));
@@ -643,7 +639,7 @@ export default {
 .tagam-order-live-status {
   display: grid;
   gap: 2px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   text-align: center;
 }
 
@@ -666,7 +662,7 @@ export default {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: center;
   width: 100%;
-  min-height: 52px;
+  min-height: 58px;
 }
 
 .tagam-order-stage {
@@ -680,9 +676,9 @@ export default {
 .tagam-order-stage-line {
   position: absolute;
   top: 50%;
-  left: calc(-50% + 22px);
-  right: calc(50% + 22px);
-  height: 2px;
+  left: calc(-50% + 26px);
+  right: calc(50% + 26px);
+  height: 3px;
   transform: translateY(-50%);
   background: color-mix(in srgb, var(--tagam-border-soft) 84%, transparent);
 }
@@ -699,8 +695,8 @@ export default {
 .tagam-order-stage-dot {
   position: relative;
   z-index: 1;
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   border-radius: 999px;
   display: grid;
   place-items: center;
@@ -710,7 +706,7 @@ export default {
 }
 
 .tagam-order-stage-dot .q-icon {
-  font-size: 23px;
+  font-size: 26px;
 }
 
 .tagam-order-stage--done .tagam-order-stage-dot,

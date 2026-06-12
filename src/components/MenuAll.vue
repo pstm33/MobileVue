@@ -78,9 +78,11 @@
       </template>
     </Suspense>
 
-    <q-space class="q-pa-sm"></q-space>
+    <q-space class="tagam-menu-category-space"></q-space>
   </template>
   <!-- end loop category -->
+
+  <q-space class="tagam-menu-bottom-space"></q-space>
 
   <ItemInfo
     ref="ref_iteminfo"

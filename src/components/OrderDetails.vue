@@ -152,10 +152,10 @@
                         data.progress.is_preparation_late ||
                         data.progress.is_driver_delivering_late,
                     }"
-                    >{{ cleanText(data.progress.order_status) }}</q-item-label
+                    >{{ displayStatus(data.progress.order_status) }}</q-item-label
                   >
                   <q-item-label caption class="tagam-order-details-status-copy">{{
-                    cleanText(data.progress.order_status_details)
+                    displayStatus(data.progress.order_status_details)
                   }}</q-item-label>
                 </q-item-section>
               </q-item>
@@ -456,6 +456,7 @@ import { defineAsyncComponent } from "vue";
 import {
   formatReadableDateTime,
   normalizeBackendLabel,
+  normalizeOrderStatusText,
   repairMojibake,
 } from "src/utils/textEncoding";
 
@@ -541,21 +542,15 @@ export default {
   methods: {
     cleanText(value) {
       const repaired = formatReadableDateTime(normalizeBackendLabel(value));
-      if (String(repaired).toLowerCase() === "scheduled") {
-        return this.$t("Scheduled");
-      }
-      const scheduledMatch = String(repaired).match(
-        /^Your order is scheduled on\s+(.+)$/i
-      );
-      if (scheduledMatch) {
-        return `${this.$t("Your order is scheduled on")} ${scheduledMatch[1]}`;
-      }
-      const preparingMatch = String(repaired).match(/^(.+)\s+is preparing your order\.?$/i);
-      if (preparingMatch) {
-        return `${preparingMatch[1]} ${this.$t("is preparing your order")}`;
+      const normalized = String(repaired || "").replace(/\s+/g, " ").trim();
+      if (!normalized) {
+        return "";
       }
       const translated = this.$t(repaired);
       return translated === repaired ? repaired : translated;
+    },
+    displayStatus(value) {
+      return normalizeOrderStatusText(value, this.$t.bind(this));
     },
     displaySummaryName(value) {
       const label = normalizeBackendLabel(value);

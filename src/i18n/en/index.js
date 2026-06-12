@@ -647,6 +647,21 @@
   "Order subtotal": "Order total",
   "Choose delivery time": "Choose delivery time",
   "is preparing your order": "is preparing your order",
+  Canceled: "Canceled",
+  Cancelled: "Canceled",
+  Scheduled: "Scheduled",
+  "Your order is scheduled on": "Your order is scheduled on",
+  "Arriving by": "Arriving by",
+  "Order is delayed": "Order is delayed",
+  "Preparing order delayed": "Preparing order delayed",
+  "Your order is ready": "Your order is ready",
+  "Restaurant is running behind schedule": "Restaurant is running behind schedule:",
+  "Your order will be ready soon.": "Your order will be ready soon.",
+  "We apologize for the delay! Your order is running a little late, but it's on its way and should arrive shortly.":
+    "We apologize for the delay. Your order is running a little late, but it is on its way and should arrive shortly.",
+  "Customer cancelled this order": "Customer cancelled this order",
+  "Unfortunately, the restaurant is not able to complete this order due to the following reason: Customer cancelled this order":
+    "Customer cancelled this order.",
   "Chat is not available for this order yet":
     "Chat is not available for this order yet",
   Edit: "Edit",
