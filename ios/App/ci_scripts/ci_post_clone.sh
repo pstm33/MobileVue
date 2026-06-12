@@ -41,6 +41,19 @@ for item in sys.argv[1:]:
 PY
 }
 
+patch_xcode_cloud_podfile() {
+  python3 - "$REPO_ROOT/ios/App/Podfile" <<'PY'
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+text = text.replace("../../node_modules/", "../../src-capacitor/node_modules/")
+path.write_text(text, encoding="utf-8")
+print(f"Patched Capacitor pod paths in {path}")
+PY
+}
+
 if command -v brew >/dev/null 2>&1; then
   NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)"
   if [ "$NODE_MAJOR" -lt 20 ] || [ "$NODE_MAJOR" -gt 22 ]; then
@@ -73,6 +86,7 @@ rm -rf "$REPO_ROOT/ios"
 mkdir -p "$REPO_ROOT/ios"
 cp -R "$REPO_ROOT/src-capacitor/ios/." "$REPO_ROOT/ios/"
 strip_bom "$REPO_ROOT/ios/App/App.xcodeproj/project.pbxproj"
+patch_xcode_cloud_podfile
 
 cd "$REPO_ROOT/ios/App"
 retry 3 30 pod install
