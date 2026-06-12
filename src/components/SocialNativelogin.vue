@@ -19,7 +19,7 @@
   </q-btn>
 
   <q-btn
-    v-if="fb_flag"
+    v-if="fb_flag && !isIOS"
     class="tagam-social-login-btn full-width"
     no-caps
     unelevated
@@ -96,7 +96,7 @@ export default {
       });
     }
 
-    if (this.fb_flag) {
+    if (this.fb_flag && !this.isIOS) {
       await SocialLogin.initialize({
         facebook: {
           appId: this.DataStore?.attributes_data?.app_facebook_id,
@@ -221,6 +221,11 @@ export default {
     showSocialError(error) {
       const message = error?.message || error?.error || this.$t("Social login failed");
       APIinterface.notify("dark", this.$t(message), "error_outline", this.$q);
+    },
+  },
+  computed: {
+    isIOS() {
+      return Capacitor.getPlatform() === "ios";
     },
   },
 };
