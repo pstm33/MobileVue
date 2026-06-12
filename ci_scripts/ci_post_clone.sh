@@ -52,6 +52,47 @@ cd "$REPO_ROOT/src-capacitor"
 retry 3 30 npx cap sync ios
 cd "$REPO_ROOT"
 
+IOS_SRC="$REPO_ROOT/src-capacitor/ios/App"
+INFO_PLIST="$IOS_SRC/App/Info.plist"
+ENTITLEMENTS="$IOS_SRC/App/App.entitlements"
+PBXPROJ="$IOS_SRC/App.xcodeproj/project.pbxproj"
+FACEBOOK_APP_ID="1010492511527363"
+FACEBOOK_URL_SCHEME="fb${FACEBOOK_APP_ID}"
+
+echo "Applying TAGAM iOS native metadata"
+/usr/libexec/PlistBuddy -c "Set :FacebookAppID ${FACEBOOK_APP_ID}" "$INFO_PLIST" 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :FacebookAppID string ${FACEBOOK_APP_ID}" "$INFO_PLIST"
+/usr/libexec/PlistBuddy -c "Set :FacebookClientToken ${TAGAM_FACEBOOK_CLIENT_TOKEN:-f45eedf16fabcb347a88ca2ae2069ca0}" "$INFO_PLIST" 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :FacebookClientToken string ${TAGAM_FACEBOOK_CLIENT_TOKEN:-f45eedf16fabcb347a88ca2ae2069ca0}" "$INFO_PLIST"
+/usr/libexec/PlistBuddy -c "Set :FacebookDisplayName Tagam Delivery" "$INFO_PLIST" 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :FacebookDisplayName string Tagam Delivery" "$INFO_PLIST"
+/usr/libexec/PlistBuddy -c "Delete :LSApplicationQueriesSchemes" "$INFO_PLIST" 2>/dev/null || true
+/usr/libexec/PlistBuddy -c "Add :LSApplicationQueriesSchemes array" "$INFO_PLIST"
+/usr/libexec/PlistBuddy -c "Add :LSApplicationQueriesSchemes:0 string fbapi" "$INFO_PLIST"
+/usr/libexec/PlistBuddy -c "Add :LSApplicationQueriesSchemes:1 string fb-messenger-share-api" "$INFO_PLIST"
+/usr/libexec/PlistBuddy -c "Add :LSApplicationQueriesSchemes:2 string fbauth2" "$INFO_PLIST"
+/usr/libexec/PlistBuddy -c "Add :LSApplicationQueriesSchemes:3 string fbshareextension" "$INFO_PLIST"
+/usr/libexec/PlistBuddy -c "Delete :CFBundleURLTypes" "$INFO_PLIST" 2>/dev/null || true
+/usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes array" "$INFO_PLIST"
+/usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0 dict" "$INFO_PLIST"
+/usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLName string facebook" "$INFO_PLIST"
+/usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes array" "$INFO_PLIST"
+/usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string ${FACEBOOK_URL_SCHEME}" "$INFO_PLIST"
+
+cat > "$ENTITLEMENTS" <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
+</dict>
+</plist>
+EOF
+
+if ! grep -q "CODE_SIGN_ENTITLEMENTS = App/App.entitlements;" "$PBXPROJ"; then
+  perl -0pi -e 's/(CODE_SIGN_STYLE = Automatic;\n)/$1\t\t\t\tCODE_SIGN_ENTITLEMENTS = App\\/App.entitlements;\n/g' "$PBXPROJ"
+fi
+
 rm -rf "$REPO_ROOT/ios"
 mkdir -p "$REPO_ROOT/ios"
 cp -R "$REPO_ROOT/src-capacitor/ios/." "$REPO_ROOT/ios/"
