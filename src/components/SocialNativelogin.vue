@@ -1,58 +1,58 @@
 ﻿<template>
   <div class="tagam-social-login-stack q-gutter-y-sm">
-  <q-btn
-    v-if="google_login_enabled"
-    class="tagam-social-login-btn full-width"
-    no-caps
-    unelevated
-    rounded
-    color="white"
-    text-color="dark"
-    @click="handleGoogle"
-    :loading="loading"
-    :aria-label="$t('Continue with Google')"
-  >
-    <q-avatar size="20px" class="q-mr-sm">
-      <img src="google-icon-logo.svg" />
-    </q-avatar>
-    <span class="text-weight-bold">{{ $t("Continue with Google") }}</span>
-  </q-btn>
+    <q-btn
+      v-if="google_login_enabled"
+      class="tagam-social-login-btn full-width"
+      no-caps
+      unelevated
+      rounded
+      color="white"
+      text-color="dark"
+      @click="handleGoogle"
+      :loading="loading"
+      :aria-label="$t('Continue with Google')"
+    >
+      <q-avatar size="20px" class="q-mr-sm">
+        <img src="google-icon-logo.svg" />
+      </q-avatar>
+      <span class="text-weight-bold">{{ $t("Continue with Google") }}</span>
+    </q-btn>
 
-  <q-btn
-    v-if="fb_flag && !isIOS"
-    class="tagam-social-login-btn full-width"
-    no-caps
-    unelevated
-    rounded
-    color="white"
-    text-color="dark"
-    @click="handleFacebook"
-    :loading="loading"
-    :aria-label="$t('Continue with Facebook')"
-  >
-    <q-avatar size="22px" class="q-mr-sm">
-      <img src="facebook-3-logo.svg" />
-    </q-avatar>
-    <span class="text-weight-bold">{{ $t("Continue with Facebook") }}</span>
-  </q-btn>
+    <q-btn
+      v-if="fb_flag && !isIOS"
+      class="tagam-social-login-btn full-width"
+      no-caps
+      unelevated
+      rounded
+      color="white"
+      text-color="dark"
+      @click="handleFacebook"
+      :loading="loading"
+      :aria-label="$t('Continue with Facebook')"
+    >
+      <q-avatar size="22px" class="q-mr-sm">
+        <img src="facebook-3-logo.svg" />
+      </q-avatar>
+      <span class="text-weight-bold">{{ $t("Continue with Facebook") }}</span>
+    </q-btn>
 
-  <q-btn
-    v-if="app_enabled_apple_login"
-    class="tagam-social-login-btn full-width"
-    no-caps
-    unelevated
-    rounded
-    color="white"
-    text-color="dark"
-    @click="handleAppleLogin"
-    :loading="loading"
-    :aria-label="$t('Continue with Apple')"
-  >
-    <q-avatar size="22px" class="q-mr-sm">
-      <img src="apple-black-logo.svg" />
-    </q-avatar>
-    <span class="text-weight-bold">{{ $t("Continue with Apple") }}</span>
-  </q-btn>
+    <q-btn
+      v-if="app_enabled_apple_login"
+      class="tagam-social-login-btn full-width"
+      no-caps
+      unelevated
+      rounded
+      color="white"
+      text-color="dark"
+      @click="handleAppleLogin"
+      :loading="loading"
+      :aria-label="$t('Continue with Apple')"
+    >
+      <q-avatar size="22px" class="q-mr-sm">
+        <img src="apple-black-logo.svg" />
+      </q-avatar>
+      <span class="text-weight-bold">{{ $t("Continue with Apple") }}</span>
+    </q-btn>
   </div>
 </template>
 
@@ -116,6 +116,114 @@ export default {
     }
   },
   methods: {
+    cleanSocialValue(value) {
+      return typeof value === "string" ? value.trim() : "";
+    },
+    getTokenFromResult(result, provider) {
+      const accessToken = result?.accessToken;
+      const accessTokenValue =
+        typeof accessToken === "string" ? accessToken : accessToken?.token;
+
+      if (provider === "apple") {
+        return this.cleanSocialValue(
+          accessTokenValue || result?.identityToken || result?.idToken,
+        );
+      }
+
+      return this.cleanSocialValue(
+        accessTokenValue || result?.idToken || result?.serverAuthCode,
+      );
+    },
+    decodeJwtPayload(token) {
+      if (!token || typeof token !== "string" || !token.includes(".")) {
+        return {};
+      }
+
+      try {
+        const payload = token.split(".")[1];
+        const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+        const padded = normalized.padEnd(
+          normalized.length + ((4 - (normalized.length % 4)) % 4),
+          "=",
+        );
+        const decoded = atob(padded);
+        return JSON.parse(
+          decodeURIComponent(
+            decoded
+              .split("")
+              .map(
+                (char) =>
+                  `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`,
+              )
+              .join(""),
+          ),
+        );
+      } catch (error) {
+        return {};
+      }
+    },
+    splitName(name) {
+      const parts = this.cleanSocialValue(name).split(/\s+/).filter(Boolean);
+      return {
+        firstName: parts[0] || "",
+        lastName: parts.slice(1).join(" "),
+      };
+    },
+    fallbackFirstName(email, provider) {
+      const emailName = this.cleanSocialValue(email).split("@")[0];
+      if (emailName) {
+        return emailName.replace(/[._-]+/g, " ").trim() || emailName;
+      }
+      return provider === "apple"
+        ? "Apple"
+        : provider === "google"
+          ? "Google"
+          : "Social";
+    },
+    fallbackLastName(provider) {
+      return provider === "apple"
+        ? "Apple"
+        : provider === "google"
+          ? "Google"
+          : "Facebook";
+    },
+    normalizeSocialParams(provider, results, profileOverride = null) {
+      const result = results?.result || {};
+      const profile = profileOverride || result?.profile || {};
+      const token = this.getTokenFromResult(result, provider);
+      const jwtPayload = this.decodeJwtPayload(token);
+      const email = this.cleanSocialValue(
+        profile?.email || profile?.email_address || jwtPayload?.email,
+      );
+      const displayName = this.splitName(profile?.name);
+      const firstName = this.cleanSocialValue(
+        profile?.givenName || profile?.first_name || displayName.firstName,
+      );
+      const lastName = this.cleanSocialValue(
+        profile?.familyName || profile?.last_name || displayName.lastName,
+      );
+      const id = this.cleanSocialValue(
+        profile?.id ||
+          profile?.user ||
+          profile?.userID ||
+          result?.accessToken?.userId ||
+          jwtPayload?.sub ||
+          email,
+      );
+
+      if (!token || !id) {
+        throw new Error("Social login failed");
+      }
+
+      return {
+        id,
+        email_address: email,
+        first_name: firstName || this.fallbackFirstName(email, provider),
+        last_name: lastName || this.fallbackLastName(provider),
+        social_strategy: provider,
+        social_token: token,
+      };
+    },
     async handleGoogle() {
       try {
         this.loading = true;
@@ -130,16 +238,7 @@ export default {
         //console.log("Login success", JSON.stringify(results));
         //alert(results?.result?.profile?.familyName);
 
-        let profile = results?.result?.profile;
-
-        const params = {
-          id: profile.id,
-          email_address: profile.email,
-          first_name: profile.givenName,
-          last_name: profile.familyName,
-          social_strategy: "google",
-          social_token: results?.result?.accessToken?.token,
-        };
+        const params = this.normalizeSocialParams("google", results);
         //alert("Login success: " + JSON.stringify(params));
         this.$emit("afterLogin", params);
       } catch (error) {
@@ -151,7 +250,6 @@ export default {
       }
     },
     async handleFacebook() {
-      console.log("handleFacebook");
       try {
         this.loading = true;
         const results = await SocialLogin.login({
@@ -164,23 +262,19 @@ export default {
         //console.log("Facebook login result:", JSON.stringify(results));
         //alert("Facebook success: " + JSON.stringify(results));
 
-        const token = results.result.accessToken.token;
+        const token = this.getTokenFromResult(results?.result, "facebook");
+        if (!token) {
+          throw new Error("Social login failed");
+        }
 
         const response = await fetch(
-          `https://graph.facebook.com/me?fields=id,name,first_name,last_name,email,picture&access_token=${token}`
+          `https://graph.facebook.com/me?fields=id,name,first_name,last_name,email,picture&access_token=${token}`,
         );
         const profile = await response.json();
         // alert(JSON.stringify(profile));
         // console.log("Facebook login result:", JSON.stringify(profile));
 
-        const params = {
-          id: profile.id,
-          email_address: profile.email,
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          social_strategy: "facebook",
-          social_token: token,
-        };
+        const params = this.normalizeSocialParams("facebook", results, profile);
         //alert(JSON.stringify(params));
         this.$emit("afterLogin", params);
       } catch (error) {
@@ -193,7 +287,6 @@ export default {
     async handleAppleLogin() {
       try {
         this.loading = true;
-        console.log("handleAppleLogin");
         const results = await SocialLogin.login({
           provider: "apple",
           options: {
@@ -201,15 +294,7 @@ export default {
           },
         });
         //alert("Apple success: " + JSON.stringify(results));
-        const profile = results?.result?.profile;
-        const params = {
-          id: profile?.user,
-          email_address: profile?.email,
-          first_name: profile?.givenName || "",
-          last_name: profile?.familyName || "",
-          social_strategy: "apple",
-          social_token: results?.result?.identityToken,
-        };
+        const params = this.normalizeSocialParams("apple", results);
         this.$emit("afterLogin", params);
       } catch (error) {
         //alert("Login error: " + JSON.stringify(error));
@@ -219,7 +304,8 @@ export default {
       }
     },
     showSocialError(error) {
-      const message = error?.message || error?.error || this.$t("Social login failed");
+      const message =
+        error?.message || error?.error || this.$t("Social login failed");
       APIinterface.notify("dark", this.$t(message), "error_outline", this.$q);
     },
   },
@@ -248,6 +334,3 @@ body.body--dark .tagam-social-login-btn {
   color: var(--tagam-text) !important;
 }
 </style>
-
-
-
